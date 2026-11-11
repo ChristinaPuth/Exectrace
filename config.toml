@@ -1,0 +1,51 @@
+# Non-secret settings. API keys live in .env, never here.
+# See SPEC.md sections 3.10 and 6.2.
+
+[models]
+# Providers are tried in this order for every LLM call (chat and extraction):
+#   1. the first provider, paced to stay under its tokens_per_minute;
+#   2. if the pacing wait would exceed limits.max_throttle_wait_seconds, or the
+#      provider is rate-limited or unreachable, the next provider is used.
+# Providers without a key are skipped, so one key is still enough.
+provider_order = ["groq", "openai"]
+
+# Chosen in M0 from `leadership check` on 2026-11-10. Every model below passed
+# JSON output, tool calling and temperature 0. Both jobs are set per provider
+# so that either key alone is enough.
+# Rate limits are what the provider reported for these keys; 0 = do not throttle.
+[models.openai]
+chat = "gpt-5.4-mini-2026-03-17"      # dated snapshot, so results are reproducible
+extract = "gpt-5.4-mini-2026-03-17"
+tokens_per_minute = 2000000
+requests_per_day = 0
+
+[models.groq]
+chat = "openai/gpt-oss-120b"
+extract = "openai/gpt-oss-120b"
+tokens_per_minute = 8000              # free tier: the binding limit for extraction
+requests_per_day = 1000
+
+[limits]
+max_pages = 40                    # pages fetched per company
+max_chunks_per_page = 3           # chunks of one page sent to the LLM
+max_search_rounds = 2
+max_search_queries = 25           # per company, including verification
+max_llm_calls = 120               # per company; cache hits do not count
+max_verification_checks = 15
+max_queries_per_verification = 2
+max_retries = 3                   # per request, with backoff
+max_throttle_wait_seconds = 30    # wait this long for the preferred provider, then fall back
+max_source_attempts = 2           # retries of a failed source on resume
+host_delay_seconds = 1.0          # between requests to the same host
+request_timeout_seconds = 20
+freshness_window_months = 12      # SPEC 3.6, rule 5 only
+
+[agent]
+max_steps = 5
+max_sql_retries = 2
+sql_row_limit = 50
+sql_timeout_seconds = 5
+
+[eval]
+min_precision_current_roles = 0.90
+min_recall_gold_c_level = 1.0     # against the hand-verified gold set

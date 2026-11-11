@@ -1,0 +1,31 @@
+[project]
+name = "leadership"
+version = "0.1.0"
+description = "Collects a company's leadership from public sources and answers questions over it."
+requires-python = ">=3.11"
+dependencies = [
+    "openai>=1.50",
+    "pydantic>=2.7",
+    "python-dotenv>=1.0",
+]
+
+[project.scripts]
+leadership = "leadership.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["leadership"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not llm and not live'"
+markers = [
+    "llm: needs an LLM key; makes real (cached) model calls",
+    "live: needs network and all keys; run manually",
+]

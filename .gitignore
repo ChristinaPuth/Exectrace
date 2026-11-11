@@ -1,0 +1,18 @@
+# Secrets
+.env
+
+# Local working data (fixtures/ is committed, these are not)
+cache/
+logs/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+
+# Editor / OS
+~$*
+.DS_Store
+Thumbs.db

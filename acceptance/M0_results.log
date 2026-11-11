@@ -1,0 +1,226 @@
+Acceptance run for M0
+Date:    2026-11-11T12:39:41-08:00
+Branch:  m0-setup
+Commit:  (none)
+Python:  3.12.10
+
+==============================================================================
+[1] Fast tests (no network, no keys)
+command:  uv run pytest -v
+exit code 0 (expected 0)  ->  PASS    6.9s
+------------------------------------------------------------------------------
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0 -- C:\dev\ExecTrace\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\dev\ExecTrace
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.16.0
+collecting ... collected 25 items / 4 deselected / 21 selected
+
+tests/test_config.py::test_committed_config_is_valid PASSED              [  4%]
+tests/test_config.py::test_unknown_key_is_rejected PASSED                [  9%]
+tests/test_config.py::test_invalid_value_is_rejected PASSED              [ 14%]
+tests/test_config.py::test_unknown_provider_in_order_is_rejected PASSED  [ 19%]
+tests/test_config.py::test_blank_keys_do_not_count_as_configured PASSED  [ 23%]
+tests/test_config.py::test_chain_follows_provider_order PASSED           [ 28%]
+tests/test_config.py::test_one_key_is_enough PASSED                      [ 33%]
+tests/test_config.py::test_env_moves_a_provider_to_the_front_and_overrides_its_model PASSED [ 38%]
+tests/test_config.py::test_provider_without_a_model_is_left_out PASSED   [ 42%]
+tests/test_config.py::test_no_key_and_no_model_give_clear_errors PASSED  [ 47%]
+tests/test_config.py::test_redact_removes_configured_secrets PASSED      [ 52%]
+tests/test_config.py::test_model_listing_hides_non_chat_models PASSED    [ 57%]
+tests/test_llm.py::test_no_limit_never_waits PASSED                      [ 61%]
+tests/test_llm.py::test_call_that_fits_goes_now PASSED                   [ 66%]
+tests/test_llm.py::test_wait_lasts_until_enough_old_usage_expires PASSED [ 71%]
+tests/test_llm.py::test_usage_older_than_a_minute_is_forgotten PASSED    [ 76%]
+tests/test_llm.py::test_call_larger_than_the_limit_can_never_fit PASSED  [ 80%]
+tests/test_llm.py::test_short_wait_stays_on_the_preferred_provider PASSED [ 85%]
+tests/test_llm.py::test_long_wait_or_oversized_call_falls_back PASSED    [ 90%]
+tests/test_llm.py::test_last_provider_is_never_skipped PASSED            [ 95%]
+tests/test_llm.py::test_estimate_is_on_the_high_side PASSED              [100%]
+
+====================== 21 passed, 4 deselected in 3.21s =======================
+
+==============================================================================
+[2] Real-provider tests: Groq first, pacing, fallback to OpenAI
+command:  uv run pytest -v -m llm
+exit code 0 (expected 0)  ->  PASS    12.8s
+------------------------------------------------------------------------------
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0 -- C:\dev\ExecTrace\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\dev\ExecTrace
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.16.0
+collecting ... collected 25 items / 21 deselected / 4 selected
+
+tests/test_llm.py::test_groq_is_used_first PASSED                        [ 25%]
+tests/test_llm.py::test_falls_back_to_openai_when_groq_pacing_wait_is_too_long PASSED [ 50%]
+tests/test_llm.py::test_waits_for_groq_when_the_wait_is_short PASSED     [ 75%]
+tests/test_llm.py::test_falls_back_to_openai_when_groq_is_unreachable PASSED [100%]
+
+====================== 4 passed, 21 deselected in 9.90s =======================
+
+==============================================================================
+[3] Key check with all keys
+command:  uv run leadership check
+exit code 0 (expected 0)  ->  PASS    8.5s
+------------------------------------------------------------------------------
+Keys in .env:  openai=set  groq=set  tavily=set  sec_user_agent=set
+
+[openai]
+  50 chat-capable models available:
+    chat-latest   gpt-4.1   gpt-4.1-2025-04-14
+    gpt-4.1-mini   gpt-4.1-mini-2025-04-14   gpt-4o
+    gpt-4o-2024-08-06   gpt-4o-2024-11-20   gpt-4o-mini
+    gpt-4o-mini-2024-07-18   gpt-5   gpt-5-2025-08-07
+    gpt-5-mini   gpt-5-mini-2025-08-07   gpt-5-nano
+    gpt-5-nano-2025-08-07   gpt-5-pro   gpt-5-pro-2025-10-06
+    gpt-5-search-api   gpt-5-search-api-2025-10-14   gpt-5.1
+    gpt-5.1-2025-11-13   gpt-5.2   gpt-5.2-2025-12-11
+    gpt-5.2-pro   gpt-5.2-pro-2025-12-11   gpt-5.3-codex
+    gpt-5.4   gpt-5.4-2026-03-05   gpt-5.4-mini
+    gpt-5.4-mini-2026-03-17   gpt-5.4-nano   gpt-5.4-nano-2026-03-17
+    gpt-5.4-pro   gpt-5.4-pro-2026-03-05   gpt-5.5
+    gpt-5.5-2026-04-23   gpt-5.5-pro   gpt-5.5-pro-2026-04-23
+    gpt-5.6-luna   gpt-5.6-sol   gpt-5.6-terra
+    gpt-6-astra   gpt-6-luna   gpt-6-sol
+    gpt-6.1-sol   gpt-6.1-terra   gpt-live-1
+    o3   o3-2025-04-16
+  gpt-5.4-mini-2026-03-17: JSON output ok, tool calling ok, temperature 0 ok, 1.8s, 207 tokens
+      x-ratelimit-limit-requests = 5000
+      x-ratelimit-limit-tokens = 2000000
+      x-ratelimit-remaining-requests = 4999
+      x-ratelimit-remaining-tokens = 1999981
+      x-ratelimit-reset-requests = 12ms
+      x-ratelimit-reset-tokens = 0s
+
+[groq]
+  6 chat-capable models available:
+    allam-2-7b   canopylabs/orpheus-arabic-saudi   canopylabs/orpheus-v1-english
+    openai/gpt-oss-120b   openai/gpt-oss-20b   qwen/qwen3.8-27b
+  openai/gpt-oss-120b: JSON output ok, tool calling ok, temperature 0 ok, 0.9s, 416 tokens
+      x-ratelimit-limit-requests = 1000
+      x-ratelimit-limit-tokens = 8000
+      x-ratelimit-remaining-requests = 996
+      x-ratelimit-remaining-tokens = 7294
+      x-ratelimit-reset-requests = 5m45.6s
+      x-ratelimit-reset-tokens = 5.295s
+
+All configured models passed.
+
+==============================================================================
+[4] Key check with only the Groq key
+command:  uv run leadership check    with OPENAI_API_KEY=(empty)
+exit code 0 (expected 0)  ->  PASS    5.6s
+------------------------------------------------------------------------------
+Keys in .env:  openai=MISSING  groq=set  tavily=set  sec_user_agent=set
+
+[groq]
+  6 chat-capable models available:
+    allam-2-7b   canopylabs/orpheus-arabic-saudi   canopylabs/orpheus-v1-english
+    openai/gpt-oss-120b   openai/gpt-oss-20b   qwen/qwen3.8-27b
+  openai/gpt-oss-120b: JSON output ok, tool calling ok, temperature 0 ok, 1.0s, 416 tokens
+      x-ratelimit-limit-requests = 1000
+      x-ratelimit-limit-tokens = 8000
+      x-ratelimit-remaining-requests = 994
+      x-ratelimit-remaining-tokens = 7342
+      x-ratelimit-reset-requests = 8m38.4s
+      x-ratelimit-reset-tokens = 4.935s
+
+All configured models passed.
+
+==============================================================================
+[5] Key check with only the OpenAI key
+command:  uv run leadership check    with GROQ_API_KEY=(empty)
+exit code 0 (expected 0)  ->  PASS    7.5s
+------------------------------------------------------------------------------
+Keys in .env:  openai=set  groq=MISSING  tavily=set  sec_user_agent=set
+
+[openai]
+  50 chat-capable models available:
+    chat-latest   gpt-4.1   gpt-4.1-2025-04-14
+    gpt-4.1-mini   gpt-4.1-mini-2025-04-14   gpt-4o
+    gpt-4o-2024-08-06   gpt-4o-2024-11-20   gpt-4o-mini
+    gpt-4o-mini-2024-07-18   gpt-5   gpt-5-2025-08-07
+    gpt-5-mini   gpt-5-mini-2025-08-07   gpt-5-nano
+    gpt-5-nano-2025-08-07   gpt-5-pro   gpt-5-pro-2025-10-06
+    gpt-5-search-api   gpt-5-search-api-2025-10-14   gpt-5.1
+    gpt-5.1-2025-11-13   gpt-5.2   gpt-5.2-2025-12-11
+    gpt-5.2-pro   gpt-5.2-pro-2025-12-11   gpt-5.3-codex
+    gpt-5.4   gpt-5.4-2026-03-05   gpt-5.4-mini
+    gpt-5.4-mini-2026-03-17   gpt-5.4-nano   gpt-5.4-nano-2026-03-17
+    gpt-5.4-pro   gpt-5.4-pro-2026-03-05   gpt-5.5
+    gpt-5.5-2026-04-23   gpt-5.5-pro   gpt-5.5-pro-2026-04-23
+    gpt-5.6-luna   gpt-5.6-sol   gpt-5.6-terra
+    gpt-6-astra   gpt-6-luna   gpt-6-sol
+    gpt-6.1-sol   gpt-6.1-terra   gpt-live-1
+    o3   o3-2025-04-16
+  gpt-5.4-mini-2026-03-17: JSON output ok, tool calling ok, temperature 0 ok, 2.2s, 207 tokens
+      x-ratelimit-limit-requests = 5000
+      x-ratelimit-limit-tokens = 2000000
+      x-ratelimit-remaining-requests = 4999
+      x-ratelimit-remaining-tokens = 1999981
+      x-ratelimit-reset-requests = 12ms
+      x-ratelimit-reset-tokens = 0s
+
+All configured models passed.
+
+==============================================================================
+[6] Key check with an invalid Groq key (must fail without printing the key)
+command:  uv run leadership check    with GROQ_API_KEY=(hidden)
+exit code 1 (expected 1)  ->  PASS    7.1s
+------------------------------------------------------------------------------
+Keys in .env:  openai=set  groq=set  tavily=set  sec_user_agent=set
+
+[openai]
+  50 chat-capable models available:
+    chat-latest   gpt-4.1   gpt-4.1-2025-04-14
+    gpt-4.1-mini   gpt-4.1-mini-2025-04-14   gpt-4o
+    gpt-4o-2024-08-06   gpt-4o-2024-11-20   gpt-4o-mini
+    gpt-4o-mini-2024-07-18   gpt-5   gpt-5-2025-08-07
+    gpt-5-mini   gpt-5-mini-2025-08-07   gpt-5-nano
+    gpt-5-nano-2025-08-07   gpt-5-pro   gpt-5-pro-2025-10-06
+    gpt-5-search-api   gpt-5-search-api-2025-10-14   gpt-5.1
+    gpt-5.1-2025-11-13   gpt-5.2   gpt-5.2-2025-12-11
+    gpt-5.2-pro   gpt-5.2-pro-2025-12-11   gpt-5.3-codex
+    gpt-5.4   gpt-5.4-2026-03-05   gpt-5.4-mini
+    gpt-5.4-mini-2026-03-17   gpt-5.4-nano   gpt-5.4-nano-2026-03-17
+    gpt-5.4-pro   gpt-5.4-pro-2026-03-05   gpt-5.5
+    gpt-5.5-2026-04-23   gpt-5.5-pro   gpt-5.5-pro-2026-04-23
+    gpt-5.6-luna   gpt-5.6-sol   gpt-5.6-terra
+    gpt-6-astra   gpt-6-luna   gpt-6-sol
+    gpt-6.1-sol   gpt-6.1-terra   gpt-live-1
+    o3   o3-2025-04-16
+  gpt-5.4-mini-2026-03-17: JSON output ok, tool calling ok, temperature 0 ok, 1.6s, 207 tokens
+      x-ratelimit-limit-requests = 5000
+      x-ratelimit-limit-tokens = 2000000
+      x-ratelimit-remaining-requests = 4999
+      x-ratelimit-remaining-tokens = 1999981
+      x-ratelimit-reset-requests = 12ms
+      x-ratelimit-reset-tokens = 0s
+
+[groq]
+  could not list models: authentication failed - check the key in .env
+
+==============================================================================
+[7] Key check with no keys (must explain what to do)
+command:  uv run leadership check    with OPENAI_API_KEY=(empty) GROQ_API_KEY=(empty)
+exit code 2 (expected 2)  ->  PASS    3.2s
+------------------------------------------------------------------------------
+Keys in .env:  openai=MISSING  groq=MISSING  tavily=set  sec_user_agent=set
+
+No LLM key found. Copy .env.example to .env and set OPENAI_API_KEY or GROQ_API_KEY.
+
+==============================================================================
+SUMMARY
+  [1] PASS  Fast tests (no network, no keys)
+  [2] PASS  Real-provider tests: Groq first, pacing, fallback to OpenAI
+  [3] PASS  Key check with all keys
+  [4] PASS  Key check with only the Groq key
+  [5] PASS  Key check with only the OpenAI key
+  [6] PASS  Key check with an invalid Groq key (must fail without printing the key)
+  [7] PASS  Key check with no keys (must explain what to do)
+  7 of 7 steps as expected
