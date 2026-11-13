@@ -1,0 +1,558 @@
+Acceptance run for M1
+Date:    2026-11-12T16:24:36-08:00
+Branch:  m1-schema
+Commit:  901812d
+Python:  3.12.10
+
+==============================================================================
+[1] Resolution rules: one test per worked case, plus rule-specific tests
+command:  uv run pytest -v tests/test_resolve.py
+exit code 0 (expected 0)  ->  PASS    1.6s
+------------------------------------------------------------------------------
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0 -- C:\dev\ExecTrace\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\dev\ExecTrace
+configfile: pyproject.toml
+plugins: anyio-4.16.0
+collecting ... collected 82 items
+
+tests/test_resolve.py::test_worked_case[Only an old press release names X as CTO] PASSED [  1%]
+tests/test_resolve.py::test_worked_case[Live leadership page lists X] PASSED [  2%]
+tests/test_resolve.py::test_worked_case[Page lists X; a company release says X stepped down as CTO] PASSED [  3%]
+tests/test_resolve.py::test_worked_case[Page lists X; an SEC filing says X left the company] PASSED [  4%]
+tests/test_resolve.py::test_worked_case[Page lists X; only a news article reports the departure] PASSED [  6%]
+tests/test_resolve.py::test_worked_case[No page lists X; only a news article reports the departure] PASSED [  7%]
+tests/test_resolve.py::test_worked_case[Departure announced with a future effective date] PASSED [  8%]
+tests/test_resolve.py::test_worked_case[Old release names X; live page shows Y in that role] PASSED [  9%]
+tests/test_resolve.py::test_worked_case[X steps down as CTO, stays as board advisor] PASSED [ 10%]
+tests/test_resolve.py::test_worked_case[X's only role ends; nothing says X left the company] PASSED [ 12%]
+tests/test_resolve.py::test_worked_case[Concurrent roles: X is CEO on the page and Chair in a filing] PASSED [ 13%]
+tests/test_resolve.py::test_worked_case[Successor appointed: Y becomes CFO; X keeps another role] PASSED [ 14%]
+tests/test_resolve.py::test_worked_case[Company release appoints Y as CTO; the page still lists only X (page lags)] PASSED [ 15%]
+tests/test_resolve.py::test_worked_case[Y appointed co-CEO; the page lists both X and Y] PASSED [ 17%]
+tests/test_resolve.py::test_worked_case[Newer news article names Y as CTO; company page lists X] PASSED [ 18%]
+tests/test_resolve.py::test_worked_case[Co-CEOs: the company page lists both] PASSED [ 19%]
+tests/test_resolve.py::test_worked_case[Only a search snippet names X] PASSED [ 20%]
+tests/test_resolve.py::test_worked_case[A snippet reports X's departure; company page lists X] PASSED [ 21%]
+tests/test_resolve.py::test_worked_case[Only a search snippet says X is a former CTO] PASSED [ 23%]
+tests/test_resolve.py::test_worked_case[Title change: X moves from CTO to Chief Architect] PASSED [ 24%]
+tests/test_resolve.py::test_worked_case[Published in March, effective end of June; a later April release still names X] PASSED [ 25%]
+tests/test_resolve.py::test_worked_case[Same claims, but viewed in May before the effective date] PASSED [ 26%]
+tests/test_resolve.py::test_worked_case[X left the company, then was re-appointed CTO later] PASSED [ 28%]
+tests/test_resolve.py::test_worked_case[Page lists X; X's only dated source is from 2019] PASSED [ 29%]
+tests/test_resolve.py::test_worked_case[No page; news article from 5 months ago names X as VP Engineering] PASSED [ 30%]
+tests/test_resolve.py::test_worked_case[No page; the same article is 17 months old] PASSED [ 31%]
+tests/test_resolve.py::test_worked_case[No page; an undated article names X] PASSED [ 32%]
+tests/test_resolve.py::test_worked_case[Role known only from a company statement calling X 'former CTO'] PASSED [ 34%]
+tests/test_resolve.py::test_worked_case[Release in October says Y will become CFO on 1 January; X is the CFO in a filing] PASSED [ 35%]
+tests/test_resolve.py::test_worked_case[Same claims, but viewed on 2 January after the effective date] PASSED [ 36%]
+tests/test_resolve.py::test_worked_case[Release says Y 'will become CFO' and gives no date; X is the CFO in a filing] PASSED [ 37%]
+tests/test_resolve.py::test_worked_case[Same undated announcement; the live page now lists Y as CFO] PASSED [ 39%]
+tests/test_resolve.py::test_worked_case[Same undated announcement; a later news article names Y as CFO] PASSED [ 40%]
+tests/test_resolve.py::test_worked_case[Undated announcement from 15 months ago was never confirmed] PASSED [ 41%]
+tests/test_resolve.py::test_worked_case[Page lists X; a company release says X 'will step down as CTO', no date] PASSED [ 42%]
+tests/test_resolve.py::test_worked_case[No page; a company release says X 'will leave the company', no date] PASSED [ 43%]
+tests/test_resolve.py::test_worked_case[Undated departure; a later company release says X has stepped down] PASSED [ 45%]
+tests/test_resolve.py::test_worked_case[Undated departure from 17 months ago, never confirmed; the page still lists X] PASSED [ 46%]
+tests/test_resolve.py::test_worked_case[Undated 'will leave the company' from 17 months ago; only an old release names X] PASSED [ 47%]
+tests/test_resolve.py::test_worked_case[The company page lists X and Y, both as plain 'CEO'] PASSED [ 48%]
+tests/test_resolve.py::test_worked_case[The page lists X as 'Co-CEO' but Y as plain 'CEO'] PASSED [ 50%]
+tests/test_resolve.py::test_worked_case[The page lists X as 'Co-CEO'; only a news article calls Y 'Co-CEO'] PASSED [ 51%]
+tests/test_resolve.py::test_worked_case[The page lists X as 'Joint CEO' and Y as 'Joint Chief Executive Officer'] PASSED [ 52%]
+tests/test_resolve.py::test_worked_case[The page lists both X and Y as 'Co-founder and CEO'] PASSED [ 53%]
+tests/test_resolve.py::test_worked_case[The page lists X and Y as 'Co-CEO' and a third person, Z, as plain 'CEO'] PASSED [ 54%]
+tests/test_resolve.py::test_every_role_names_the_rule_that_decided_it PASSED [ 56%]
+tests/test_resolve.py::test_resolve_is_pure_and_order_independent PASSED [ 57%]
+tests/test_resolve.py::test_news_only_departure_records_the_evidence_and_the_reason PASSED [ 58%]
+tests/test_resolve.py::test_lower_tier_source_raises_a_conflict_instead_of_overriding PASSED [ 59%]
+tests/test_resolve.py::test_equal_tier_holders_both_stay_current_and_are_flagged PASSED [ 60%]
+tests/test_resolve.py::test_co_ceos_on_the_company_page_are_current_without_a_conflict PASSED [ 62%]
+tests/test_resolve.py::test_shared_title_in_a_filing_or_release_alone_does_not_clear_the_conflict PASSED [ 63%]
+tests/test_resolve.py::test_is_shared_title[Co-CEO-True] PASSED          [ 64%]
+tests/test_resolve.py::test_is_shared_title[co-ceo-True] PASSED          [ 65%]
+tests/test_resolve.py::test_is_shared_title[Co CEO-True] PASSED          [ 67%]
+tests/test_resolve.py::test_is_shared_title[Joint CEO-True] PASSED       [ 68%]
+tests/test_resolve.py::test_is_shared_title[Co-Chief Executive Officer-True] PASSED [ 69%]
+tests/test_resolve.py::test_is_shared_title[Co-founder and Co-CEO-True] PASSED [ 70%]
+tests/test_resolve.py::test_is_shared_title[Co-President-True] PASSED    [ 71%]
+tests/test_resolve.py::test_is_shared_title[Co-Head of Engineering-True] PASSED [ 73%]
+tests/test_resolve.py::test_is_shared_title[CEO-False] PASSED            [ 74%]
+tests/test_resolve.py::test_is_shared_title[Co-founder and CEO-False] PASSED [ 75%]
+tests/test_resolve.py::test_is_shared_title[Chief Executive Officer-False] PASSED [ 76%]
+tests/test_resolve.py::test_is_shared_title[Cofounder-False] PASSED      [ 78%]
+tests/test_resolve.py::test_is_shared_title[Joint venture lead-False] PASSED [ 79%]
+tests/test_resolve.py::test_is_shared_title[None-False] PASSED           [ 80%]
+tests/test_resolve.py::test_concurrent_roles_of_one_person_are_not_a_conflict PASSED [ 81%]
+tests/test_resolve.py::test_explicit_end_records_date_and_evidence PASSED [ 82%]
+tests/test_resolve.py::test_succession_records_the_appointment_and_leaves_other_roles_alone PASSED [ 84%]
+tests/test_resolve.py::test_appointment_does_not_end_a_holder_confirmed_after_it PASSED [ 85%]
+tests/test_resolve.py::test_future_appointment_is_announced_not_current PASSED [ 86%]
+tests/test_resolve.py::test_announced_roles_are_never_counted_as_current PASSED [ 87%]
+tests/test_resolve.py::test_announced_successor_is_shown_beside_the_current_holder PASSED [ 89%]
+tests/test_resolve.py::test_stale_or_snippet_announcements_are_not_shown_as_a_successor PASSED [ 90%]
+tests/test_resolve.py::test_undated_appointment_takes_effect_on_the_date_of_the_confirming_source PASSED [ 91%]
+tests/test_resolve.py::test_source_older_than_the_announcement_does_not_confirm_it PASSED [ 92%]
+tests/test_resolve.py::test_undated_departure_keeps_the_role_and_records_the_announcement PASSED [ 93%]
+tests/test_resolve.py::test_source_count_counts_independent_sources PASSED [ 95%]
+tests/test_resolve.py::test_freshness_window_is_configurable PASSED      [ 96%]
+tests/test_resolve.py::test_freshness_boundary_is_inclusive PASSED       [ 97%]
+tests/test_resolve.py::test_role_key_groups_title_variants PASSED        [ 98%]
+tests/test_resolve.py::test_conflict_messages_are_cleanly_worded PASSED  [100%]
+
+============================= 82 passed in 0.29s ==============================
+
+==============================================================================
+[2] Database: schema, constraints, views, rebuilding roles from claims
+command:  uv run pytest -v tests/test_db.py
+exit code 0 (expected 0)  ->  PASS    2.1s
+------------------------------------------------------------------------------
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0 -- C:\dev\ExecTrace\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\dev\ExecTrace
+configfile: pyproject.toml
+plugins: anyio-4.16.0
+collecting ... collected 14 items
+
+tests/test_db.py::test_schema_has_the_tables_and_views PASSED            [  7%]
+tests/test_db.py::test_connect_is_safe_to_repeat PASSED                  [ 14%]
+tests/test_db.py::test_claim_without_source_date_or_evidence_is_rejected[evidence] PASSED [ 21%]
+tests/test_db.py::test_claim_without_source_date_or_evidence_is_rejected[as_of] PASSED [ 28%]
+tests/test_db.py::test_claim_without_source_date_or_evidence_is_rejected[source] PASSED [ 35%]
+tests/test_db.py::test_departure_without_scope_is_rejected PASSED        [ 42%]
+tests/test_db.py::test_invalid_enum_values_are_rejected PASSED           [ 50%]
+tests/test_db.py::test_rebuild_writes_roles_and_employment_status PASSED [ 57%]
+tests/test_db.py::test_rebuild_is_idempotent PASSED                      [ 64%]
+tests/test_db.py::test_views_expose_provenance_location_and_scope PASSED [ 71%]
+tests/test_db.py::test_announced_role_is_visible_but_not_counted_as_current PASSED [ 78%]
+tests/test_db.py::test_claims_are_kept_when_an_announcement_goes_stale PASSED [ 85%]
+tests/test_db.py::test_every_current_role_has_a_supporting_claim PASSED  [ 92%]
+tests/test_db.py::test_runs_table_keeps_status_reasons_and_counters PASSED [100%]
+
+============================= 14 passed in 0.76s ==============================
+
+==============================================================================
+[3] Whole fast suite (no network, no keys)
+command:  uv run pytest -q
+exit code 0 (expected 0)  ->  PASS    3.9s
+------------------------------------------------------------------------------
+........................................................................ [ 61%]
+.............................................                            [100%]
+117 passed, 4 deselected in 2.35s
+
+==============================================================================
+[4] Worked cases printed as a table for manual review
+command:  uv run python tools/show_cases.py
+exit code 0 (expected 0)  ->  PASS    0.4s
+------------------------------------------------------------------------------
+
+ 1. Only an old press release names X as CTO   [as of 2026-11-01]   OK
+      X as CTO                  unverified  rule6_stale_or_weak_evidence
+      employment: X=unknown
+
+ 2. Live leadership page lists X   [as of 2026-11-01]   OK
+      X as CTO                  current     rule4_listed_on_company_page
+      employment: X=current
+
+ 3. Page lists X; a company release says X stepped down as CTO   [as of 2026-11-01]   OK
+      X as CTO                  former      rule1_explicit_end  ends 2026-09-15
+      employment: X=unknown
+
+ 4. Page lists X; an SEC filing says X left the company   [as of 2026-11-01]   OK
+      X as CTO                  former      rule1_explicit_end  ends 2026-09-15
+      employment: X=former
+
+ 5. Page lists X; only a news article reports the departure   [as of 2026-11-01]   OK
+      X as CTO                  unverified  rule2_departure_reported_by_news_only
+          CONFLICT: departure reported by news only; company page still lists the role
+      employment: X=unknown
+
+ 6. No page lists X; only a news article reports the departure   [as of 2026-11-01]   OK
+      X as CTO                  unverified  rule2_departure_reported_by_news_only
+          CONFLICT: departure reported by news only; no company source confirms it
+      employment: X=unknown
+
+ 7. Departure announced with a future effective date   [as of 2026-11-01]   OK
+      X as CTO                  current     rule1_departure_announced_for_future_date  ends 2026-12-31
+      employment: X=current
+
+ 8. Old release names X; live page shows Y in that role   [as of 2026-11-01]   OK
+      X as CTO                  former      rule3_successor_listed_on_company_page
+      Y as CTO                  current     rule4_listed_on_company_page
+      employment: X=unknown, Y=current
+
+ 9. X steps down as CTO, stays as board advisor   [as of 2026-11-01]   OK
+      X as CTO                  former      rule1_explicit_end  ends 2026-08-01
+      X as board advisor        current     rule4_listed_on_company_page
+      employment: X=current
+
+10. X's only role ends; nothing says X left the company   [as of 2026-11-01]   OK
+      X as CTO                  former      rule1_explicit_end  ends 2026-08-01
+      employment: X=unknown
+
+11. Concurrent roles: X is CEO on the page and Chair in a filing   [as of 2026-11-01]   OK
+      X as CEO                  current     rule4_listed_on_company_page
+      X as chair of the board   current     rule5_recent_reliable_source
+      employment: X=current
+
+12. Successor appointed: Y becomes CFO; X keeps another role   [as of 2026-11-01]   OK
+      X as CFO                  former      rule3_successor_appointed  ends 2026-08-01
+      X as president            current     rule5_recent_reliable_source
+      Y as CFO                  current     rule5_recent_reliable_source
+      employment: X=current, Y=current
+
+13. Company release appoints Y as CTO; the page still lists only X (page lags)   [as of 2026-11-01]   OK
+      X as CTO                  former      rule3_successor_appointed  ends 2026-09-01
+      Y as CTO                  current     rule5_recent_reliable_source
+      employment: X=unknown, Y=current
+
+14. Y appointed co-CEO; the page lists both X and Y   [as of 2026-11-01]   OK
+      X as CEO                  current     rule4_listed_on_company_page
+      Y as CEO                  current     rule4_listed_on_company_page
+      employment: X=current, Y=current
+
+15. Newer news article names Y as CTO; company page lists X   [as of 2026-11-01]   OK
+      X as CTO                  current     rule4_listed_on_company_page
+          CONFLICT: another person is also claimed as CTO by a less reliable source
+      Y as CTO                  unverified  rule7_outranked_in_single_holder_role
+          CONFLICT: another person holds CTO according to a more reliable source (tier 1 vs tier 3)
+      employment: X=current, Y=unknown
+
+16. Co-CEOs: the company page lists both   [as of 2026-11-01]   OK
+      X as CEO                  current     rule4_listed_on_company_page
+      Y as CEO                  current     rule4_listed_on_company_page
+      employment: X=current, Y=current
+
+17. Only a search snippet names X   [as of 2026-11-01]   OK
+      X as CTO                  unverified  rule6_stale_or_weak_evidence
+      employment: X=unknown
+
+18. A snippet reports X's departure; company page lists X   [as of 2026-11-01]   OK
+      X as CTO                  current     rule4_listed_on_company_page
+      employment: X=current
+
+19. Only a search snippet says X is a former CTO   [as of 2026-11-01]   OK
+      employment: X=unknown
+
+20. Title change: X moves from CTO to Chief Architect   [as of 2026-11-01]   OK
+      X as CTO                  former      rule1_explicit_end  ends 2026-07-01
+      X as chief architect      current     rule5_recent_reliable_source
+      employment: X=current
+
+21. Published in March, effective end of June; a later April release still names X   [as of 2026-11-01]   OK
+      X as CTO                  former      rule1_explicit_end  ends 2026-06-30
+      employment: X=unknown
+
+22. Same claims, but viewed in May before the effective date   [as of 2026-05-01]   OK
+      X as CTO                  current     rule1_departure_announced_for_future_date  ends 2026-06-30
+      employment: X=current
+
+23. X left the company, then was re-appointed CTO later   [as of 2026-11-01]   OK
+      X as CTO                  current     rule5_recent_reliable_source
+      employment: X=current
+
+24. Page lists X; X's only dated source is from 2019   [as of 2026-11-01]   OK
+      X as CTO                  current     rule4_listed_on_company_page
+      employment: X=current
+
+25. No page; news article from 5 months ago names X as VP Engineering   [as of 2026-11-01]   OK
+      X as vp:engineering       current     rule5_recent_reliable_source
+      employment: X=current
+
+26. No page; the same article is 17 months old   [as of 2026-11-01]   OK
+      X as vp:engineering       unverified  rule6_stale_or_weak_evidence
+      employment: X=unknown
+
+27. No page; an undated article names X   [as of 2026-11-01]   OK
+      X as CTO                  unverified  rule6_stale_or_weak_evidence
+      employment: X=unknown
+
+28. Role known only from a company statement calling X 'former CTO'   [as of 2026-11-01]   OK
+      X as CTO                  former      rule1_explicit_end  ends 2026-05-01
+      employment: X=unknown
+
+29. Release in October says Y will become CFO on 1 January; X is the CFO in a filing   [as of 2026-11-01]   OK
+      X as CFO                  current     rule5_recent_reliable_source  successor announced: Y
+      Y as CFO                  announced   rule0_appointment_announced_not_yet_effective  starts 2027-01-01
+      employment: X=current, Y=unknown
+
+30. Same claims, but viewed on 2 January after the effective date   [as of 2027-01-02]   OK
+      X as CFO                  former      rule3_successor_appointed  ends 2027-01-01
+      Y as CFO                  current     rule5_recent_reliable_source
+      employment: X=unknown, Y=current
+
+31. Release says Y 'will become CFO' and gives no date; X is the CFO in a filing   [as of 2026-11-01]   OK
+      X as CFO                  current     rule5_recent_reliable_source  successor announced: Y
+      Y as CFO                  announced   rule0_appointment_announced_not_yet_effective  starts (no date given)
+      employment: X=current, Y=unknown
+
+32. Same undated announcement; the live page now lists Y as CFO   [as of 2026-11-01]   OK
+      X as CFO                  former      rule3_successor_appointed  ends 2026-11-01
+      Y as CFO                  current     rule4_listed_on_company_page
+      employment: X=unknown, Y=current
+
+33. Same undated announcement; a later news article names Y as CFO   [as of 2026-11-01]   OK
+      X as CFO                  former      rule3_successor_appointed  ends 2026-10-10
+      Y as CFO                  current     rule5_recent_reliable_source
+      employment: X=unknown, Y=current
+
+34. Undated announcement from 15 months ago was never confirmed   [as of 2026-11-01]   OK
+      X as CFO                  current     rule5_recent_reliable_source
+      Y as CFO                  unverified  rule0_announcement_never_confirmed
+      employment: X=current, Y=unknown
+
+35. Page lists X; a company release says X 'will step down as CTO', no date   [as of 2026-11-01]   OK
+      X as CTO                  current     rule1_departure_announced_without_date  departure announced, no date
+      employment: X=current
+
+36. No page; a company release says X 'will leave the company', no date   [as of 2026-11-01]   OK
+      X as CTO                  current     rule1_departure_announced_without_date  departure announced, no date
+      employment: X=current
+
+37. Undated departure; a later company release says X has stepped down   [as of 2026-11-01]   OK
+      X as CTO                  former      rule1_explicit_end  ends 2026-10-01
+      employment: X=unknown
+
+38. Undated departure from 17 months ago, never confirmed; the page still lists X   [as of 2026-11-01]   OK
+      X as CTO                  current     rule4_listed_on_company_page
+      employment: X=current
+
+39. Undated 'will leave the company' from 17 months ago; only an old release names X   [as of 2026-11-01]   OK
+      X as CTO                  unverified  rule6_stale_or_weak_evidence
+      employment: X=unknown
+
+40. The company page lists X and Y, both as plain 'CEO'   [as of 2026-11-01]   OK
+      X as CEO                  current     rule4_listed_on_company_page
+          CONFLICT: another person is also claimed as CEO; sources are equally reliable
+      Y as CEO                  current     rule4_listed_on_company_page
+          CONFLICT: another person is also claimed as CEO; sources are equally reliable
+      employment: X=current, Y=current
+
+41. The page lists X as 'Co-CEO' but Y as plain 'CEO'   [as of 2026-11-01]   OK
+      X as CEO                  current     rule4_listed_on_company_page
+          CONFLICT: another person is also claimed as CEO; sources are equally reliable
+      Y as CEO                  current     rule4_listed_on_company_page
+          CONFLICT: another person is also claimed as CEO; sources are equally reliable
+      employment: X=current, Y=current
+
+42. The page lists X as 'Co-CEO'; only a news article calls Y 'Co-CEO'   [as of 2026-11-01]   OK
+      X as CEO                  current     rule4_listed_on_company_page
+          CONFLICT: another person is also claimed as CEO by a less reliable source
+      Y as CEO                  unverified  rule7_outranked_in_single_holder_role
+          CONFLICT: another person holds CEO according to a more reliable source (tier 1 vs tier 3)
+      employment: X=current, Y=unknown
+
+43. The page lists X as 'Joint CEO' and Y as 'Joint Chief Executive Officer'   [as of 2026-11-01]   OK
+      X as CEO                  current     rule4_listed_on_company_page
+      Y as CEO                  current     rule4_listed_on_company_page
+      employment: X=current, Y=current
+
+44. The page lists both X and Y as 'Co-founder and CEO'   [as of 2026-11-01]   OK
+      X as CEO                  current     rule4_listed_on_company_page
+          CONFLICT: another person is also claimed as CEO; sources are equally reliable
+      Y as CEO                  current     rule4_listed_on_company_page
+          CONFLICT: another person is also claimed as CEO; sources are equally reliable
+      employment: X=current, Y=current
+
+45. The page lists X and Y as 'Co-CEO' and a third person, Z, as plain 'CEO'   [as of 2026-11-01]   OK
+      X as CEO                  current     rule4_listed_on_company_page
+          CONFLICT: another person is also claimed as CEO; sources are equally reliable
+      Y as CEO                  current     rule4_listed_on_company_page
+          CONFLICT: another person is also claimed as CEO; sources are equally reliable
+      Z as CEO                  current     rule4_listed_on_company_page
+          CONFLICT: another person is also claimed as CEO; sources are equally reliable
+      employment: X=current, Y=current, Z=current
+
+45 of 45 cases match their expected outcome
+
+==============================================================================
+[5] Mutation check: each deliberately broken rule must fail at least one case
+command:  uv run python tools/mutation_check.py
+exit code 0 (expected 0)  ->  PASS    0.9s
+------------------------------------------------------------------------------
+Unmodified rules: 0 of 45 cases fail (must be 0)
+  caught    A news-only departure ends the role (rule 2 removed)  ->  2 case(s) fail
+  caught    Old documents count as fresh (freshness window removed)  ->  4 case(s) fail
+  caught    Undated articles count as dated  ->  1 case(s) fail
+  caught    Leaving the company no longer ends the person's roles  ->  2 case(s) fail
+  caught    Single-holder conflicts are not detected (rule 7 removed)  ->  6 case(s) fail
+  caught    Co-CEOs shown on the company page are flagged as a conflict  ->  3 case(s) fail
+  caught    One 'Co-CEO' title is enough to clear the conflict for everyone  ->  3 case(s) fail
+  caught    A shared title in any source, not only the company page, clears the conflict  ->  1 case(s) fail
+  caught    Any title starting with 'co-' counts as a shared role  ->  1 case(s) fail
+  caught    An appointment ends a co-holder shown on the same page  ->  1 case(s) fail
+  caught    Succession is never detected (rule 3 removed)  ->  6 case(s) fail
+  caught    A live page listing no longer makes a role current (rule 4 removed)  ->  17 case(s) fail
+  caught    A future departure date is treated as already past  ->  2 case(s) fail
+  caught    A future appointment ends the current holder's role on the day it is announced  ->  1 case(s) fail
+  caught    An undated 'will become' appointment takes effect on the day it is published  ->  2 case(s) fail
+  caught    An undated appointment is never confirmed by later evidence  ->  2 case(s) fail
+  caught    An announced appointment is counted as a current role  ->  2 case(s) fail
+  caught    A stale, never-confirmed announcement still shows as announced  ->  1 case(s) fail
+  caught    An undated 'will step down' ends the role on the day it is published  ->  4 case(s) fail
+  caught    An undated departure keeps the role current for ever, however old it is  ->  2 case(s) fail
+  caught    An undated 'will leave the company' counts as having left  ->  1 case(s) fail
+  caught    A search snippet can report a departure  ->  1 case(s) fail
+  caught    A later re-appointment no longer cancels an earlier departure  ->  1 case(s) fail
+
+23 of 23 broken rules were caught by the worked cases
+
+==============================================================================
+[6] Database schema as created: tables, views and columns
+command:  uv run python tools/show_schema.py
+exit code 0 (expected 0)  ->  PASS    0.4s
+------------------------------------------------------------------------------
+
+TABLE claims  (17 columns)
+    id                      INTEGER 
+    company_id              INTEGER  NOT NULL
+    person_id               INTEGER  NOT NULL
+    source_id               INTEGER  NOT NULL
+    claim_type              TEXT     NOT NULL
+    departure_scope         TEXT    
+    raw_title               TEXT    
+    level                   TEXT    
+    department              TEXT    
+    canonical_role          TEXT    
+    value                   TEXT    
+    evidence                TEXT     NOT NULL
+    as_of_date              TEXT     NOT NULL
+    as_of_basis             TEXT     NOT NULL
+    effective_date          TEXT    
+    effective_pending       INTEGER  NOT NULL
+    extraction_version      TEXT     NOT NULL
+
+TABLE companies  (4 columns)
+    id                      INTEGER 
+    domain                  TEXT     NOT NULL
+    name                    TEXT     NOT NULL
+    collected_at            TEXT    
+
+TABLE people  (6 columns)
+    id                      INTEGER 
+    company_id              INTEGER  NOT NULL
+    full_name               TEXT     NOT NULL
+    normalized_name         TEXT     NOT NULL
+    linkedin_url            TEXT    
+    employment_status       TEXT     NOT NULL
+
+TABLE roles  (21 columns)
+    id                      INTEGER 
+    company_id              INTEGER  NOT NULL
+    person_id               INTEGER  NOT NULL
+    title                   TEXT     NOT NULL
+    level                   TEXT    
+    department              TEXT    
+    canonical_role          TEXT    
+    status                  TEXT     NOT NULL
+    status_reason           TEXT     NOT NULL
+    starts_on               TEXT    
+    ended_on                TEXT    
+    ended_by_claim_id       INTEGER 
+    first_seen              TEXT    
+    last_seen               TEXT    
+    last_verified_at        TEXT    
+    conflict                INTEGER  NOT NULL
+    conflict_reason         TEXT    
+    conflicting_claim_id    INTEGER 
+    source_count            INTEGER  NOT NULL
+    supporting_claim_id     INTEGER 
+    successor_claim_id      INTEGER 
+
+TABLE runs  (7 columns)
+    id                      INTEGER 
+    company_id              INTEGER  NOT NULL
+    started_at              TEXT     NOT NULL
+    finished_at             TEXT    
+    status                  TEXT     NOT NULL
+    reasons                 TEXT     NOT NULL
+    counters                TEXT     NOT NULL
+
+TABLE sources  (12 columns)
+    id                      INTEGER 
+    company_id              INTEGER  NOT NULL
+    url                     TEXT     NOT NULL
+    source_type             TEXT     NOT NULL
+    tier                    INTEGER  NOT NULL
+    title                   TEXT    
+    published_at            TEXT    
+    retrieved_at            TEXT     NOT NULL
+    content_hash            TEXT    
+    stage                   TEXT     NOT NULL
+    attempts                INTEGER  NOT NULL
+    last_error              TEXT    
+
+VIEW current_leadership  (30 columns)
+    company_domain          TEXT    
+    company                 TEXT    
+    person                  TEXT    
+    employment_status       TEXT    
+    title                   TEXT    
+    level                   TEXT    
+    department              TEXT    
+    canonical_role          TEXT    
+    status                  TEXT    
+    status_reason           TEXT    
+    starts_on               TEXT    
+    ended_on                TEXT    
+    first_seen              TEXT    
+    last_seen               TEXT    
+    last_verified_at        TEXT    
+    conflict                INTEGER 
+    conflict_reason         TEXT    
+    source_count            INTEGER 
+    location                TEXT    
+    location_source_url     TEXT    
+    bio                     TEXT    
+    source_url              TEXT    
+    source_type             TEXT    
+    source_date             TEXT    
+    evidence                        
+    conflicting_source_url  TEXT    
+    conflicting_evidence            
+    successor               TEXT    
+    successor_starts_on     TEXT    
+    successor_source_url    TEXT    
+
+VIEW leadership  (30 columns)
+    company_domain          TEXT    
+    company                 TEXT    
+    person                  TEXT    
+    employment_status       TEXT    
+    title                   TEXT    
+    level                   TEXT    
+    department              TEXT    
+    canonical_role          TEXT    
+    status                  TEXT    
+    status_reason           TEXT    
+    starts_on               TEXT    
+    ended_on                TEXT    
+    first_seen              TEXT    
+    last_seen               TEXT    
+    last_verified_at        TEXT    
+    conflict                INTEGER 
+    conflict_reason         TEXT    
+    source_count            INTEGER 
+    location                TEXT    
+    location_source_url     TEXT    
+    bio                     TEXT    
+    source_url              TEXT    
+    source_type             TEXT    
+    source_date             TEXT    
+    evidence                        
+    conflicting_source_url  TEXT    
+    conflicting_evidence            
+    successor               TEXT    
+    successor_starts_on     TEXT    
+    successor_source_url    TEXT
+
+==============================================================================
+SUMMARY
+  [1] PASS  Resolution rules: one test per worked case, plus rule-specific tests
+  [2] PASS  Database: schema, constraints, views, rebuilding roles from claims
+  [3] PASS  Whole fast suite (no network, no keys)
+  [4] PASS  Worked cases printed as a table for manual review
+  [5] PASS  Mutation check: each deliberately broken rule must fail at least one case
+  [6] PASS  Database schema as created: tables, views and columns
+  6 of 6 steps as expected
