@@ -58,11 +58,16 @@ def test_schema_normalises_dates_scope_and_pending():
     assert _claim(claim_type="departure").departure_scope == "role"         # unclear scope: role
     assert _claim(claim_type="departure", departure_scope="company").departure_scope == "company"
     assert _claim(departure_scope="company").departure_scope is None        # only departures have one
-    assert _claim(effective_date="2026-03-01").effective_date == "2026-03-01"
+    hire = dict(claim_type="appointment")
+    assert _claim(effective_date="2026-03-01", **hire).effective_date == "2026-03-01"
     # A month or a year alone is not a date: dropped, never completed.
-    assert _claim(effective_date="March 2026").effective_date is None
-    assert _claim(effective_date="2026-03").effective_date is None
-    assert _claim(effective_date="2026-03-01", effective_pending=True).effective_pending is False
+    assert _claim(effective_date="March 2026", **hire).effective_date is None
+    assert _claim(effective_date="2026-03", **hire).effective_date is None
+    assert _claim(effective_date="2026-03-01", effective_pending=True, **hire).effective_pending is False
+    # Only a change has an effective date. A plain role never carries one, whatever the model sends:
+    # "CFO since February 2026" is a start, and a signature date is when a paper was signed.
+    held = _claim(claim_type="role", effective_date="2026-02-18", effective_pending=True)
+    assert held.effective_date is None and held.effective_pending is False
     assert _claim(claim_type="appointment", effective_pending=True).effective_pending is True
 
 
@@ -144,17 +149,84 @@ def test_an_effective_date_counts_only_if_the_document_states_it_in_full():
 
 def test_a_date_the_model_completed_is_dropped_and_logged(tmp_path):
     cache, log = FileCache(tmp_path / "llm"), RunLog(tmp_path / "run.jsonl")
-    page = "Jeffrey Pinner has been Chief Technology Officer of Acme Robotics since August 2024."
+    page = "Jeffrey Pinner was appointed Chief Technology Officer of Acme Robotics in August 2024."
     _seed(cache, page, {"about_target_company": True, "page_kind": "official", "claims": [
-        {"person": "Jeffrey Pinner", "organization": "Acme Robotics", "claim_type": "role",
+        {"person": "Jeffrey Pinner", "organization": "Acme Robotics", "claim_type": "appointment",
          "raw_title": "Chief Technology Officer", "effective_date": "2024-08-01",
-         "evidence": "Jeffrey Pinner has been Chief Technology Officer of Acme Robotics since August 2024."}]})
+         "evidence": "Jeffrey Pinner was appointed Chief Technology Officer of Acme Robotics in August 2024."}]})
     found = extract_document(_Chain(), ACME, page, source_type="press_release", doc_date=None, url="u",
                              max_chunks=3, cache=cache, log=log)
     (a,) = found.accepted                               # the claim is kept; only the made-up day goes
     assert a.claim.effective_date is None and found.dates_dropped == 1
     events = [json.loads(line) for line in (tmp_path / "run.jsonl").read_text(encoding="utf-8").splitlines()]
     assert [e["effective_date"] for e in events if e["event"] == "date_dropped"] == ["2024-08-01"]
+
+
+def test_a_date_found_elsewhere_in_a_long_document_does_not_count(tmp_path):
+    """Robinhood's proxy: 'since January 2022' in one place, 'January 1, 2022' 100,000 characters away."""
+    cache, log = FileCache(tmp_path / "llm"), RunLog(tmp_path / "run.jsonl")
+    sentence = "Steven Quirk was named Chief Brokerage Officer of Acme Robotics in January 2022."
+    page = (sentence + "\n\n" + "Unrelated paragraph about the share plan and its rules. " * 30
+            + "\n\nThe number of shares available will increase each year beginning on January 1, 2022.")
+    answer = {"about_target_company": True, "page_kind": "official", "claims": [
+        {"person": "Steven Quirk", "organization": "Acme Robotics", "claim_type": "appointment",
+         "raw_title": "Chief Brokerage Officer", "effective_date": "2022-01-01", "evidence": sentence}]}
+    for piece in chunks(page, 3):
+        _seed_piece(cache, piece, answer)
+    found = extract_document(_Chain(), ACME, page, source_type="press_release", doc_date=None, url="u",
+                             max_chunks=3, cache=cache, log=log)
+    quirk = [a.claim for a in found.accepted if a.claim.person == "Steven Quirk"]
+    assert quirk and all(c.effective_date is None for c in quirk)
+    assert found.dates_dropped >= 1
+    # The same date right beside the quote is kept.
+    near = "Effective January 1, 2022, " + sentence
+    _seed(cache, near, answer)
+    kept = extract_document(_Chain(), ACME, near, source_type="press_release", doc_date=None, url="u",
+                            max_chunks=3, cache=cache, log=log)
+    assert [a.claim.effective_date for a in kept.accepted] == ["2022-01-01"]
+
+
+def test_a_role_claim_never_carries_a_date_even_when_the_page_states_one(tmp_path):
+    cache, log = FileCache(tmp_path / "llm"), RunLog(tmp_path / "run.jsonl")
+    page = "/s/ Ada Lovelace  Chief Executive Officer of Acme Robotics  February 18, 2026"
+    _seed(cache, page, {"about_target_company": True, "page_kind": "official", "claims": [
+        {"person": "Ada Lovelace", "organization": "Acme Robotics", "claim_type": "role",
+         "raw_title": "Chief Executive Officer", "effective_date": "2026-02-18",
+         "evidence": "/s/ Ada Lovelace Chief Executive Officer of Acme Robotics"}]},
+          source_type="sec_filing", doc_date="2026-02-18")
+    (a,) = extract_document(_Chain(), ACME, page, source_type="sec_filing", doc_date="2026-02-18", url="u",
+                            max_chunks=3, cache=cache, log=log).accepted
+    assert a.claim.effective_date is None               # a signing date is not a role's effective date
+
+
+def test_a_change_still_to_come_is_marked_pending_and_leaving_the_company_is_company_scoped(tmp_path):
+    """Robinhood 2020: 'Anne Hoge, our current Chief Legal Officer, who is leaving Robinhood later this month'."""
+    cache, log = FileCache(tmp_path / "llm"), RunLog(tmp_path / "run.jsonl")
+    page = ("Today we announce that Dan Gallagher will be joining Acme Robotics as Chief Legal Officer. "
+            "Dan is replacing Anne Hoge, our current Chief Legal Officer, who is leaving Acme Robotics "
+            "later this month. Our then-current CFO Jason Warnick has transitioned to an advisory role "
+            "and will remain employed with the Company until September 1, 2026.")
+    _seed(cache, page, {"about_target_company": True, "page_kind": "official", "claims": [
+        {"person": "Anne Hoge", "organization": "Acme Robotics", "claim_type": "departure",
+         "raw_title": "Chief Legal Officer", "departure_scope": "role", "effective_pending": False,
+         "evidence": "Anne Hoge, our current Chief Legal Officer, who is leaving Acme Robotics later this month"},
+        {"person": "Dan Gallagher", "organization": "Acme Robotics", "claim_type": "appointment",
+         "raw_title": "Chief Legal Officer", "effective_pending": False,
+         "evidence": "Dan Gallagher will be joining Acme Robotics as Chief Legal Officer"},
+        {"person": "Jason Warnick", "organization": "Acme Robotics", "claim_type": "departure",
+         "raw_title": "CFO", "departure_scope": "role", "effective_pending": False,
+         "evidence": "Our then-current CFO Jason Warnick has transitioned to an advisory role and will "
+                     "remain employed with the Company until September 1, 2026"}]}, doc_date="2020-05-05")
+    found = extract_document(_Chain(), ACME, page, source_type="press_release", doc_date="2020-05-05",
+                             url="u", max_chunks=3, cache=cache, log=log)
+    by = {a.claim.person: a.claim for a in found.accepted}
+    assert by["Anne Hoge"].effective_pending is True and by["Anne Hoge"].departure_scope == "company"
+    assert by["Anne Hoge"].effective_date is None
+    assert by["Dan Gallagher"].effective_pending is True
+    # Already happened: "will remain employed" is not a change still to come.
+    assert by["Jason Warnick"].effective_pending is False and by["Jason Warnick"].departure_scope == "role"
+    # September 1, 2026 is when his employment ends, not when he ceased to be CFO; the model gave no date.
+    assert by["Jason Warnick"].effective_date is None
 
 
 # -------------------------------------------------------------------- chunking
@@ -226,6 +298,14 @@ def _seed(cache, text, answer, model="model-b", target=ACME, source_type="press_
                           max_claims=ex.MAX_CLAIMS_PER_CHUNK, text=chunks(text, 3)[0])
     digest = hashlib.sha256(user.encode()).hexdigest()
     cache.put(f"extract|{extraction_version(model)}|{digest}", answer)
+
+
+def _seed_piece(cache, piece, answer, model="model-b", target=ACME, source_type="press_release"):
+    user = ex.USER.format(company=target.name, domains=", ".join(sorted(target.domains)),
+                          description=target.description or "unknown", source_type=source_type,
+                          doc_date="not stated", departments=", ".join(ex.DEPARTMENTS),
+                          max_claims=ex.MAX_CLAIMS_PER_CHUNK, text=piece)
+    cache.put(f"extract|{extraction_version(model)}|{hashlib.sha256(user.encode()).hexdigest()}", answer)
 
 
 def test_cached_answer_from_either_model_is_reused_and_checked(tmp_path):

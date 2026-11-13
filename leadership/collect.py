@@ -379,19 +379,30 @@ def collect(url: str, cfg: Config, *, refresh: bool = False, root: Path = ROOT,
             marks = ",".join("?" * len(IN_SCOPE))
             ceo = conn.execute("SELECT count(*) FROM roles WHERE company_id = ? AND status = 'current' "
                                "AND canonical_role = 'CEO'", (company_id,)).fetchone()[0] > 0
-            people = conn.execute(
-                f"SELECT count(DISTINCT person_id) FROM roles WHERE company_id = ? AND level IN ({marks}) "
-                "AND status IN ('current', 'unverified')", (company_id, *IN_SCOPE)).fetchone()[0]
-            return ceo, people
+            def leaders(status: str) -> int:
+                return conn.execute(
+                    f"SELECT count(DISTINCT person_id) FROM roles WHERE company_id = ? AND status = ? "
+                    f"AND level IN ({marks})", (company_id, status, *IN_SCOPE)).fetchone()[0]
+
+            # Kept apart everywhere: an unverified role is a lead, never a confirmed leader.
+            counters["current_leaders"] = leaders("current")
+            counters["unverified_leaders"] = conn.execute(
+                f"SELECT count(DISTINCT person_id) FROM roles WHERE company_id = ? AND status = 'unverified' "
+                f"AND level IN ({marks}) AND person_id NOT IN (SELECT person_id FROM roles WHERE "
+                f"company_id = ? AND status = 'current' AND level IN ({marks}))",
+                (company_id, *IN_SCOPE, company_id, *IN_SCOPE)).fetchone()[0]
+            return ceo, counters["current_leaders"]
 
         if extract and llm is not None:
             extract_pending()
             ceo, people = resolve_now()
             # Round 2 runs only when round 1 found too little (SPEC 3.10).
             trigger = None if stopped else ("no current CEO found" if not ceo else
-                                            f"only {people} in-scope people found" if people < 3 else None)
+                                            f"only {people} current leaders found" if people < 3 else None)
             if not trigger:
-                why = "extraction stopped early" if stopped else f"a CEO and {people} in-scope people found"
+                why = "extraction stopped early" if stopped else (
+                    f"a current CEO and {people} current leaders found; "
+                    f"{counters['unverified_leaders']} more people are unverified and not counted")
                 notes.append(f"search round 2: not needed ({why})")
                 log.event("search_round", round=2, ran=False, reason=why)
             elif not search.available or cfg.limits.max_search_rounds < 2:
@@ -424,12 +435,11 @@ def collect(url: str, cfg: Config, *, refresh: bool = False, root: Path = ROOT,
                     add_reason(reasons, "insufficient_data", "extract", "no current CEO was found")
                 if people == 0:
                     add_reason(reasons, "insufficient_data", "extract",
-                               "no in-scope leader (C-level, VP or Head) was found")
+                               "no current leader (C-level, VP or Head) was found")
             counters["people"] = conn.execute("SELECT count(*) FROM people WHERE company_id = ?",
                                               (company_id,)).fetchone()[0]
             counters["claims"] = conn.execute("SELECT count(*) FROM claims WHERE company_id = ?",
                                               (company_id,)).fetchone()[0]
-            counters["in_scope_people"] = people
         elif extract:
             notes.append("extraction: skipped, no LLM key is configured")
             add_reason(reasons, "insufficient_data", "extract",
@@ -492,6 +502,8 @@ def print_report(result: RunResult, cfg: Config, conn_path: Path) -> None:
                 ORDER BY CASE status WHEN 'current' THEN 0 WHEN 'announced' THEN 1
                          WHEN 'unverified' THEN 2 ELSE 3 END, level, person""",
             (result.company,)).fetchall()
+        print(f"Current leaders: {c.get('current_leaders', 0)}. Unverified, not counted as current: "
+              f"{c.get('unverified_leaders', 0)}")
         print("\nLeadership found (C-level, VP, Head)")
         for r in people:
             flag = "  CONFLICT" if r["conflict"] else ""

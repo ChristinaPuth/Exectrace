@@ -69,6 +69,11 @@ class ExtractedClaim(BaseModel):
             raise ValueError("a role or appointment needs raw_title")
         if self.claim_type in ("location", "bio") and not (self.value or "").strip():
             raise ValueError("a location or bio needs value")
+        if self.claim_type not in ("appointment", "departure"):
+            # Only a change has an effective date. "CFO since February 2026" says when
+            # a role began, and a signature date says when a paper was signed.
+            self.effective_date = None
+            self.effective_pending = False
         if self.effective_date:
             self.effective_pending = False              # a stated date is not "pending"
         return self
@@ -237,7 +242,7 @@ def check_claim(claim: ExtractedClaim, text: str, target: Target) -> str | None:
 
 
 def date_is_stated(iso: str, text: str) -> bool:
-    """True if the document writes this exact date, day included, in a common form."""
+    """True if the text writes this exact date, day included, in a common form."""
     d = date.fromisoformat(iso)
     month, short = d.strftime("%B"), d.strftime("%b")
     days = (str(d.day), f"{d.day:02d}")
@@ -250,6 +255,30 @@ def date_is_stated(iso: str, text: str) -> bool:
                       f"{m} {day}th, {d.year}"}
     plain = squash(text).casefold()
     return any(f.casefold() in plain for f in forms)
+
+
+def around(evidence: str, text: str) -> str:
+    """The evidence quote with NEAR_CHARS of the document on each side, every place it occurs."""
+    plain, quote = squash(text), squash(evidence).strip('"').strip()
+    parts, at = [], -1
+    while quote and (at := plain.find(quote, at + 1)) != -1:
+        parts.append(plain[max(0, at - NEAR_CHARS):at + len(quote) + NEAR_CHARS])
+    return " ... ".join(parts)
+
+
+# Wording that says a change had not happened yet when the page was written.
+# Deliberately narrow: "will remain employed until ..." must not match.
+_CHANGE = r"(?:join|leav|depart|step(?:ping)?\s+down|retir|resign|becom|assum|succeed|tak(?:e|ing)\s+over|start)"
+_FUTURE = re.compile(
+    rf"\bwill\s+(?:be\s+)?{_CHANGE}\w*|\b(?:is|are)\s+(?:to\s+)?{_CHANGE}\w*\b.{{0,60}}?"
+    r"\b(?:later\s+this|next|at\s+the\s+end\s+of|by\s+the\s+end\s+of|in\s+the\s+coming)\b|"
+    rf"\bplans?\s+to\s+{_CHANGE}\w*|\bintends?\s+to\s+{_CHANGE}\w*", re.I)
+
+
+def _leaves_company(quote: str, target: Target) -> bool:
+    """The quote says the person leaves the company itself, not only a title."""
+    names = "|".join(re.escape(n) for n in {target.name, "the company", "the firm"})
+    return bool(re.search(rf"\b(?:leav\w+|depart\w+(?:\s+from)?|exit\w*)\s+(?:{names})\b", quote, re.I))
 
 
 # -------------------------------------------------------------------- chunking
@@ -410,14 +439,25 @@ def extract_document(llm: LLM, target: Target, text: str, *, source_type: str, d
                 log.event("claim_rejected", url=url, person=c.person, title=c.raw_title,
                           claim_type=c.claim_type, reason=reason)
                 continue
-            if c.effective_date and not date_is_stated(c.effective_date, text):
+            if c.effective_date and not date_is_stated(c.effective_date, around(c.evidence, text)):
                 # The model completed "since May 2020" into a day. A date is kept only
-                # when the document itself states it in full.
+                # when the source states it in full in, or right next to, the quote.
+                # Looking anywhere in the document is not enough: a long filing has
+                # "January 1, 2022" somewhere for unrelated reasons.
                 log.event("date_dropped", url=url, person=c.person, title=c.raw_title,
                           effective_date=c.effective_date,
-                          reason="the document does not state this date in full")
+                          reason="the source does not state this date in full next to the quote")
                 result.dates_dropped += 1
                 c.effective_date = None
+            if c.claim_type in ("appointment", "departure") and not c.effective_date:
+                if not c.effective_pending and _FUTURE.search(squash(c.evidence)):
+                    # "is leaving later this month", "will be joining": not yet done when written.
+                    c.effective_pending = True
+                    log.event("pending_set", url=url, person=c.person, title=c.raw_title,
+                              reason="the quote describes the change as still to come, with no date")
+            if (c.claim_type == "departure" and c.departure_scope == "role"
+                    and _leaves_company(squash(c.evidence), target)):
+                c.departure_scope = "company"
             whole_company = organisation_relation(c.organization, target) == "company"
             if (not whole_company and c.raw_title
                     and squash(c.organization).casefold() not in squash(c.raw_title).casefold()):

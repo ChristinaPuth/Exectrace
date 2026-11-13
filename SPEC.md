@@ -1,6 +1,6 @@
 # SPEC: Company Leadership RAG Agent
 
-Status: **revision 10, 2026-11-13** — design agreed; implementation in progress.
+Status: **revision 12, 2026-11-13** — design agreed; implementation in progress.
 Remaining open decisions are in [section 9](#9-open-decisions).
 
 | Milestone | State |
@@ -8,7 +8,7 @@ Remaining open decisions are in [section 9](#9-open-decisions).
 | M0 Project setup, key check | Done; manual tests passed 2026-11-11; merged to `main` |
 | M1 Schema + resolution logic | Done; manual tests passed 2026-11-12; merged to `main` |
 | M2 Discovery, fetch, cache | Done; accepted 2026-11-13 (`acceptance/M2.md`) |
-| M3 Extraction + normalization | Built on branch `m3-extract`; automated acceptance run; manual tests pending |
+| M3 Extraction + normalization | Done; accepted 2026-11-13 with three checks not reviewed (`acceptance/M3.md` section 10); on branch `m3-extract`, not yet merged to `main` |
 | M4 – M7 | Not started |
 
 Evidence for each finished milestone is in `acceptance/`.
@@ -287,9 +287,21 @@ from cache when possible.
 - **A unit of the company is not the company.** "Chief Compliance Officer"
   of Robinhood Financial keeps the unit in its title and gets no
   single-holder role, so it cannot conflict with a company-wide office.
-- **Effective dates must be stated in full.** A date is kept only when the
-  source text writes that exact day. If the model completes "since May 2020"
-  to a day, the date is dropped and the claim is kept without one.
+- **Effective dates must be stated in full, next to the quote.** A date is
+  kept only when the source writes that exact day in the evidence quote or
+  within 250 characters of it. A date found elsewhere in the document does
+  not count: a long filing contains "January 1, 2022" for unrelated reasons.
+  If the model completes "since May 2020" to a day, the date is dropped and
+  the claim is kept without one.
+- **Only a change has an effective date.** A `role` claim never carries one.
+  "CFO since February 2026" says when a role began, and a signature date
+  says when a paper was signed; neither is stored as an effective date.
+- **A change still to come.** If the quote of an undated appointment or
+  departure describes it as still to come ("is leaving later this month",
+  "will be joining"), the claim is marked `effective_pending` even when the
+  model did not mark it. The wording matched is narrow on purpose: "will
+  remain employed until ..." is not a change still to come. A quote saying
+  the person leaves the company itself is a company-scoped departure.
 - **A document about a namesake** (the model says it is about a different
   organisation) yields no claims.
 - **Page kind.** The model classifies each document as official, article,
@@ -356,6 +368,15 @@ Principles:
   different title in another source is not a contradiction by itself.
 - **A role ends only on evidence**, never on publication date alone. Age can
   only downgrade an uncorroborated claim to `unverified`.
+- **An end date is only ever a date a source states.** When a departure or a
+  succession has no stated effective date, the role is `former` with an
+  empty `ended_on`, and `end_reported_on` holds the date of the source that
+  reported it. A filing date or an announcement date is never shown as the
+  day a role ended. A date the rules work out (an undated appointment
+  confirmed by a later source) is likewise never stored as an end date.
+- **Unverified is not current.** `current_leadership` returns `current`
+  roles only. A run counts current leaders and unverified people apart, and
+  only current leaders count toward "enough leaders were found".
 - **Explicit events outrank listings.** A dated appointment or departure from
   a tier 1–2 source beats a listing on the live page, because websites lag.
 - **Reliability outranks recency.** A lower-tier source never overrides a
@@ -602,6 +623,19 @@ One bad page never stops a run.
 ### Known limits (to be stated in the README)
 
 - A departure nobody announced publicly cannot be detected.
+- Extraction can miss a sentence, including one that states a date. The
+  date is then not stored; it is never replaced by a filing or announcement
+  date. (Robinhood's former CFO: the proxy gives 2026-02-06, the database
+  has no end date.) Recovering stated dates is an M4 requirement.
+- The evidence and date checks use a fixed window of 250 characters around
+  the quote. It can refuse a correct claim in a long paragraph and cannot
+  tell two people with the same surname apart.
+- Long documents are read in part: three pieces of 4,500 characters, chosen
+  by keywords. For a proxy statement or annual report that is 2 to 3% of
+  the text.
+- "C-level" is this project's convention (any "Chief ... Officer", a
+  President who is not a Vice President, a General Counsel), not a
+  standard. It includes the chief officer of a single unit.
 - VP and Head coverage for large companies is partial by nature.
 - Personal location is often not public.
 - A company's own page can state something false; it would still be stored as
@@ -667,7 +701,9 @@ roles     (id, company_id, person_id,          -- DERIVED, rebuilt by resolve
                                                -- | announced
            status_reason,                      -- rule from 3.6 that decided
            starts_on NULL,                     -- announced roles: stated start date
-           ended_on NULL,                      -- effective end date if known
+           ended_on NULL,                      -- end date, only if a source states it
+           end_reported_on NULL,               -- no stated date: date of the source
+                                               -- that reported the end
            ended_by_claim_id NULL,             -- the departure or successor evidence
            first_seen, last_seen, last_verified_at NULL,
            conflict INTEGER, conflict_reason NULL,
@@ -965,7 +1001,7 @@ The next milestone starts only after the author has run the manual tests.
 | M6 | Streamlit UI | Runs from committed fixtures with one LLM key; shows answer, SQL, and sources | 0.5 h |
 | M7 | README + deliverables | Fresh-clone test passes; README covers design decisions, measured results, and limits; key scan clean; fixtures, eval report, citation review, and session export committed | 0.75 h |
 
-Progress: M0, M1 and M2 accepted. M3 built and awaiting manual acceptance. M0 also
+Progress: M0, M1, M2 and M3 accepted. M3 is not yet merged to `main`. M0 also
 delivered the Groq-first provider chain with pacing and fallback, which the
 original plan had placed in M3.
 

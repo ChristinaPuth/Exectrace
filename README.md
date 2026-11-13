@@ -6,7 +6,7 @@ through an LLM chat.
 
 Status: **M0** (project setup) and **M1** (database schema, role resolution
 rules) and **M2** (finding and fetching sources) are done and accepted.
-**M3** (extracting people and roles from the sources) is built.
+**M3** (extracting people and roles from the sources) is done and accepted.
 Verification of uncertain roles, the export and the chat are not built yet. See [SPEC.md](SPEC.md) for
 the design, `SPEC_checklist.xlsx` for the requirement checklist, and
 `acceptance/` for each milestone's test results.
@@ -112,7 +112,20 @@ Known limits of extraction:
   are listed as `unverified` until a recent source confirms or ends them.
   Targeted verification is the next milestone.
 - **Long documents are read in part.** At most three pieces of a document are
-  sent to the model, chosen by how much leadership wording they hold.
+  sent to the model, chosen by how much leadership wording they hold. For
+  an SEC proxy statement or annual report that is 2 to 3% of the text.
+- **A stated date can be missed.** If the model does not return the sentence
+  that gives a date, the date is not stored. Example: Robinhood's proxy
+  statement gives 2026-02-06 as the day its former CFO ceased; the database
+  has no end date for him. An end date is never filled in from a filing or
+  announcement date.
+- **The evidence window is a fixed 250 characters.** A quote must have the
+  person's surname, and any effective date, in it or that close to it. This
+  can refuse a correct claim in a long paragraph, and it cannot tell two
+  people with the same surname apart.
+- **"C-level" is a convention**: any "Chief ... Officer", a President who is
+  not a Vice President, and a General Counsel. It includes officers such as
+  a Chief Accounting Officer and the chief officer of a single unit.
 - **The model can miss or misquote.** A misquoted claim is refused by the
   evidence check, so it costs coverage, not correctness. On the five
   labelled pages the last measurement is in `acceptance/M3.md`.

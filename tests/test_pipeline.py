@@ -206,7 +206,7 @@ def test_second_search_round_runs_only_when_too_little_was_found(tmp_path, model
     assert sum("api.tavily.com" in u for u in web.requests) == 7    # 4 queries in round 1, 3 in round 2
     assert result.counters["search_rounds"] == 2
     note = next(n for n in result.notes if n.startswith("search round 2 ran because"))
-    assert "only 1 in-scope people found" in note and "No further round is ever run" in note
+    assert "only 1 current leaders found" in note and "No further round is ever run" in note
     ran = [e for e in _events(result) if e["event"] == "search_round"]
     assert len(ran) == 1 and ran[0]["ran"] is True                  # exactly one extra round, never a loop
 
@@ -229,7 +229,8 @@ def test_second_search_round_is_skipped_when_a_ceo_and_three_leaders_are_found(t
     _seed(tmp_path, answers={"/about/leadership": three})
     result = _run(tmp_path, web)
     assert sum("api.tavily.com" in u for u in web.requests) == 4    # round 1 only
-    assert "search round 2: not needed (a CEO and 3 in-scope people found)" in result.notes
+    assert ("search round 2: not needed (a current CEO and 3 current leaders found; "
+            "0 more people are unverified and not counted)") in result.notes
     skipped = [e for e in _events(result) if e["event"] == "search_round"]
     assert len(skipped) == 1 and skipped[0]["ran"] is False
 
@@ -355,4 +356,27 @@ def test_real_output_that_fails_validation_is_retried_once_then_the_document_is_
     failed = conn.execute("SELECT last_error FROM sources WHERE stage = 'failed'").fetchall()
     assert len(failed) == len(by_url) and all(r[0].startswith("extraction:") for r in failed)
     assert conn.execute("SELECT count(*) FROM claims").fetchone()[0] == 0
+    conn.close()
+
+
+def test_an_unverified_role_is_never_counted_or_listed_as_a_current_leader(tmp_path, model_configured):
+    """A 2020 press release naming a COO is a lead to verify, not a current leader."""
+    web = _prepared(tmp_path)
+    conn = connect(tmp_path / "data" / "leadership.db")
+    conn.execute("UPDATE sources SET published_at = '2020-08-04' WHERE url LIKE '%acme-names-new-cfo'")
+    conn.commit()
+    old = {"about_target_company": True, "page_kind": "official", "claims": [
+        {"person": "Grace Hopper", "organization": "Acme Robotics", "claim_type": "role",
+         "raw_title": "Chief Operating Officer", "evidence": "Grace Hopper will become CFO."}]}
+    _seed(tmp_path, answers={"/about/leadership": LEADERSHIP, "/press/acme-names-new-cfo": old})
+    result = _run(tmp_path, web)
+    row = conn.execute("SELECT status, status_reason FROM leadership WHERE person = 'Grace Hopper'").fetchone()
+    assert tuple(row) == ("unverified", "rule6_stale_or_weak_evidence")
+    current = [r["person"] for r in conn.execute("SELECT person FROM current_leadership")]
+    assert current == ["Ada Lovelace"]                              # the view of current leaders excludes her
+    assert result.counters["current_leaders"] == 1 and result.counters["unverified_leaders"] == 1
+    assert conn.execute("SELECT employment_status FROM people WHERE full_name = 'Grace Hopper'").fetchone()[0] \
+        != "current"
+    # She does not count toward "enough leaders found", so the second search round is still wanted.
+    assert any(n.startswith("search round 2: wanted (only 1 current leaders found)") for n in result.notes)
     conn.close()

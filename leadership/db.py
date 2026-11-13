@@ -101,7 +101,8 @@ CREATE TABLE IF NOT EXISTS roles (                -- DERIVED, rebuilt by rebuild
                           ('current','former','unverified','announced')),
     status_reason         TEXT NOT NULL,        -- the rule in SPEC 3.6 that decided
     starts_on             TEXT,                 -- announced roles: stated start date, if any
-    ended_on              TEXT,
+    ended_on              TEXT,                 -- only a date a source states
+    end_reported_on       TEXT,                 -- no stated date: date of the source reporting the end
     ended_by_claim_id     INTEGER REFERENCES claims(id),   -- departure or successor evidence
     first_seen            TEXT,
     last_seen             TEXT,
@@ -123,7 +124,7 @@ SELECT
     p.full_name            AS person,
     p.employment_status    AS employment_status,
     r.title, r.level, r.department, r.canonical_role,
-    r.status, r.status_reason, r.starts_on, r.ended_on,
+    r.status, r.status_reason, r.starts_on, r.ended_on, r.end_reported_on,
     r.first_seen, r.last_seen, r.last_verified_at,
     r.conflict, r.conflict_reason, r.source_count,
     (SELECT l.value FROM claims l JOIN sources ls ON ls.id = l.source_id
@@ -166,17 +167,22 @@ def connect(path: str | Path) -> sqlite3.Connection:
     conn = sqlite3.connect(str(path))
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
-    conn.executescript(SCHEMA)
-    for table, column, kind in _ADDED_COLUMNS:          # databases made before M3
+    # The views hold no data, so they are rebuilt on every opening and always
+    # match this code, also in a database made by an older version.
+    conn.executescript("DROP VIEW IF EXISTS current_leadership; DROP VIEW IF EXISTS leadership;")
+    tables, _, views = SCHEMA.partition("-- The two views below")
+    conn.executescript(tables)
+    for table, column, kind in _ADDED_COLUMNS:          # databases made by an older version
         if column not in {r["name"] for r in conn.execute(f"PRAGMA table_info({table})")}:
             conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {kind}")
+    conn.executescript("-- The two views below" + views)
     conn.commit()
     return conn
 
 
 _ADDED_COLUMNS = [("sources", "extraction_version", "TEXT"), ("sources", "page_kind", "TEXT"),
                   ("people", "possible_duplicate_of", "INTEGER REFERENCES people(id)"),
-                  ("claims", "person_as_written", "TEXT")]
+                  ("claims", "person_as_written", "TEXT"), ("roles", "end_reported_on", "TEXT")]
 
 
 def find_person(conn: sqlite3.Connection, company_id: int, full_name: str,
@@ -309,13 +315,13 @@ def rebuild_roles(conn: sqlite3.Connection, company_id: int, today: date,
                    canonical_role, status, status_reason, ended_on, ended_by_claim_id,
                    first_seen, last_seen, conflict, conflict_reason,
                    conflicting_claim_id, source_count, supporting_claim_id,
-                   starts_on, successor_claim_id)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                   starts_on, successor_claim_id, end_reported_on)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             [(company_id, r.person_id, r.title, r.level, r.department, r.canonical_role,
               r.status, r.status_reason, iso(r.ended_on), r.ended_by_claim_id,
               iso(r.first_seen), iso(r.last_seen), int(r.conflict), r.conflict_reason,
               r.conflicting_claim_id, r.source_count, r.supporting_claim_id,
-              iso(r.starts_on), r.successor_claim_id)
+              iso(r.starts_on), r.successor_claim_id, iso(r.end_reported_on))
              for r in result.roles],
         )
         conn.execute("UPDATE people SET employment_status = 'unknown' WHERE company_id = ?",

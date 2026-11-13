@@ -46,6 +46,9 @@ def main() -> int:
         print(f"    level {r['level']}, department {r['department']}, single-holder role {r['canonical_role']}, "
               f"employment {r['employment_status']}")
         extra = "".join(f", {k.replace('_', ' ')} {r[k]}" for k in ("starts_on", "ended_on") if r[k])
+        if r["status"] == "former" and not r["ended_on"]:
+            extra += (f", end date not stated (reported by a source dated {r['end_reported_on']})"
+                      if r["end_reported_on"] else ", end date not stated")
         print(f"    decided by {r['status_reason']}; first seen {r['first_seen']}, last seen {r['last_seen']}, "
               f"{r['source_count']} source(s){extra}")
         if r["conflict"]:

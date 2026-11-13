@@ -59,11 +59,17 @@ class Claim:
     canonical_role: str | None = None   # set only for single-holder roles (CEO, CFO, ...)
     departure_scope: str | None = None  # role | company
     effective_pending: bool = False     # described as a future change, with no date
+    effective_inferred: bool = False    # the date was worked out by the rules, not stated by a source
 
     @property
     def pending(self) -> bool:
         """Announced for the future without a date: not known to have happened."""
         return self.effective_pending and self.effective_date is None
+
+    @property
+    def stated_date(self) -> date | None:
+        """The effective date a source wrote down. Never a publication or worked-out date."""
+        return None if self.effective_inferred else self.effective_date
 
     @property
     def when(self) -> date:
@@ -92,7 +98,8 @@ class Role:
     canonical_role: str | None
     status: str
     status_reason: str
-    ended_on: date | None = None
+    ended_on: date | None = None            # only a date a source states; never a publication date
+    end_reported_on: date | None = None     # when no date is stated: the date of the source reporting the end
     ended_by_claim_id: int | None = None
     first_seen: date | None = None
     last_seen: date | None = None
@@ -162,7 +169,8 @@ def resolve(claims: Iterable[Claim], today: date, freshness_months: int = 12) ->
         if c.claim_type == "appointment" and c.pending:
             proof = [o.when for o in original if shows_in_role(o, c)]
             if proof:
-                c = replace(c, effective_date=min(proof), effective_pending=False)
+                c = replace(c, effective_date=min(proof), effective_pending=False,
+                            effective_inferred=True)
         claims.append(c)
 
     support: dict[tuple[int, str], list[Claim]] = defaultdict(list)
@@ -245,7 +253,10 @@ def resolve(claims: Iterable[Claim], today: date, freshness_months: int = 12) ->
 
         if strong:                                                  # rule 1
             d = min(strong, key=lambda c: (c.when, c.id))
-            role.ended_on, role.ended_by_claim_id = d.when, d.id
+            # The end date is the one the source states. Without one, only the date
+            # of the report is known; it is kept apart and never shown as the end date.
+            role.ended_on, role.ended_by_claim_id = d.stated_date, d.id
+            role.end_reported_on = None if d.stated_date else d.as_of_date
             if d.when <= today:
                 role.status, role.status_reason = FORMER, R1_END
             else:
@@ -261,7 +272,9 @@ def resolve(claims: Iterable[Claim], today: date, freshness_months: int = 12) ->
             claim, reason = succ
             role.status, role.status_reason = FORMER, reason
             role.ended_by_claim_id = claim.id
-            role.ended_on = claim.when if reason == R3_APPOINTED else None
+            if reason == R3_APPOINTED:
+                role.ended_on = claim.stated_date
+                role.end_reported_on = None if claim.stated_date else claim.when
         elif undated:                                               # rule 1, no date yet
             role.status, role.status_reason = CURRENT, R1_PENDING
             role.ended_by_claim_id = _best(undated).id
