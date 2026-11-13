@@ -4,6 +4,7 @@
 # Local working data (fixtures/ is committed, these are not)
 cache/
 logs/
+data/
 
 # Python
 .venv/

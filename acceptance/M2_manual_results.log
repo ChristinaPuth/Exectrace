@@ -1,0 +1,563 @@
+Manual tests for M2, run by script (tools/manual_checks_m2.py)
+Date:    2026-11-13T00:50:27-08:00
+Python:  3.12.10
+
+==============================================================================
+[MT-2.1] Fast tests
+command:  uv run pytest -q
+exit code 0    11.6s
+checks:
+  ok    exit code 0
+  ok    no test failed
+  ok    the tests that need keys are deselected, not failed
+->  PASS
+------------------------------------------------------------------------------
+........................................................................ [ 41%]
+........................................................................ [ 82%]
+...............................                                          [100%]
+175 passed, 7 deselected in 9.76s
+
+==============================================================================
+[MT-2.2] Campfire from cache
+command:  uv run leadership collect https://meetcampfire.com/
+exit code 0    3.8s
+checks:
+  ok    Status: complete
+  ok    network calls 0
+  ok    unread list names www.thecampfire.ai/about
+->  PASS
+------------------------------------------------------------------------------
+
+Company:  Campfire
+Run:      13    Status: complete
+  - run 13 (new); company name from the site: Campfire
+  - company site: 270 links found, 82 shortlisted, 5 chosen
+  - SEC EDGAR: no SEC registrant named 'Campfire'
+  - Wikipedia: skipped: WIKIPEDIA_USER_AGENT is not set in .env
+  - web search: 20 results, 12 usable, 7 about this company and added
+
+Usage against limits
+  pages              0 of 40
+  search_queries     0 of 25
+  llm_calls          0 of 120
+  pages failed       0
+  pages skipped      0   (refused, robots.txt, or not verified as this company)
+  network calls      0   (this process; 0 means all from cache)
+
+Sources stored
+  tier 1  company_site  fetched     2
+  tier 2  press_release fetched     7
+  tier 3  news          fetched     3
+  tier 3  news          skipped     1
+
+Pages that could not be read (nothing from them is used)
+  tier 3  news          https://www.thecampfire.ai/about
+          skipped: not verified: this site has a name like the company's but the page never mentions campfire.ai or meetcampfire.com
+
+Run log: C:\dev\ExecTrace\logs\collect-meetcampfire.com-20261113T005041.jsonl
+
+==============================================================================
+[MT-2.3] Campfire sources as stored
+command:  uv run python tools/show_run.py meetcampfire.com
+exit code 0    0.5s
+checks:
+  ok    thecampfire.ai row is skipped as not verified
+  ok    no tavily.com row
+  ok    every fetched or skipped URL is listed
+->  PASS
+------------------------------------------------------------------------------
+Company: Campfire  (meetcampfire.com)   collected at 2026-11-13T08:50:42+00:00
+
+Runs
+  run 1: complete          started 2026-11-13T08:32:05+00:00  finished 2026-11-13T08:32:24+00:00
+      pages 13, failed 0, skipped 1, search queries 4, LLM calls 2, network calls 26
+  run 2: complete          started 2026-11-13T08:32:27+00:00  finished 2026-11-13T08:32:28+00:00
+      pages 0, failed 0, skipped 0, search queries 0, LLM calls 0, network calls 0
+  run 7: complete          started 2026-11-13T08:35:40+00:00  finished 2026-11-13T08:35:40+00:00
+      pages 0, failed 0, skipped 0, search queries 0, LLM calls 0, network calls 0
+  run 10: complete          started 2026-11-13T08:43:10+00:00  finished 2026-11-13T08:43:10+00:00
+      pages 0, failed 0, skipped 0, search queries 0, LLM calls 0, network calls 0
+  run 13: complete          started 2026-11-13T08:50:42+00:00  finished 2026-11-13T08:50:42+00:00
+      pages 0, failed 0, skipped 0, search queries 0, LLM calls 0, network calls 0
+
+Sources (tier, type, stage, published, URL)
+  1  company_site  fetched  -          https://meetcampfire.com/
+  1  company_site  fetched  -          https://campfire.ai/basecamp
+  2  press_release fetched  2025-08-27 https://campfire.ai/blog/campfire-raises-35m-series-a-from-accel
+  2  press_release fetched  2025-10-15 https://campfire.ai/blog/campfire-65-million-series-b-co-led-by-accel-and-ribbit
+  2  press_release fetched  2024-03-18 https://campfire.ai/blog/announcing-campfire-x-rho-partnering-to-accelerate-accounting-workflows
+  2  press_release fetched  2026-09-18 https://campfire.ai/blog/campfire-announces-forecast-an-end-to-the-mid-month-guessing-game
+  2  press_release fetched  2025-02-06 https://campfire.ai/blog/campfire-accelerates-accounting-with-claude
+  2  press_release fetched  -          https://campfire.ai/blog
+  2  press_release fetched  2025-02-21 https://campfire.ai/blog/from-cpa-to-cfo-ron-wangerin-cfo-trust-and-will
+  3  news          fetched  -          https://aircfo.com/resources/funded-how-campfire-raised-100m-while-doubling-revenue-for-6-straight-q
+  3  news          fetched  2026-09-10 https://thegtmnewsletter.substack.com/p/gtm-205-ai-native-sales-organization-chris-mcdonough-campfir
+  3  news          skipped  -          https://www.thecampfire.ai/about   <- not verified: this site has a name like the company's but the page never mentions campfire.ai or meetcampfire.com
+  3  news          fetched  -          https://www.ycombinator.com/companies/campfire-2
+
+13 sources; 12 fetched, 1 skipped
+3 fetched articles have no publication date (left empty, never guessed)
+
+Newest run log: collect-meetcampfire.com-20261113T005041.jsonl
+  events: discover 2, fetch 4, llm_call 2, run_end 1, run_start 1, search 4   (cache hits: 10)
+
+==============================================================================
+[MT-2.4] Robinhood from cache
+command:  uv run leadership collect https://robinhood.com/
+exit code 0    3.9s
+checks:
+  ok    Status: complete
+  ok    network calls 0
+  ok    unread list marks 5 investor pages as the company's own
+->  PASS
+------------------------------------------------------------------------------
+
+Company:  Robinhood
+Run:      14    Status: complete
+  - run 14 (new); company name from the site: Robinhood
+  - company site: 523 links found, 120 shortlisted, 12 chosen
+  - SEC EDGAR: matched SEC registrant Robinhood Markets, Inc. (CIK 1783879); 5 filings selected
+  - Wikipedia: skipped: WIKIPEDIA_USER_AGENT is not set in .env
+  - web search: 20 results, 14 usable, 8 about this company and added
+
+Usage against limits
+  pages              0 of 40
+  search_queries     0 of 25
+  llm_calls          0 of 120
+  pages failed       0
+  pages skipped      0   (refused, robots.txt, or not verified as this company)
+  network calls      0   (this process; 0 means all from cache)
+
+Sources stored
+  tier 1  company_site  fetched     2
+  tier 1  company_site  skipped     5
+  tier 1  sec_filing    fetched     5
+  tier 2  press_release fetched    12
+  tier 3  wikipedia     skipped     2
+
+Pages that could not be read (nothing from them is used)
+  tier 1  company_site  https://investors.robinhood.com/governance/board-of-directors  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/governance/leadership  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/deepak-rao  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/matt-billings  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/vlad-tenev  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 3  wikipedia     https://en.wikipedia.org/wiki/Robinhood_(company)
+          skipped: disallowed by robots.txt
+  tier 3  wikipedia     https://en.wikipedia.org/wiki/Vlad_Tenev
+          skipped: disallowed by robots.txt
+
+Run log: C:\dev\ExecTrace\logs\collect-robinhood.com-20261113T005045.jsonl
+
+==============================================================================
+[MT-2.4] Robinhood sources as stored
+command:  uv run python tools/show_run.py robinhood.com
+exit code 0    0.5s
+checks:
+  ok    5 SEC filings fetched
+  ok    5 investor pages skipped
+  ok    2 Wikipedia pages skipped
+  ok    no exa.ai row
+  ok    5 access_refused reasons on the run that met them
+->  PASS
+------------------------------------------------------------------------------
+Company: Robinhood  (robinhood.com)   collected at 2026-11-13T08:50:47+00:00
+
+Runs
+  run 3: complete          started 2026-11-13T08:32:36+00:00  finished 2026-11-13T08:33:11+00:00
+      pages 26, failed 0, skipped 7, search queries 4, LLM calls 2, network calls 36
+      reason: access_refused / fetch: disallowed by robots.txt  [https://investors.robinhood.com/governance/board-of-directors]
+      reason: access_refused / fetch: disallowed by robots.txt  [https://investors.robinhood.com/governance/leadership]
+      reason: access_refused / fetch: disallowed by robots.txt  [https://investors.robinhood.com/management/deepak-rao]
+      reason: access_refused / fetch: disallowed by robots.txt  [https://investors.robinhood.com/management/matt-billings]
+      reason: access_refused / fetch: disallowed by robots.txt  [https://investors.robinhood.com/management/vlad-tenev]
+  run 4: complete          started 2026-11-13T08:33:15+00:00  finished 2026-11-13T08:33:15+00:00
+      pages 0, failed 0, skipped 0, search queries 0, LLM calls 0, network calls 0
+  run 8: complete          started 2026-11-13T08:35:45+00:00  finished 2026-11-13T08:35:45+00:00
+      pages 0, failed 0, skipped 0, search queries 0, LLM calls 0, network calls 0
+  run 11: complete          started 2026-11-13T08:43:14+00:00  finished 2026-11-13T08:43:14+00:00
+      pages 0, failed 0, skipped 0, search queries 0, LLM calls 0, network calls 0
+  run 14: complete          started 2026-11-13T08:50:47+00:00  finished 2026-11-13T08:50:47+00:00
+      pages 0, failed 0, skipped 0, search queries 0, LLM calls 0, network calls 0
+
+Sources (tier, type, stage, published, URL)
+  1  company_site  fetched  -          https://robinhood.com/
+  1  company_site  fetched  -          https://robinhood.com/us/en/about-us/
+  1  company_site  skipped  -          https://investors.robinhood.com/governance/board-of-directors   <- disallowed by robots.txt
+  1  company_site  skipped  -          https://investors.robinhood.com/governance/leadership   <- disallowed by robots.txt
+  1  company_site  skipped  -          https://investors.robinhood.com/management/deepak-rao   <- disallowed by robots.txt
+  1  company_site  skipped  -          https://investors.robinhood.com/management/matt-billings   <- disallowed by robots.txt
+  1  company_site  skipped  -          https://investors.robinhood.com/management/vlad-tenev   <- disallowed by robots.txt
+  1  sec_filing    fetched  2026-06-26 https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm
+  1  sec_filing    fetched  2026-05-08 https://www.sec.gov/Archives/edgar/data/1783879/000178387926000065/hood-20260507.htm
+  1  sec_filing    fetched  2026-04-22 https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+  1  sec_filing    fetched  2026-02-18 https://www.sec.gov/Archives/edgar/data/1783879/000178387926000023/hood-20251231.htm
+  1  sec_filing    fetched  2026-02-10 https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm
+  2  press_release fetched  2022-04-26 https://robinhood.com/newsroom/a-message-from-our-ceo-and-co-founder-vlad-tenev
+  2  press_release fetched  2018-10-12 https://robinhood.com/newsroom/a-letter-from-robinhood-co-founder-co-ceo-vlad-tenev
+  2  press_release fetched  2018-11-26 https://robinhood.com/newsroom/jason-warnick-joins-robinhood-as-chief-financial-officer
+  2  press_release fetched  2024-08-12 https://robinhood.com/newsroom/robinhood-welcomes-jeff-pinner-as-chief-technology-officer
+  2  press_release fetched  2019-06-24 https://robinhood.com/newsroom/gretchen-howard-elevated-to-chief-operating-officer
+  2  press_release fetched  2021-03-17 https://robinhood.com/newsroom/robinhood-welcomes-aparna-chennapragada-as-first-chief-product-office
+  2  press_release fetched  2020-08-27 https://robinhood.com/newsroom/robinhood-appoints-norm-ashkenas-and-kelly-zigaitis-as-chief-complian
+  2  press_release fetched  2020-08-04 https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer
+  2  press_release fetched  2020-05-05 https://robinhood.com/newsroom/dan-gallagher-robinhood-board-member-and-former-sec-commissioner-join
+  2  press_release fetched  2019-11-21 https://robinhood.com/newsroom/robinhood-welcomes-anne-hoge-as-chief-legal-officer
+  2  press_release fetched  2026-02-19 https://robinhood.com/newsroom/robinhood-welcomes-dr-naomi-boyd-as-chief-economic-advisor
+  2  press_release fetched  2018-11-29 https://www.robinhood.com/us/en/newsroom/gretchen-howard-joins-robinhood-as-vice-president-of-operat
+  3  wikipedia     skipped  -          https://en.wikipedia.org/wiki/Robinhood_(company)   <- disallowed by robots.txt
+  3  wikipedia     skipped  -          https://en.wikipedia.org/wiki/Vlad_Tenev   <- disallowed by robots.txt
+
+26 sources; 19 fetched, 7 skipped
+0 fetched articles have no publication date (left empty, never guessed)
+
+Newest run log: collect-robinhood.com-20261113T005045.jsonl
+  events: discover 2, fetch 8, llm_call 2, run_end 1, run_start 1, search 4   (cache hits: 14)
+
+==============================================================================
+[MT-2.4b] Microsoft, repeated
+command:  uv run leadership collect https://www.microsoft.com/
+exit code 0    91.7s
+checks:
+  ok    Status: complete
+  ok    pages failed 0
+  ok    unread list names news.microsoft.com/source/leadership
+->  PASS
+------------------------------------------------------------------------------
+
+Company:  Microsoft
+Run:      15    Status: complete
+  - run 15 (new); company name from the site: Microsoft
+  - company site: 744 links found, 20 shortlisted, 1 chosen
+  - SEC EDGAR: matched SEC registrant MICROSOFT CORP (CIK 789019); 5 filings selected
+  - Wikipedia: skipped: WIKIPEDIA_USER_AGENT is not set in .env
+  - web search: 20 results, 13 usable, 9 about this company and added
+
+Usage against limits
+  pages              0 of 40
+  search_queries     0 of 25
+  llm_calls          0 of 120
+  pages failed       0
+  pages skipped      0   (refused, robots.txt, or not verified as this company)
+  network calls      4   (this process; 0 means all from cache)
+
+Sources stored
+  tier 1  company_site  fetched     4
+  tier 1  company_site  skipped     2
+  tier 1  sec_filing    fetched     5
+  tier 2  press_release skipped     1
+  tier 3  news          fetched     2
+  tier 3  news          skipped     1
+  tier 3  wikipedia     skipped     1
+
+Pages that could not be read (nothing from them is used)
+  tier 1  company_site  https://news.microsoft.com/source/exec/satya-nadella  <- the company's own page or filing
+          skipped: the site refused automated access (HTTP 403)
+  tier 1  company_site  https://news.microsoft.com/source/leadership  <- the company's own page or filing
+          skipped: the site refused automated access (HTTP 403)
+  tier 2  press_release https://blogs.microsoft.com/blog/author/kscott  <- the company's own page or filing
+          skipped: the site refused automated access (HTTP 403)
+  tier 3  wikipedia     https://en.wikipedia.org/wiki/Satya_Nadella
+          skipped: disallowed by robots.txt
+  tier 3  news          https://www.comparably.com/companies/microsoft/executive-team
+          skipped: the site refused automated access (HTTP 403)
+
+Run log: C:\dev\ExecTrace\logs\collect-microsoft.com-20261113T005050.jsonl
+
+==============================================================================
+[MT-2.4b] Microsoft sources as stored
+command:  uv run python tools/show_run.py microsoft.com
+exit code 0    0.4s
+checks:
+  ok    no vectorshift.ai or derrick-app.com row
+  ok    3 access_refused reasons on an earlier run
+  ok    Business Roundtable page has no date
+->  PASS
+------------------------------------------------------------------------------
+Company: Microsoft  (microsoft.com)   collected at 2026-11-13T08:52:19+00:00
+
+Runs
+  run 5: complete          started 2026-11-13T08:34:59+00:00  finished 2026-11-13T08:35:08+00:00
+      pages 16, failed 0, skipped 5, search queries 0, LLM calls 2, network calls 4
+      reason: access_refused / fetch: the site refused automated access (HTTP 403)  [https://blogs.microsoft.com/blog/author/kscott]
+      reason: access_refused / fetch: the site refused automated access (HTTP 403)  [https://news.microsoft.com/source/exec/satya-nadella]
+      reason: access_refused / fetch: the site refused automated access (HTTP 403)  [https://news.microsoft.com/source/leadership]
+  run 9: complete          started 2026-11-13T08:37:16+00:00  finished 2026-11-13T08:37:17+00:00
+      pages 0, failed 0, skipped 0, search queries 0, LLM calls 0, network calls 4
+  run 12: complete          started 2026-11-13T08:44:46+00:00  finished 2026-11-13T08:44:46+00:00
+      pages 0, failed 0, skipped 0, search queries 0, LLM calls 0, network calls 4
+  run 15: complete          started 2026-11-13T08:52:19+00:00  finished 2026-11-13T08:52:19+00:00
+      pages 0, failed 0, skipped 0, search queries 0, LLM calls 0, network calls 4
+
+Sources (tier, type, stage, published, URL)
+  1  company_site  fetched  -          https://www.microsoft.com/
+  1  company_site  fetched  -          https://www.microsoft.com/about
+  1  company_site  skipped  -          https://news.microsoft.com/source/exec/satya-nadella   <- the site refused automated access (HTTP 403)
+  1  company_site  skipped  -          https://news.microsoft.com/source/leadership   <- the site refused automated access (HTTP 403)
+  1  company_site  fetched  -          https://www.microsoft.com/en-my/about/people
+  1  company_site  fetched  -          https://www.microsoft.com/en-us/aprd/aboutus/leadership
+  1  sec_filing    fetched  2026-11-05 https://www.sec.gov/Archives/edgar/data/789019/000119312526448357/d177209d8k.htm
+  1  sec_filing    fetched  2026-10-21 https://www.sec.gov/Archives/edgar/data/789019/000119312526427849/d61756ddef14a.htm
+  1  sec_filing    fetched  2026-07-29 https://www.sec.gov/Archives/edgar/data/789019/000119312526323660/msft-20260630.htm
+  1  sec_filing    fetched  2026-06-05 https://www.sec.gov/Archives/edgar/data/789019/000119312526258667/d26760d8k.htm
+  1  sec_filing    fetched  2026-05-14 https://www.sec.gov/Archives/edgar/data/789019/000119312526224155/d125909d8k.htm
+  2  press_release skipped  -          https://blogs.microsoft.com/blog/author/kscott   <- the site refused automated access (HTTP 403)
+  3  news          fetched  2026-07-10 https://digitaldefynd.com/IQ/executive-c-suite-team-of-microsoft
+  3  news          fetched  -          https://www.businessroundtable.org/members/satya-nadella
+  3  news          skipped  -          https://www.comparably.com/companies/microsoft/executive-team   <- the site refused automated access (HTTP 403)
+  3  wikipedia     skipped  -          https://en.wikipedia.org/wiki/Satya_Nadella   <- disallowed by robots.txt
+
+16 sources; 11 fetched, 5 skipped
+1 fetched articles have no publication date (left empty, never guessed)
+
+Newest run log: collect-microsoft.com-20261113T005050.jsonl
+  events: discover 2, fetch 9, llm_call 2, run_end 1, run_start 1, search 4   (cache hits: 14)
+
+==============================================================================
+[MT-2.5] Limit: max_pages = 5 (Microsoft, copy of the cache)
+command:  C:\dev\ExecTrace\.venv\Scripts\python.exe C:\dev\ExecTrace\tools\manual_checks_m2.py --drive C:\dev\ExecTrace\data\manual_m2\limits https://www.microsoft.com/ 5
+exit code 3    97.9s
+checks:
+  ok    exit code 3
+  ok    Status: budget_exhausted
+  ok    reason reads max_pages=5 reached
+  ok    pages 5 of 5
+  ok    no search query or model call was made
+->  PASS
+------------------------------------------------------------------------------
+
+Company:  Microsoft
+Run:      1    Status: budget_exhausted
+  - run 1 (new); company name from the site: Microsoft
+  - company site: 744 links found, 20 shortlisted, 1 chosen
+  - SEC EDGAR: matched SEC registrant MICROSOFT CORP (CIK 789019); 5 filings selected
+  - Wikipedia: skipped: WIKIPEDIA_USER_AGENT is not set in .env
+  - web search: 20 results, 13 usable, 9 about this company and added
+
+Usage against limits
+  pages              5 of 5
+  search_queries     0 of 25
+  llm_calls          0 of 120
+  pages failed       0
+  pages skipped      0   (refused, robots.txt, or not verified as this company)
+  network calls      4   (this process; 0 means all from cache)
+
+Reasons recorded
+  budget_exhausted  fetch    max_pages=5 reached
+
+Sources stored
+  tier 1  company_site  fetched     2
+  tier 1  sec_filing    fetched     3
+
+Run log: C:\dev\ExecTrace\data\manual_m2\limits\logs\collect-microsoft.com-20261113T005222.jsonl
+
+==============================================================================
+[MT-2.5] Same limit again: must resume, not start over
+command:  C:\dev\ExecTrace\.venv\Scripts\python.exe C:\dev\ExecTrace\tools\manual_checks_m2.py --drive C:\dev\ExecTrace\data\manual_m2\limits https://www.microsoft.com/ 5
+exit code 3    91.3s
+checks:
+  ok    same run number
+  ok    resumed (budget_exhausted)
+  ok    still 5 pages: the restart did not get around the limit
+  ok    Status: budget_exhausted
+->  PASS
+------------------------------------------------------------------------------
+
+Company:  Microsoft
+Run:      1    Status: budget_exhausted
+  - run 1 (resumed (budget_exhausted)); company name from the site: Microsoft
+  - company site: 744 links found, 20 shortlisted, 1 chosen
+  - SEC EDGAR: matched SEC registrant MICROSOFT CORP (CIK 789019); 5 filings selected
+  - Wikipedia: skipped: WIKIPEDIA_USER_AGENT is not set in .env
+  - web search: 20 results, 13 usable, 9 about this company and added
+
+Usage against limits
+  pages              5 of 5
+  search_queries     0 of 25
+  llm_calls          0 of 120
+  pages failed       0
+  pages skipped      0   (refused, robots.txt, or not verified as this company)
+  network calls      4   (this process; 0 means all from cache)
+
+Reasons recorded
+  budget_exhausted  fetch    max_pages=5 reached
+
+Sources stored
+  tier 1  company_site  fetched     2
+  tier 1  sec_filing    fetched     3
+
+Run log: C:\dev\ExecTrace\data\manual_m2\limits\logs\collect-microsoft.com-20261113T005400.jsonl
+
+==============================================================================
+[MT-2.5] Limit raised to max_pages = 40: must continue the same run
+command:  C:\dev\ExecTrace\.venv\Scripts\python.exe C:\dev\ExecTrace\tools\manual_checks_m2.py --drive C:\dev\ExecTrace\data\manual_m2\limits https://www.microsoft.com/ 40
+exit code 0    91.9s
+checks:
+  ok    same run number
+  ok    resumed (budget_exhausted)
+  ok    more than 5 pages
+  ok    Status: complete
+->  PASS
+------------------------------------------------------------------------------
+
+Company:  Microsoft
+Run:      1    Status: complete
+  - run 1 (resumed (budget_exhausted)); company name from the site: Microsoft
+  - company site: 744 links found, 20 shortlisted, 1 chosen
+  - SEC EDGAR: matched SEC registrant MICROSOFT CORP (CIK 789019); 5 filings selected
+  - Wikipedia: skipped: WIKIPEDIA_USER_AGENT is not set in .env
+  - web search: 20 results, 13 usable, 9 about this company and added
+
+Usage against limits
+  pages             16 of 40
+  search_queries     0 of 25
+  llm_calls          0 of 120
+  pages failed       0
+  pages skipped      5   (refused, robots.txt, or not verified as this company)
+  network calls      4   (this process; 0 means all from cache)
+
+Reasons recorded
+  access_refused    fetch    the site refused automated access (HTTP 403)  [https://blogs.microsoft.com/blog/author/kscott]
+  access_refused    fetch    the site refused automated access (HTTP 403)  [https://news.microsoft.com/source/exec/satya-nadella]
+  access_refused    fetch    the site refused automated access (HTTP 403)  [https://news.microsoft.com/source/leadership]
+
+Sources stored
+  tier 1  company_site  fetched     4
+  tier 1  company_site  skipped     2
+  tier 1  sec_filing    fetched     5
+  tier 2  press_release skipped     1
+  tier 3  news          fetched     2
+  tier 3  news          skipped     1
+  tier 3  wikipedia     skipped     1
+
+Pages that could not be read (nothing from them is used)
+  tier 1  company_site  https://news.microsoft.com/source/exec/satya-nadella  <- the company's own page or filing
+          skipped: the site refused automated access (HTTP 403)
+  tier 1  company_site  https://news.microsoft.com/source/leadership  <- the company's own page or filing
+          skipped: the site refused automated access (HTTP 403)
+  tier 2  press_release https://blogs.microsoft.com/blog/author/kscott  <- the company's own page or filing
+          skipped: the site refused automated access (HTTP 403)
+  tier 3  wikipedia     https://en.wikipedia.org/wiki/Satya_Nadella
+          skipped: disallowed by robots.txt
+  tier 3  news          https://www.comparably.com/companies/microsoft/executive-team
+          skipped: the site refused automated access (HTTP 403)
+
+Run log: C:\dev\ExecTrace\data\manual_m2\limits\logs\collect-microsoft.com-20261113T005531.jsonl
+
+==============================================================================
+[MT-2.6] Kill the process in the middle of a Campfire run
+command:  C:\dev\ExecTrace\.venv\Scripts\python.exe C:\dev\ExecTrace\tools\manual_checks_m2.py --drive C:\dev\ExecTrace\data\manual_m2\interrupt https://meetcampfire.com/ 40   (killed once 4 sources were stored)
+exit code 1    10.3s
+checks:
+  ok    the process was still working when it was killed
+  ok    it had stored some sources but not all
+  ok    the run is left as 'running' with no finish time
+->  PASS
+------------------------------------------------------------------------------
+
+[runs table after the kill: [(1, 'running', None)]]
+[sources stored before the kill: 4]
+
+==============================================================================
+[MT-2.6] Start again: must detect the interrupted run and finish it
+command:  C:\dev\ExecTrace\.venv\Scripts\python.exe C:\dev\ExecTrace\tools\manual_checks_m2.py --drive C:\dev\ExecTrace\data\manual_m2\interrupt https://meetcampfire.com/ 40
+exit code 0    12.6s
+checks:
+  ok    same run number
+  ok    resumed (interrupted)
+  ok    Status: complete
+  ok    more sources than before the kill
+  ok    each source is stored once
+  ok    still one run for the company
+->  PASS
+------------------------------------------------------------------------------
+
+Company:  Campfire
+Run:      1    Status: complete
+  - run 1 (resumed (interrupted)); company name from the site: Campfire
+  - company site: 270 links found, 82 shortlisted, 5 chosen
+  - SEC EDGAR: no SEC registrant named 'Campfire'
+  - Wikipedia: skipped: WIKIPEDIA_USER_AGENT is not set in .env
+  - web search: 20 results, 12 usable, 7 about this company and added
+
+Usage against limits
+  pages             13 of 40
+  search_queries     0 of 25
+  llm_calls          0 of 120
+  pages failed       0
+  pages skipped      1   (refused, robots.txt, or not verified as this company)
+  network calls     13   (this process; 0 means all from cache)
+
+Sources stored
+  tier 1  company_site  fetched     2
+  tier 2  press_release fetched     7
+  tier 3  news          fetched     3
+  tier 3  news          skipped     1
+
+Pages that could not be read (nothing from them is used)
+  tier 3  news          https://www.thecampfire.ai/about
+          skipped: not verified: this site has a name like the company's but the page never mentions campfire.ai or meetcampfire.com
+
+Run log: C:\dev\ExecTrace\data\manual_m2\interrupt\logs\collect-meetcampfire.com-20261113T005714.jsonl
+
+==============================================================================
+[MT-2.7] Unreachable site
+command:  uv run leadership collect https://no-such-company-exectrace.invalid/
+exit code 1    10.9s
+checks:
+  ok    exit code 1
+  ok    says nothing was stored
+  ok    says the homepage could not be read
+->  PASS
+------------------------------------------------------------------------------
+
+[stderr]
+Stopped: Could not read the homepage of no-such-company-exectrace.invalid: the site could not be reached (robots.txt gave no answer). Nothing was stored.
+
+==============================================================================
+[MT-2.8] Newest run log has one line per event
+command:  read collect-no-such-company-exectrace.invalid-20261113T005727.jsonl
+exit code 0    0.0s
+checks:
+  ok    has fetch events
+  ok    ends with run_end
+->  PASS
+------------------------------------------------------------------------------
+fetch: 2
+run_end: 1
+
+==============================================================================
+[MT-2.8] Secret scan
+command:  uv run python tools/scan_secrets.py
+exit code 0    0.8s
+checks:
+  ok    exit code 0
+  ok    0 problems
+->  PASS
+------------------------------------------------------------------------------
+121 files scanned (45 that git would track, 76 run logs), 4 values from .env checked: 0 problems
+
+==============================================================================
+SUMMARY
+  PASS  MT-2.1   Fast tests
+  PASS  MT-2.2   Campfire from cache
+  PASS  MT-2.3   Campfire sources as stored
+  PASS  MT-2.4   Robinhood from cache
+  PASS  MT-2.4   Robinhood sources as stored
+  PASS  MT-2.4b  Microsoft, repeated
+  PASS  MT-2.4b  Microsoft sources as stored
+  PASS  MT-2.5   Limit: max_pages = 5 (Microsoft, copy of the cache)
+  PASS  MT-2.5   Same limit again: must resume, not start over
+  PASS  MT-2.5   Limit raised to max_pages = 40: must continue the same run
+  PASS  MT-2.6   Kill the process in the middle of a Campfire run
+  PASS  MT-2.6   Start again: must detect the interrupted run and finish it
+  PASS  MT-2.7   Unreachable site
+  PASS  MT-2.8   Newest run log has one line per event
+  PASS  MT-2.8   Secret scan
+
+15 of 15 scripted checks passed.
+Not scripted: MT-2.9 (your decisions) and MT-2.10 (the checklist workbook).

@@ -1,13 +1,13 @@
 # SPEC: Company Leadership RAG Agent
 
-Status: **revision 5, 2026-11-12** — design agreed; implementation in progress.
+Status: **revision 9, 2026-11-13** — design agreed; implementation in progress.
 Remaining open decisions are in [section 9](#9-open-decisions).
 
 | Milestone | State |
 |---|---|
 | M0 Project setup, key check | Done; manual tests passed 2026-11-11; merged to `main` |
 | M1 Schema + resolution logic | Done; manual tests passed 2026-11-12; merged to `main` |
-| M2 Discovery, fetch, cache | In progress |
+| M2 Discovery, fetch, cache | Done; accepted 2026-11-13 (`acceptance/M2.md`) |
 | M3 – M7 | Not started |
 
 Evidence for each finished milestone is in `acceptance/`.
@@ -143,16 +143,19 @@ leadership/
   llm.py            # built: Groq-first provider chain, pacing, fallback; cache in M3
   resolve.py        # built: claims -> roles (pure, deterministic)
   db.py             # built: schema, views, rebuild_roles; read-only guard in M5
-  cache.py          # M2: atomic file caches
-  runlog.py         # M2: JSON-lines run and chat logs
-  sources/          # M2: site.py, search.py, edgar.py
+  cache.py          # built: atomic file caches
+  runlog.py         # built: JSON-lines run log; chat log in M5
+  collect.py        # built: one collection run (discover, fetch, budgets, status, resume)
+  sources/          # built: web.py (fetcher), site.py, search.py, edgar.py, wikipedia.py
   extract.py        # M3: document -> claims, evidence check
   normalize.py      # M3: title -> level, name normalization
   verify.py         # M4: targeted checks for unverified / conflicting roles
   agent.py          # M5: tool-calling loop
 app.py              # M6: Streamlit UI
 config.toml         # models, limits, agent limits, eval thresholds
-tools/              # acceptance.py, show_cases.py, mutation_check.py, show_schema.py
+tools/              # acceptance.py, show_cases.py, mutation_check.py, show_schema.py,
+                    # show_run.py, scan_secrets.py, manual_checks_m2.py
+data/               # working database, not committed (leadership.db)
 acceptance/         # per milestone: M<n>_results.log and M<n>.md
 fixtures/           # M4+: leadership.db, <company>.json, gold/, eval report
 tests/              # worked_cases.py drives the resolution tests
@@ -168,27 +171,76 @@ from cache when possible.
 
 ### 3.1 Discover
 
-- Fetch the homepage; derive the company name.
+- Fetch the homepage; derive the company name. If the homepage redirects to
+  another domain (meetcampfire.com → campfire.ai), both count as the
+  company's own.
 - **Company site**: read `sitemap.xml` and homepage links. One LLM call picks
   the links likely to describe leadership (team, about, press, newsroom and
   unusually named equivalents). Its output is filtered to URLs that actually
-  appeared in the input, so it cannot invent addresses.
-- **Search round 1** (if a key is configured): a fixed set of queries such as
-  `"<company>" leadership team`, `"<company>" "vice president"`,
-  `"<company>" "head of"`, `"<company>" CEO CTO CFO`.
+  appeared in the input, so it cannot invent addresses. If the model answers
+  that none of the offered links is relevant, that is respected: no page is
+  chosen from the site, and it is not a failure. An answer made only of
+  invented addresses is unusable, not empty.
+- A page counts as news or a press release only when `press`, `news`,
+  `newsroom`, `blog`, `media` or `announc...` is a whole word of its path:
+  `/press/` and `/company-news/`, but not `/express/`.
+- **Search round 1** (if a key is configured): a fixed set of four queries,
+  each anchored with the company's domain, such as
+  `"<company>" <domain> leadership team` and `"<company>" <domain> "head of"`.
+- **Namesake filter.** Other organisations often share a company's name. One
+  LLM call keeps only the results that are about this company, given its
+  website and the homepage's own description; its answer is filtered to URLs
+  that were offered. Without a model, or if its answer is unusable, only
+  results that name the company's domain are kept. LinkedIn and other social
+  sites are never fetched.
+- **Original sources only.** Machine-generated summary pages published by
+  search, AI and data-tool companies (`tavily.com`, `exa.ai`, `vectorshift.ai`,
+  `derrick-app.com`) are never
+  fetched or stored, so
+  they can never be evidence for a claim. They may appear among search
+  results, which is how other sources are found.
+- **Lookalike check.** A page found by search on a site whose name contains
+  the company's name but is not the company's (thecampfire.ai for
+  campfire.ai) is used only if the page itself names one of the company's
+  domains. Otherwise it is stored with stage `skipped` and the reason, and
+  its text is never extracted. This check is code, not a model decision.
 - **Search round 2** runs only when triggered (section 3.10).
 - **EDGAR** (if the company matches a public registrant): latest 10-K, latest
-  proxy statement, and recent 8-K filings reporting officer changes.
-- **Wikipedia**: the company page if one exists.
+  proxy statement, and recent 8-K filings reporting officer changes (item
+  5.02). Matching is strict: the registrant's name must equal the company's
+  name once corporate words are removed, and its listed website, if any, must
+  be the same domain. Needs `SEC_USER_AGENT`.
+- **Wikipedia**: the company page, accepted only if it mentions the company's
+  domain. Wikimedia refuses clients without contact details, so this runs
+  only when `WIKIPEDIA_USER_AGENT` is set; otherwise it is skipped.
+  Decided 2026-11-12: it is not set for this project, so Wikipedia is not a
+  source (see Known limits).
+- **If a model call fails** during discovery (for example invalid JSON): one
+  retry, then the keyword ranking is used and a `partial_failure` reason is
+  recorded. The run continues. A valid empty answer is not a failure.
 
 ### 3.2 Fetch and cache
 
 - Store the raw response body (HTML), URL, HTTP status, retrieval time, and a
   hash of the cleaned text (`content_hash`). Keeping the raw body means a
   change to text cleaning never requires re-fetching.
-- Record `published_at` from page metadata, filing date, or search result date.
-  Leave it null when unknown — never guess.
-- Obey `robots.txt`; wait between requests to the same host.
+- Record `published_at` only from a date the page itself states (its
+  metadata), or, for an SEC filing, the filing date in the SEC's index. A date
+  reported by the search provider is never used: for a profile page it is
+  often not a publication date. Leave it null when unknown — never guess.
+- Obey `robots.txt`; wait between requests to the same host. A site that
+  answers 401 or 403 for `robots.txt` is treated as forbidding crawling. The
+  fetcher identifies itself honestly and never imitates a browser. Pages it
+  may not read are stored with stage `skipped` and the reason.
+- A page that answers 401 or 403 is a refusal, not a failure: stage `skipped`,
+  reason "the site refused automated access", never retried and never
+  bypassed. Other errors (timeouts, 429, 5xx, 404) keep the `failed` stage
+  and the retry rules.
+- **Unread pages are always reported.** Every run report, including one
+  answered from the cache, lists each page that could not be read with its
+  reason, the company's own pages and filings first. For those (tier 1 and
+  2) the run also records an `access_refused` reason with the URL.
+- A definite answer (200, 403, 404) is cached; timeouts, 429 and 5xx are not.
 - Each source's stage (`fetched`, `extracted`, `failed`, `skipped`) is saved
   to the database as soon as it changes, not at the end of the run.
 
@@ -450,6 +502,10 @@ points, to be confirmed against free-tier quotas in M0.
   cannot bypass them. Continuing a `budget_exhausted` run requires raising
   the limit in `config.toml`.
 - Every run ends by printing usage against each limit.
+- The page budget counts stored sources. `robots.txt`, sitemaps and the SEC
+  and Wikipedia lookups are not counted; `[discovery]` in `config.toml`
+  bounds them (pages chosen from the site, links offered to the model,
+  sitemap files, results per query, news pages, 8-K filings).
 
 ### 3.11 Run status and resume
 
@@ -466,6 +522,9 @@ Each collection run has a row in `runs` with one status:
 
 - If more than one applies, the single `status` follows precedence:
   `partial_failure`, then `budget_exhausted`, then `insufficient_data`.
+- `access_refused` is a reason code but not a status: a run whose only
+  problem is that a site refused access or forbids crawling stays `complete`,
+  with the refused pages named in `reasons` and in the report.
 - Precedence only picks the headline. **Every condition that applied is
   recorded independently** in `reasons`, a list with one entry per condition:
   its code, the stage, and the detail (which limit was reached and at what
@@ -502,6 +561,16 @@ One bad page never stops a run.
 - Personal location is often not public.
 - A company's own page can state something false; it would still be stored as
   a tier-1 claim.
+- A company may have no team page, or one that refuses automated clients.
+  Campfire has none; Robinhood's (`investors.robinhood.com`) answers 403 to
+  every automated request. The tool does not imitate a browser. Roles then
+  rest on filings, press releases and news, and no role can be confirmed by
+  a live page listing (rule 4).
+- Wikipedia is not used: Wikimedia requires a contact address, and none is
+  configured.
+- The lookalike check covers sites whose name contains the company's name. A
+  namesake on an unrelated site name can still pass the model's relevance
+  check; extraction must confirm each person belongs to this company (M3).
 
 ---
 
@@ -833,14 +902,14 @@ The next milestone starts only after the author has run the manual tests.
 |---|---|---|---|
 | M0 | Project setup, key check | `uv sync` works on a clean clone; `leadership check` makes one real call per configured provider and reports usable models; models and rate limits recorded in config | 0.5 h |
 | M1 | Schema + resolution logic | Schema created, including `runs`; `resolve` is a pure function; one passing unit test per worked case in 3.6; employment status derived correctly | 1.25 h |
-| M2 | Discovery, fetch, cache, limits, logging | For both companies: at least one company-site team page found; Robinhood includes at least one SEC filing; a second run makes zero network calls; limits enforced from `config.toml`; run status and run log written | 1.5 h |
+| M2 | Discovery, fetch, cache, limits, logging | For both companies: the company's own leadership-related pages are found, and any page that cannot be read is recorded with the reason (reworded 2026-11-12; was "at least one company-site team page found", see `acceptance/M2.md` section 2); Robinhood includes at least one SEC filing; a second run makes zero network calls; limits enforced from `config.toml`; run status and run log written | 1.5 h |
 | M3 | Extraction + normalization | 100% of stored claims pass the evidence check; rejected claims logged; CEO of each company extracted; extraction accuracy measured on labelled pages; malformed output handled; injection test passes; resume test passes | 1.75 h |
 | M4 | Verify, enrich, export, gold set, held-out run | No unflagged duplicate single-holder roles; precision ≥ 90% and gold C-level recall = 100%; no gold former executive marked current; each CEO has a sourced location or an explicit "not found"; held-out company and no-data input run | 1.75 h |
 | M5 | Chat agent (CLI) | Four sample questions × two companies correct with citations; SQL guard tests pass; answer-correctness, hallucination, and chat-injection evals run; automated and manual citation checks recorded | 1.5 h |
 | M6 | Streamlit UI | Runs from committed fixtures with one LLM key; shows answer, SQL, and sources | 0.5 h |
 | M7 | README + deliverables | Fresh-clone test passes; README covers design decisions, measured results, and limits; key scan clean; fixtures, eval report, citation review, and session export committed | 0.75 h |
 
-Progress: M0 and M1 accepted. M0 also
+Progress: M0, M1 and M2 accepted. M0 also
 delivered the Groq-first provider chain with pacing and fallback, which the
 original plan had placed in M3.
 
@@ -870,6 +939,18 @@ Decided:
   them against the free-tier quotas.
 - **Run status precedence**: agreed, with every applicable reason recorded
   independently.
+- **Team pages** (2026-11-12): M2 requires that leadership-related pages are
+  found and that unreadable ones are recorded with the reason, not that a
+  team page exists.
+- **Wikipedia** (2026-11-12): skipped for now; documented as a known limit.
+- **Unverified search results** (2026-11-12): excluded unless verified
+  (lookalike check, section 3.1).
+- **Generated summaries** (2026-11-12): pages generated by search companies
+  are not evidence; only original sources are (section 3.1).
+- **Refused pages** (2026-11-12): a 401 or 403 is `skipped`, not `failed`,
+  and important unread pages are always reported (section 3.2).
+- **Publication dates** (2026-11-12): only dates confirmed on the page itself,
+  or SEC filing dates; never the search provider's date.
 - **Thresholds**: precision ≥ 90%, gold C-level recall = 100%.
 - **Gold sets**: hand-verified by the author before viewing pipeline output.
 - **Collection architecture**: deterministic workflow with bounded LLM steps.

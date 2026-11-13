@@ -1,0 +1,394 @@
+Acceptance run for M2
+Date:    2026-11-13T00:31:33-08:00
+Branch:  m2-collect
+Commit:  0db4a23
+Python:  3.12.10
+
+==============================================================================
+[1] M2 tests: cache, fetcher, robots, discovery, SEC matching, runs, budgets, resume
+command:  uv run pytest -v tests/test_sources.py tests/test_collect.py
+exit code 0 (expected 0)  ->  PASS    10.4s
+------------------------------------------------------------------------------
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0 -- C:\dev\ExecTrace\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\dev\ExecTrace
+configfile: pyproject.toml
+plugins: anyio-4.16.0
+collecting ... collected 61 items / 3 deselected / 58 selected
+
+tests/test_sources.py::test_cache_round_trip_and_miss PASSED             [  1%]
+tests/test_sources.py::test_cache_ignores_a_half_written_or_corrupt_entry PASSED [  3%]
+tests/test_sources.py::test_cache_write_failure_leaves_the_old_entry_intact PASSED [  5%]
+tests/test_sources.py::test_fetch_is_cached_and_cache_hit_keeps_the_original_retrieval_time PASSED [  6%]
+tests/test_sources.py::test_retries_server_errors_with_backoff_then_succeeds PASSED [  8%]
+tests/test_sources.py::test_retry_after_header_is_honored PASSED         [ 10%]
+tests/test_sources.py::test_gives_up_after_the_retry_limit_and_does_not_cache_the_failure PASSED [ 12%]
+tests/test_sources.py::test_timeout_is_reported_not_raised PASSED        [ 13%]
+tests/test_sources.py::test_definite_refusals_are_cached PASSED          [ 15%]
+tests/test_sources.py::test_robots_txt_is_obeyed PASSED                  [ 17%]
+tests/test_sources.py::test_site_that_refuses_robots_txt_is_not_crawled PASSED [ 18%]
+tests/test_sources.py::test_missing_robots_allows_and_unreachable_robots_forbids PASSED [ 20%]
+tests/test_sources.py::test_requests_to_one_host_are_spaced_out PASSED   [ 22%]
+tests/test_sources.py::test_fetch_log_has_no_headers PASSED              [ 24%]
+tests/test_sources.py::test_published_date_is_read_only_when_the_page_states_it PASSED [ 25%]
+tests/test_sources.py::test_content_hash_ignores_markup_changes_but_not_text_changes PASSED [ 27%]
+tests/test_sources.py::test_clean_text_drops_scripts_and_styles PASSED   [ 29%]
+tests/test_sources.py::test_registrable_and_normalize PASSED             [ 31%]
+tests/test_sources.py::test_links_are_resolved_and_assets_dropped PASSED [ 32%]
+tests/test_sources.py::test_company_name_from_site_metadata PASSED       [ 34%]
+tests/test_sources.py::test_ranking_prefers_leadership_pages_and_executive_news PASSED [ 36%]
+tests/test_sources.py::test_link_picker_output_cannot_add_urls_that_were_not_offered PASSED [ 37%]
+tests/test_sources.py::test_sitemap_index_is_followed_within_the_limit PASSED [ 39%]
+tests/test_sources.py::test_queries_are_anchored_to_the_company_domain PASSED [ 41%]
+tests/test_sources.py::test_namesake_results_are_dropped_without_an_llm PASSED [ 43%]
+tests/test_sources.py::test_homepage_description_is_read_from_metadata PASSED [ 44%]
+tests/test_sources.py::test_registrant_is_matched_only_on_an_exact_core_name PASSED [ 46%]
+tests/test_sources.py::test_filings_selected_are_latest_annual_proxy_and_officer_change_8ks PASSED [ 48%]
+tests/test_sources.py::test_sec_lookup_is_skipped_without_a_contact_and_rejects_a_different_website PASSED [ 50%]
+tests/test_sources.py::test_a_domain_is_named_only_as_a_whole_name PASSED [ 51%]
+tests/test_sources.py::test_lookalike_sites_are_recognised PASSED        [ 53%]
+tests/test_sources.py::test_only_lookalikes_need_proof_and_the_proof_is_the_companys_domain PASSED [ 55%]
+tests/test_sources.py::test_product_pages_with_press_inside_a_word_are_not_ranked_as_news PASSED [ 56%]
+tests/test_sources.py::test_valid_empty_link_selection_is_respected_not_treated_as_a_failure PASSED [ 58%]
+tests/test_sources.py::test_without_a_model_the_keyword_ranking_is_still_used PASSED [ 60%]
+tests/test_collect.py::test_run_discovers_fetches_and_records_sources PASSED [ 62%]
+tests/test_collect.py::test_second_run_makes_no_network_calls PASSED     [ 63%]
+tests/test_collect.py::test_refresh_fetches_again PASSED                 [ 65%]
+tests/test_collect.py::test_robots_disallowed_page_is_skipped_not_fetched PASSED [ 67%]
+tests/test_collect.py::test_page_budget_stops_the_run_and_names_the_limit PASSED [ 68%]
+tests/test_collect.py::test_every_condition_is_recorded_not_only_the_headline PASSED [ 70%]
+tests/test_collect.py::test_failed_page_does_not_stop_the_run PASSED     [ 72%]
+tests/test_collect.py::test_resume_cannot_bypass_the_budget PASSED       [ 74%]
+tests/test_collect.py::test_interrupted_run_is_detected_and_continued PASSED [ 75%]
+tests/test_collect.py::test_failed_source_is_retried_up_to_the_cap PASSED [ 77%]
+tests/test_collect.py::test_unreachable_homepage_stops_with_a_clear_error_and_stores_nothing PASSED [ 79%]
+tests/test_collect.py::test_redirected_domain_is_still_the_companys_own_site PASSED [ 81%]
+tests/test_collect.py::test_search_results_are_fetched_cached_and_the_key_stays_out_of_the_log PASSED [ 82%]
+tests/test_collect.py::test_lookalike_site_is_excluded_unless_its_page_names_the_company PASSED [ 84%]
+tests/test_collect.py::test_generated_summary_pages_of_search_companies_are_never_sources PASSED [ 86%]
+tests/test_collect.py::test_page_that_refuses_automated_access_is_skipped_reported_and_not_retried PASSED [ 87%]
+tests/test_collect.py::test_a_server_error_is_still_a_failure_and_is_still_retried PASSED [ 89%]
+tests/test_collect.py::test_search_query_budget_is_enforced PASSED       [ 91%]
+tests/test_collect.py::test_classify_and_headline PASSED                 [ 93%]
+tests/test_collect.py::test_llm_call_budget_stops_model_use_before_any_call PASSED [ 94%]
+tests/test_collect.py::test_search_rounds_limit_of_zero_turns_search_off PASSED [ 96%]
+tests/test_collect.py::test_run_with_no_readable_company_page_ends_insufficient_data PASSED [ 98%]
+tests/test_collect.py::test_every_fetch_and_search_log_entry_has_the_required_fields PASSED [100%]
+
+====================== 58 passed, 3 deselected in 8.41s =======================
+
+==============================================================================
+[2] Whole fast suite (no network, no keys)
+command:  uv run pytest -q
+exit code 0 (expected 0)  ->  PASS    9.9s
+------------------------------------------------------------------------------
+........................................................................ [ 41%]
+........................................................................ [ 82%]
+...............................                                          [100%]
+175 passed, 7 deselected in 8.22s
+
+==============================================================================
+[3] Real model: picks leadership pages, may choose none, drops a namesake search result
+command:  uv run pytest -v -m llm tests/test_sources.py
+exit code 0 (expected 0)  ->  PASS    6.1s
+------------------------------------------------------------------------------
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0 -- C:\dev\ExecTrace\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\dev\ExecTrace
+configfile: pyproject.toml
+plugins: anyio-4.16.0
+collecting ... collected 38 items / 35 deselected / 3 selected
+
+tests/test_sources.py::test_real_model_picks_leadership_pages_and_only_offered_urls PASSED [ 33%]
+tests/test_sources.py::test_real_model_drops_a_namesake_search_result PASSED [ 66%]
+tests/test_sources.py::test_real_model_may_choose_none_and_that_is_not_a_failure PASSED [100%]
+
+====================== 3 passed, 35 deselected in 4.49s =======================
+
+==============================================================================
+[4] Campfire: real collection, caches ignored
+command:  uv run leadership collect https://meetcampfire.com/ --refresh
+exit code 0 (expected 0)  ->  PASS    24.4s
+------------------------------------------------------------------------------
+
+Company:  Campfire
+Run:      1    Status: complete
+  - run 1 (new); company name from the site: Campfire
+  - company site: 270 links found, 82 shortlisted, 5 chosen
+  - SEC EDGAR: no SEC registrant named 'Campfire'
+  - Wikipedia: skipped: WIKIPEDIA_USER_AGENT is not set in .env
+  - web search: 20 results, 12 usable, 7 about this company and added
+
+Usage against limits
+  pages             13 of 40
+  search_queries     4 of 25
+  llm_calls          2 of 120
+  pages failed       0
+  pages skipped      1   (refused, robots.txt, or not verified as this company)
+  network calls     26   (this process; 0 means all from cache)
+
+Sources stored
+  tier 1  company_site  fetched     2
+  tier 2  press_release fetched     7
+  tier 3  news          fetched     3
+  tier 3  news          skipped     1
+
+Pages that could not be read (nothing from them is used)
+  tier 3  news          https://www.thecampfire.ai/about
+          skipped: not verified: this site has a name like the company's but the page never mentions campfire.ai or meetcampfire.com
+
+Run log: C:\dev\ExecTrace\logs\collect-meetcampfire.com-20261113T003202.jsonl
+
+==============================================================================
+[5] Campfire: second run must make 0 network calls
+command:  uv run leadership collect https://meetcampfire.com/
+exit code 0 (expected 0)  ->  PASS    3.7s
+------------------------------------------------------------------------------
+
+Company:  Campfire
+Run:      2    Status: complete
+  - run 2 (new); company name from the site: Campfire
+  - company site: 270 links found, 82 shortlisted, 5 chosen
+  - SEC EDGAR: no SEC registrant named 'Campfire'
+  - Wikipedia: skipped: WIKIPEDIA_USER_AGENT is not set in .env
+  - web search: 20 results, 12 usable, 7 about this company and added
+
+Usage against limits
+  pages              0 of 40
+  search_queries     0 of 25
+  llm_calls          0 of 120
+  pages failed       0
+  pages skipped      0   (refused, robots.txt, or not verified as this company)
+  network calls      0   (this process; 0 means all from cache)
+
+Sources stored
+  tier 1  company_site  fetched     2
+  tier 2  press_release fetched     7
+  tier 3  news          fetched     3
+  tier 3  news          skipped     1
+
+Pages that could not be read (nothing from them is used)
+  tier 3  news          https://www.thecampfire.ai/about
+          skipped: not verified: this site has a name like the company's but the page never mentions campfire.ai or meetcampfire.com
+
+Run log: C:\dev\ExecTrace\logs\collect-meetcampfire.com-20261113T003226.jsonl
+
+==============================================================================
+[6] Robinhood: real collection, caches ignored
+command:  uv run leadership collect https://robinhood.com/ --refresh
+exit code 0 (expected 0)  ->  PASS    43.4s
+------------------------------------------------------------------------------
+
+Company:  Robinhood
+Run:      3    Status: complete
+  - run 3 (new); company name from the site: Robinhood
+  - company site: 523 links found, 120 shortlisted, 12 chosen
+  - SEC EDGAR: matched SEC registrant Robinhood Markets, Inc. (CIK 1783879); 5 filings selected
+  - Wikipedia: skipped: WIKIPEDIA_USER_AGENT is not set in .env
+  - web search: 20 results, 14 usable, 8 about this company and added
+
+Usage against limits
+  pages             26 of 40
+  search_queries     4 of 25
+  llm_calls          2 of 120
+  pages failed       0
+  pages skipped      7   (refused, robots.txt, or not verified as this company)
+  network calls     36   (this process; 0 means all from cache)
+
+Reasons recorded
+  access_refused    fetch    disallowed by robots.txt  [https://investors.robinhood.com/governance/board-of-directors]
+  access_refused    fetch    disallowed by robots.txt  [https://investors.robinhood.com/governance/leadership]
+  access_refused    fetch    disallowed by robots.txt  [https://investors.robinhood.com/management/deepak-rao]
+  access_refused    fetch    disallowed by robots.txt  [https://investors.robinhood.com/management/matt-billings]
+  access_refused    fetch    disallowed by robots.txt  [https://investors.robinhood.com/management/vlad-tenev]
+
+Sources stored
+  tier 1  company_site  fetched     2
+  tier 1  company_site  skipped     5
+  tier 1  sec_filing    fetched     5
+  tier 2  press_release fetched    12
+  tier 3  wikipedia     skipped     2
+
+Pages that could not be read (nothing from them is used)
+  tier 1  company_site  https://investors.robinhood.com/governance/board-of-directors  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/governance/leadership  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/deepak-rao  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/matt-billings  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/vlad-tenev  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 3  wikipedia     https://en.wikipedia.org/wiki/Robinhood_(company)
+          skipped: disallowed by robots.txt
+  tier 3  wikipedia     https://en.wikipedia.org/wiki/Vlad_Tenev
+          skipped: disallowed by robots.txt
+
+Run log: C:\dev\ExecTrace\logs\collect-robinhood.com-20261113T003230.jsonl
+
+==============================================================================
+[7] Robinhood: second run must make 0 network calls
+command:  uv run leadership collect https://robinhood.com/
+exit code 0 (expected 0)  ->  PASS    3.9s
+------------------------------------------------------------------------------
+
+Company:  Robinhood
+Run:      4    Status: complete
+  - run 4 (new); company name from the site: Robinhood
+  - company site: 523 links found, 120 shortlisted, 12 chosen
+  - SEC EDGAR: matched SEC registrant Robinhood Markets, Inc. (CIK 1783879); 5 filings selected
+  - Wikipedia: skipped: WIKIPEDIA_USER_AGENT is not set in .env
+  - web search: 20 results, 14 usable, 8 about this company and added
+
+Usage against limits
+  pages              0 of 40
+  search_queries     0 of 25
+  llm_calls          0 of 120
+  pages failed       0
+  pages skipped      0   (refused, robots.txt, or not verified as this company)
+  network calls      0   (this process; 0 means all from cache)
+
+Sources stored
+  tier 1  company_site  fetched     2
+  tier 1  company_site  skipped     5
+  tier 1  sec_filing    fetched     5
+  tier 2  press_release fetched    12
+  tier 3  wikipedia     skipped     2
+
+Pages that could not be read (nothing from them is used)
+  tier 1  company_site  https://investors.robinhood.com/governance/board-of-directors  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/governance/leadership  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/deepak-rao  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/matt-billings  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/vlad-tenev  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 3  wikipedia     https://en.wikipedia.org/wiki/Robinhood_(company)
+          skipped: disallowed by robots.txt
+  tier 3  wikipedia     https://en.wikipedia.org/wiki/Vlad_Tenev
+          skipped: disallowed by robots.txt
+
+Run log: C:\dev\ExecTrace\logs\collect-robinhood.com-20261113T003313.jsonl
+
+==============================================================================
+[8] Campfire: runs, reasons and sources as stored
+command:  uv run python tools/show_run.py meetcampfire.com
+exit code 0 (expected 0)  ->  PASS    0.5s
+------------------------------------------------------------------------------
+Company: Campfire  (meetcampfire.com)   collected at 2026-11-13T08:32:28+00:00
+
+Runs
+  run 1: complete          started 2026-11-13T08:32:05+00:00  finished 2026-11-13T08:32:24+00:00
+      pages 13, failed 0, skipped 1, search queries 4, LLM calls 2, network calls 26
+  run 2: complete          started 2026-11-13T08:32:27+00:00  finished 2026-11-13T08:32:28+00:00
+      pages 0, failed 0, skipped 0, search queries 0, LLM calls 0, network calls 0
+
+Sources (tier, type, stage, published, URL)
+  1  company_site  fetched  -          https://meetcampfire.com/
+  1  company_site  fetched  -          https://campfire.ai/basecamp
+  2  press_release fetched  2025-08-27 https://campfire.ai/blog/campfire-raises-35m-series-a-from-accel
+  2  press_release fetched  2025-10-15 https://campfire.ai/blog/campfire-65-million-series-b-co-led-by-accel-and-ribbit
+  2  press_release fetched  2024-03-18 https://campfire.ai/blog/announcing-campfire-x-rho-partnering-to-accelerate-accounting-workflows
+  2  press_release fetched  2026-09-18 https://campfire.ai/blog/campfire-announces-forecast-an-end-to-the-mid-month-guessing-game
+  2  press_release fetched  2025-02-06 https://campfire.ai/blog/campfire-accelerates-accounting-with-claude
+  2  press_release fetched  -          https://campfire.ai/blog
+  2  press_release fetched  2025-02-21 https://campfire.ai/blog/from-cpa-to-cfo-ron-wangerin-cfo-trust-and-will
+  3  news          fetched  -          https://aircfo.com/resources/funded-how-campfire-raised-100m-while-doubling-revenue-for-6-straight-q
+  3  news          fetched  2026-09-10 https://thegtmnewsletter.substack.com/p/gtm-205-ai-native-sales-organization-chris-mcdonough-campfir
+  3  news          skipped  -          https://www.thecampfire.ai/about   <- not verified: this site has a name like the company's but the page never mentions campfire.ai or meetcampfire.com
+  3  news          fetched  -          https://www.ycombinator.com/companies/campfire-2
+
+13 sources; 12 fetched, 1 skipped
+3 fetched articles have no publication date (left empty, never guessed)
+
+Newest run log: collect-meetcampfire.com-20261113T003226.jsonl
+  events: discover 2, fetch 4, llm_call 2, run_end 1, run_start 1, search 4   (cache hits: 10)
+
+==============================================================================
+[9] Robinhood: runs, reasons and sources as stored
+command:  uv run python tools/show_run.py robinhood.com
+exit code 0 (expected 0)  ->  PASS    0.5s
+------------------------------------------------------------------------------
+Company: Robinhood  (robinhood.com)   collected at 2026-11-13T08:33:15+00:00
+
+Runs
+  run 3: complete          started 2026-11-13T08:32:36+00:00  finished 2026-11-13T08:33:11+00:00
+      pages 26, failed 0, skipped 7, search queries 4, LLM calls 2, network calls 36
+      reason: access_refused / fetch: disallowed by robots.txt  [https://investors.robinhood.com/governance/board-of-directors]
+      reason: access_refused / fetch: disallowed by robots.txt  [https://investors.robinhood.com/governance/leadership]
+      reason: access_refused / fetch: disallowed by robots.txt  [https://investors.robinhood.com/management/deepak-rao]
+      reason: access_refused / fetch: disallowed by robots.txt  [https://investors.robinhood.com/management/matt-billings]
+      reason: access_refused / fetch: disallowed by robots.txt  [https://investors.robinhood.com/management/vlad-tenev]
+  run 4: complete          started 2026-11-13T08:33:15+00:00  finished 2026-11-13T08:33:15+00:00
+      pages 0, failed 0, skipped 0, search queries 0, LLM calls 0, network calls 0
+
+Sources (tier, type, stage, published, URL)
+  1  company_site  fetched  -          https://robinhood.com/
+  1  company_site  fetched  -          https://robinhood.com/us/en/about-us/
+  1  company_site  skipped  -          https://investors.robinhood.com/governance/board-of-directors   <- disallowed by robots.txt
+  1  company_site  skipped  -          https://investors.robinhood.com/governance/leadership   <- disallowed by robots.txt
+  1  company_site  skipped  -          https://investors.robinhood.com/management/deepak-rao   <- disallowed by robots.txt
+  1  company_site  skipped  -          https://investors.robinhood.com/management/matt-billings   <- disallowed by robots.txt
+  1  company_site  skipped  -          https://investors.robinhood.com/management/vlad-tenev   <- disallowed by robots.txt
+  1  sec_filing    fetched  2026-06-26 https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm
+  1  sec_filing    fetched  2026-05-08 https://www.sec.gov/Archives/edgar/data/1783879/000178387926000065/hood-20260507.htm
+  1  sec_filing    fetched  2026-04-22 https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+  1  sec_filing    fetched  2026-02-18 https://www.sec.gov/Archives/edgar/data/1783879/000178387926000023/hood-20251231.htm
+  1  sec_filing    fetched  2026-02-10 https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm
+  2  press_release fetched  2022-04-26 https://robinhood.com/newsroom/a-message-from-our-ceo-and-co-founder-vlad-tenev
+  2  press_release fetched  2018-10-12 https://robinhood.com/newsroom/a-letter-from-robinhood-co-founder-co-ceo-vlad-tenev
+  2  press_release fetched  2018-11-26 https://robinhood.com/newsroom/jason-warnick-joins-robinhood-as-chief-financial-officer
+  2  press_release fetched  2024-08-12 https://robinhood.com/newsroom/robinhood-welcomes-jeff-pinner-as-chief-technology-officer
+  2  press_release fetched  2019-06-24 https://robinhood.com/newsroom/gretchen-howard-elevated-to-chief-operating-officer
+  2  press_release fetched  2021-03-17 https://robinhood.com/newsroom/robinhood-welcomes-aparna-chennapragada-as-first-chief-product-office
+  2  press_release fetched  2020-08-27 https://robinhood.com/newsroom/robinhood-appoints-norm-ashkenas-and-kelly-zigaitis-as-chief-complian
+  2  press_release fetched  2020-08-04 https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer
+  2  press_release fetched  2020-05-05 https://robinhood.com/newsroom/dan-gallagher-robinhood-board-member-and-former-sec-commissioner-join
+  2  press_release fetched  2019-11-21 https://robinhood.com/newsroom/robinhood-welcomes-anne-hoge-as-chief-legal-officer
+  2  press_release fetched  2026-02-19 https://robinhood.com/newsroom/robinhood-welcomes-dr-naomi-boyd-as-chief-economic-advisor
+  2  press_release fetched  2018-11-29 https://www.robinhood.com/us/en/newsroom/gretchen-howard-joins-robinhood-as-vice-president-of-operat
+  3  wikipedia     skipped  -          https://en.wikipedia.org/wiki/Robinhood_(company)   <- disallowed by robots.txt
+  3  wikipedia     skipped  -          https://en.wikipedia.org/wiki/Vlad_Tenev   <- disallowed by robots.txt
+
+26 sources; 19 fetched, 7 skipped
+0 fetched articles have no publication date (left empty, never guessed)
+
+Newest run log: collect-robinhood.com-20261113T003313.jsonl
+  events: discover 2, fetch 8, llm_call 2, run_end 1, run_start 1, search 4   (cache hits: 14)
+
+==============================================================================
+[10] Unreachable homepage: must stop with a clear error and store nothing
+command:  uv run leadership collect https://no-such-company-exectrace.invalid/
+exit code 1 (expected 1)  ->  PASS    10.6s
+------------------------------------------------------------------------------
+
+--- stderr ---
+Stopped: Could not read the homepage of no-such-company-exectrace.invalid: the site could not be reached (robots.txt gave no answer). Nothing was stored.
+
+==============================================================================
+[11] No key or contact address in any file that could be committed, or in the run logs
+command:  uv run python tools/scan_secrets.py
+exit code 0 (expected 0)  ->  PASS    0.7s
+------------------------------------------------------------------------------
+107 files scanned (45 that git would track, 62 run logs), 4 values from .env checked: 0 problems
+
+==============================================================================
+SUMMARY
+  [1] PASS  M2 tests: cache, fetcher, robots, discovery, SEC matching, runs, budgets, resume
+  [2] PASS  Whole fast suite (no network, no keys)
+  [3] PASS  Real model: picks leadership pages, may choose none, drops a namesake search result
+  [4] PASS  Campfire: real collection, caches ignored
+  [5] PASS  Campfire: second run must make 0 network calls
+  [6] PASS  Robinhood: real collection, caches ignored
+  [7] PASS  Robinhood: second run must make 0 network calls
+  [8] PASS  Campfire: runs, reasons and sources as stored
+  [9] PASS  Robinhood: runs, reasons and sources as stored
+  [10] PASS  Unreachable homepage: must stop with a clear error and store nothing
+  [11] PASS  No key or contact address in any file that could be committed, or in the run logs
+  11 of 11 steps as expected
