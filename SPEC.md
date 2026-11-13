@@ -1,6 +1,6 @@
 # SPEC: Company Leadership RAG Agent
 
-Status: **revision 12, 2026-11-13** — design agreed; implementation in progress.
+Status: **revision 13, 2026-11-13** — design agreed; implementation in progress.
 Remaining open decisions are in [section 9](#9-open-decisions).
 
 | Milestone | State |
@@ -8,7 +8,7 @@ Remaining open decisions are in [section 9](#9-open-decisions).
 | M0 Project setup, key check | Done; manual tests passed 2026-11-11; merged to `main` |
 | M1 Schema + resolution logic | Done; manual tests passed 2026-11-12; merged to `main` |
 | M2 Discovery, fetch, cache | Done; accepted 2026-11-13 (`acceptance/M2.md`) |
-| M3 Extraction + normalization | Done; accepted 2026-11-13 with three checks not reviewed (`acceptance/M3.md` section 10); on branch `m3-extract`, not yet merged to `main` |
+| M3 Extraction + normalization | Done; implemented and manually accepted 2026-11-13, with conditions carried into M4 as R160, R161, R164, R165 (`acceptance/M3.md` section 10); merged to `main` |
 | M4 – M7 | Not started |
 
 Evidence for each finished milestone is in `acceptance/`.
@@ -627,6 +627,9 @@ One bad page never stops a run.
   date is then not stored; it is never replaced by a filing or announcement
   date. (Robinhood's former CFO: the proxy gives 2026-02-06, the database
   has no end date.) Recovering stated dates is an M4 requirement.
+- The model's judgment that a document is about a different organisation
+  is trusted as given. It has wrongly dropped a page on the company's own
+  site. First-party pages must not be refused on that judgment alone (M4).
 - The evidence and date checks use a fixed window of 250 characters around
   the quote. It can refuse a correct claim in a long paragraph and cannot
   tell two people with the same surname apart.
@@ -1001,7 +1004,7 @@ The next milestone starts only after the author has run the manual tests.
 | M6 | Streamlit UI | Runs from committed fixtures with one LLM key; shows answer, SQL, and sources | 0.5 h |
 | M7 | README + deliverables | Fresh-clone test passes; README covers design decisions, measured results, and limits; key scan clean; fixtures, eval report, citation review, and session export committed | 0.75 h |
 
-Progress: M0, M1, M2 and M3 accepted. M3 is not yet merged to `main`. M0 also
+Progress: M0, M1, M2 and M3 accepted. M0 also
 delivered the Groq-first provider chain with pacing and fallback, which the
 original plan had placed in M3.
 

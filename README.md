@@ -119,6 +119,9 @@ Known limits of extraction:
   statement gives 2026-02-06 as the day its former CFO ceased; the database
   has no end date for him. An end date is never filled in from a filing or
   announcement date.
+- **A page can be refused whole by mistake.** If the model judges a page to be
+  about a different organisation with the same name, all its claims are
+  dropped. It has done so wrongly for one of Robinhood's own newsroom pages.
 - **The evidence window is a fixed 250 characters.** A quote must have the
   person's surname, and any effective date, in it or that close to it. This
   can refuse a correct claim in a long paragraph, and it cannot tell two
