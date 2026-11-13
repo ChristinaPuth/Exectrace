@@ -34,7 +34,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 WORK = ROOT / "data" / "manual_m2"
 PY = [sys.executable, str(Path(__file__).resolve()), "--drive"]
-CLI = ["uv", "run", "leadership", "collect"]
+CLI = ["uv", "run", "leadership", "collect", "--no-extract"]     # M2 checks: fetch only
 SHOW = ["uv", "run", "python", "tools/show_run.py"]
 
 
@@ -45,7 +45,7 @@ def drive(root: str, url: str, max_pages: str) -> int:
     load_env()
     cfg = load_config()
     cfg = cfg.model_copy(update={"limits": cfg.limits.model_copy(update={"max_pages": int(max_pages)})})
-    result = collect(url, cfg, root=Path(root))
+    result = collect(url, cfg, root=Path(root), extract=False)
     print_report(result, cfg, _db_path(Path(root)))
     return 0 if result.status == "complete" else 3
 

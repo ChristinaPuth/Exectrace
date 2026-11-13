@@ -184,8 +184,10 @@ def test_undated_appointment_takes_effect_on_the_date_of_the_confirming_source()
         appointment(2, Y, "CFO", tier=2, src="press_release", on=date(2026, 9, 1),
                     pending=True, **CFO),
         news(3, Y, "CFO", date(2026, 10, 10), **CFO)], TODAY))
-    assert roles[(X, "CFO")].ended_on == date(2026, 10, 10)    # not the announcement date
-    assert roles[(X, "CFO")].ended_by_claim_id == 2
+    x = roles[(X, "CFO")]
+    assert x.status == "former" and x.ended_by_claim_id == 2
+    # No source states the day. Known only: a source dated 2026-10-10 shows the successor in office.
+    assert x.ended_on is None and x.end_reported_on == date(2026, 10, 10)   # not the announcement date
 
 
 def test_source_older_than_the_announcement_does_not_confirm_it():
@@ -258,3 +260,77 @@ def test_conflict_messages_are_cleanly_worded():
         "another person is also claimed as CTO by a less reliable source")
     assert roles[(Y, "CTO")].conflict_reason == (
         "another person holds CTO according to a more reliable source (tier 1 vs tier 3)")
+
+
+# ------------------------------------------------- end dates (found in M3 review)
+def test_an_end_date_is_the_one_the_source_states_not_the_filing_date():
+    """Robinhood: a filing dated 2026-02-10 says the CFO ceased on 2026-02-06."""
+    roles = _by_key(resolve([
+        filing(1, X, "CFO", date(2025, 2, 18), **CFO),
+        departure(2, X, "role", tier=1, src="sec_filing", on=date(2026, 2, 10),
+                  eff=date(2026, 2, 6), title="CFO", **CFO)], TODAY))
+    x = roles[(X, "CFO")]
+    assert x.status == "former" and x.ended_on == date(2026, 2, 6) and x.end_reported_on is None
+
+
+def test_a_departure_without_a_stated_date_gets_no_end_date():
+    """The same filing, when the sentence with the date was not extracted."""
+    roles = _by_key(resolve([
+        filing(1, X, "CFO", date(2025, 2, 18), **CFO),
+        departure(2, X, "role", tier=1, src="sec_filing", on=date(2026, 2, 10), title="CFO", **CFO)], TODAY))
+    x = roles[(X, "CFO")]
+    assert x.status == "former" and x.ended_by_claim_id == 2
+    assert x.ended_on is None                               # the filing date is not an end date
+    assert x.end_reported_on == date(2026, 2, 10)           # only: reported by a source of that date
+
+
+def test_an_earlier_title_given_as_past_has_no_end_date():
+    """'Prior to his current position he had been our SVP since 2018' states no end date."""
+    svp = dict(level="vp", dept="finance")
+    roles = _by_key(resolve([
+        departure(1, X, "role", tier=1, src="sec_filing", on=date(2026, 4, 22),
+                  title="Senior Vice President of Finance", **svp)], TODAY))
+    (r,) = roles.values()
+    assert r.status == "former" and r.ended_on is None and r.end_reported_on == date(2026, 4, 22)
+
+
+def test_succession_without_a_stated_date_gives_no_end_date():
+    roles = _by_key(resolve([
+        _c(1, X, "role", "CLO", tier=2, src="press_release", on=date(2019, 11, 21), canonical="CLO"),
+        appointment(2, Y, "CLO", tier=2, src="press_release", on=date(2020, 8, 4), canonical="CLO")], TODAY))
+    x = roles[(X, "CLO")]
+    assert x.status == "former" and x.status_reason == "rule3_successor_appointed"
+    assert x.ended_on is None and x.end_reported_on == date(2020, 8, 4)
+    dated = _by_key(resolve([
+        _c(1, X, "role", "CLO", tier=2, src="press_release", on=date(2019, 11, 21), canonical="CLO"),
+        appointment(2, Y, "CLO", tier=2, src="press_release", on=date(2020, 5, 5),
+                    eff=date(2020, 6, 1), canonical="CLO")], TODAY))
+    assert dated[(X, "CLO")].ended_on == date(2020, 6, 1) and dated[(X, "CLO")].end_reported_on is None
+
+
+def test_leaving_later_this_month_never_ends_a_role_on_the_announcement_date():
+    """Robinhood 2020: 'our current Chief Legal Officer, who is leaving later this month'."""
+    claims = [
+        _c(1, X, "appointment", "CLO", tier=2, src="press_release", on=date(2019, 11, 21), canonical="CLO"),
+        departure(2, X, "company", tier=2, src="press_release", on=date(2020, 5, 5), title="CLO",
+                  canonical="CLO", pending=True),
+        appointment(3, Y, "CLO", tier=2, src="press_release", on=date(2020, 5, 5), canonical="CLO",
+                    pending=True),
+        _c(4, Y, "role", "CLO", tier=2, src="press_release", on=date(2020, 8, 4), canonical="CLO")]
+    x = _by_key(resolve(claims, TODAY))[(X, "CLO")]
+    assert x.status == "former"                             # a later source shows the successor in office
+    assert x.ended_on is None                               # no source gives the day she left
+    assert x.end_reported_on == date(2020, 8, 4) != date(2020, 5, 5)
+    # While the announcement was fresh she was still the holder.
+    then = _by_key(resolve(claims[:3], date(2020, 5, 10)))[(X, "CLO")]
+    assert then.status == "current" and then.status_reason == "rule1_departure_announced_without_date"
+    assert then.ended_on is None
+
+
+def test_no_role_ever_gets_an_end_date_that_no_claim_states():
+    """Over every worked case: an end date always equals some claim's stated effective date."""
+    for case in CASES:
+        stated = {c.effective_date for c in case["claims"] if c.effective_date}
+        for r in resolve(case["claims"], TODAY).roles:
+            assert r.ended_on is None or r.ended_on in stated, case["name"]
+            assert not (r.ended_on and r.end_reported_on), case["name"]

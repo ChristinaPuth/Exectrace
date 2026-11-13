@@ -1,0 +1,812 @@
+Acceptance run for M3
+Date:    2026-11-13T08:20:32-08:00
+Branch:  m3-extract
+Commit:  23365c1
+Python:  3.12.10
+
+==============================================================================
+[1] M3 tests: title and name rules, evidence checks, storage, the extraction stage, scoring
+command:  uv run pytest -v tests/test_normalize.py tests/test_extract.py tests/test_pipeline.py tests/test_evals.py
+exit code 0 (expected 0)  ->  PASS    20.9s
+------------------------------------------------------------------------------
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0 -- C:\dev\ExecTrace\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\dev\ExecTrace
+configfile: pyproject.toml
+plugins: anyio-4.16.0
+collecting ... collected 109 items / 6 deselected / 103 selected
+
+tests/test_normalize.py::test_level_from_title[CEO-c_level] PASSED       [  0%]
+tests/test_normalize.py::test_level_from_title[Chief Executive Officer-c_level] PASSED [  1%]
+tests/test_normalize.py::test_level_from_title[Co-Founder & CEO-c_level] PASSED [  2%]
+tests/test_normalize.py::test_level_from_title[Chief Compliance Officer-c_level] PASSED [  3%]
+tests/test_normalize.py::test_level_from_title[President-c_level] PASSED [  4%]
+tests/test_normalize.py::test_level_from_title[General Counsel-c_level] PASSED [  5%]
+tests/test_normalize.py::test_level_from_title[SVP, Engineering-vp] PASSED [  6%]
+tests/test_normalize.py::test_level_from_title[EVP of Sales-vp] PASSED   [  7%]
+tests/test_normalize.py::test_level_from_title[Senior Vice President-vp] PASSED [  8%]
+tests/test_normalize.py::test_level_from_title[Executive Vice President of Sales-vp] PASSED [  9%]
+tests/test_normalize.py::test_level_from_title[VP of Sales-vp] PASSED    [ 10%]
+tests/test_normalize.py::test_level_from_title[Vice-President, Product-vp] PASSED [ 11%]
+tests/test_normalize.py::test_level_from_title[Head of Product-head] PASSED [ 12%]
+tests/test_normalize.py::test_level_from_title[Global Head of Communications-head] PASSED [ 13%]
+tests/test_normalize.py::test_level_from_title[Director-other] PASSED    [ 14%]
+tests/test_normalize.py::test_level_from_title[Director of Engineering-other] PASSED [ 15%]
+tests/test_normalize.py::test_level_from_title[Board member-other] PASSED [ 16%]
+tests/test_normalize.py::test_level_from_title[Chairman of the Board-other] PASSED [ 17%]
+tests/test_normalize.py::test_level_from_title[Founder-other] PASSED     [ 18%]
+tests/test_normalize.py::test_level_from_title[Chief of Staff-other] PASSED [ 19%]
+tests/test_normalize.py::test_level_from_title[Software Engineer-other] PASSED [ 20%]
+tests/test_normalize.py::test_level_from_title[None-other] PASSED        [ 21%]
+tests/test_normalize.py::test_level_from_title[-other] PASSED            [ 22%]
+tests/test_normalize.py::test_a_vice_president_is_not_a_president PASSED [ 23%]
+tests/test_normalize.py::test_canonical_role[CEO-CEO] PASSED             [ 24%]
+tests/test_normalize.py::test_canonical_role[Chief Executive Officer-CEO] PASSED [ 25%]
+tests/test_normalize.py::test_canonical_role[President and CEO-CEO] PASSED [ 26%]
+tests/test_normalize.py::test_canonical_role[Co-Founder & CEO-CEO] PASSED [ 27%]
+tests/test_normalize.py::test_canonical_role[CEO and Co-Founder-CEO] PASSED [ 28%]
+tests/test_normalize.py::test_canonical_role[Co-CEO-CEO] PASSED          [ 29%]
+tests/test_normalize.py::test_canonical_role[Chief Executive Officer and Chair of the Board-CEO] PASSED [ 30%]
+tests/test_normalize.py::test_canonical_role[Chief Executive Officer, President and Director-CEO] PASSED [ 31%]
+tests/test_normalize.py::test_canonical_role[Chief Financial Officer-CFO] PASSED [ 32%]
+tests/test_normalize.py::test_canonical_role[EVP & CFO-CFO] PASSED       [ 33%]
+tests/test_normalize.py::test_canonical_role[Chief Technology Officer-CTO] PASSED [ 33%]
+tests/test_normalize.py::test_canonical_role[Chief Operating Officer-COO] PASSED [ 34%]
+tests/test_normalize.py::test_canonical_role[Chief Marketing Officer-CMO] PASSED [ 35%]
+tests/test_normalize.py::test_canonical_role[Chief Legal Officer-CLO] PASSED [ 36%]
+tests/test_normalize.py::test_canonical_role[Chief Compliance Officer-Chief Compliance Officer] PASSED [ 37%]
+tests/test_normalize.py::test_canonical_role[Chief Brokerage Officer-Chief Brokerage Officer] PASSED [ 38%]
+tests/test_normalize.py::test_canonical_role[Co-Founder and Chief Creative Officer-Chief Creative Officer] PASSED [ 39%]
+tests/test_normalize.py::test_canonical_role[President-None] PASSED      [ 40%]
+tests/test_normalize.py::test_canonical_role[SVP, Engineering-None] PASSED [ 41%]
+tests/test_normalize.py::test_canonical_role[Head of Product-None] PASSED [ 42%]
+tests/test_normalize.py::test_canonical_role[Director-None] PASSED       [ 43%]
+tests/test_normalize.py::test_canonical_role[Chief of Staff-None] PASSED [ 44%]
+tests/test_normalize.py::test_canonical_role[None-None] PASSED           [ 45%]
+tests/test_normalize.py::test_the_head_of_one_division_is_not_the_company_wide_holder PASSED [ 46%]
+tests/test_normalize.py::test_other_roles_joined_by_punctuation_are_not_divisions PASSED [ 47%]
+tests/test_normalize.py::test_the_same_office_spelled_two_ways_is_one_role PASSED [ 48%]
+tests/test_normalize.py::test_a_title_naming_two_offices_uses_the_first PASSED [ 49%]
+tests/test_normalize.py::test_normalize_name[Vladimir Tenev-vladimir tenev] PASSED [ 50%]
+tests/test_normalize.py::test_normalize_name[  Vlad   Tenev -vlad tenev] PASSED [ 51%]
+tests/test_normalize.py::test_normalize_name[Dr. Naomi Boyd-naomi boyd] PASSED [ 52%]
+tests/test_normalize.py::test_normalize_name[Jason K. Warnick-jason warnick] PASSED [ 53%]
+tests/test_normalize.py::test_normalize_name[Jos\xe9 \xc1lvarez Jr.-jose alvarez] PASSED [ 54%]
+tests/test_normalize.py::test_normalize_name[JOHN GLASGOW-john glasgow] PASSED [ 55%]
+tests/test_normalize.py::test_normalize_name[Baiju Prafulkumar Bhatt-baiju prafulkumar bhatt] PASSED [ 56%]
+tests/test_normalize.py::test_normalize_name[Daniel "Dan" Gallagher-daniel gallagher] PASSED [ 57%]
+tests/test_normalize.py::test_normalize_name[Mary-Anne O'Neil, CPA-mary-anne o'neil] PASSED [ 58%]
+tests/test_normalize.py::test_name_comparison PASSED                     [ 59%]
+tests/test_extract.py::test_schema_rejects_what_the_model_must_not_send PASSED [ 60%]
+tests/test_extract.py::test_schema_normalises_dates_scope_and_pending PASSED [ 61%]
+tests/test_extract.py::test_evidence_must_be_in_the_document PASSED      [ 62%]
+tests/test_extract.py::test_evidence_check_ignores_whitespace_quotes_and_table_separators PASSED [ 63%]
+tests/test_extract.py::test_the_persons_name_must_be_in_the_document_in_full PASSED [ 64%]
+tests/test_extract.py::test_evidence_must_be_about_the_person_it_is_attached_to PASSED [ 65%]
+tests/test_extract.py::test_a_name_between_two_quotations_still_counts_as_near PASSED [ 66%]
+tests/test_extract.py::test_a_title_at_another_organisation_is_rejected PASSED [ 66%]
+tests/test_extract.py::test_organisation_relation PASSED                 [ 67%]
+tests/test_extract.py::test_an_effective_date_counts_only_if_the_document_states_it_in_full PASSED [ 68%]
+tests/test_extract.py::test_a_date_the_model_completed_is_dropped_and_logged PASSED [ 69%]
+tests/test_extract.py::test_a_date_found_elsewhere_in_a_long_document_does_not_count PASSED [ 70%]
+tests/test_extract.py::test_a_role_claim_never_carries_a_date_even_when_the_page_states_one PASSED [ 71%]
+tests/test_extract.py::test_a_change_still_to_come_is_marked_pending_and_leaving_the_company_is_company_scoped PASSED [ 72%]
+tests/test_extract.py::test_short_documents_are_sent_whole_and_long_ones_by_relevance PASSED [ 73%]
+tests/test_extract.py::test_extraction_version_changes_with_prompt_schema_or_model PASSED [ 74%]
+tests/test_extract.py::test_cached_answer_from_either_model_is_reused_and_checked PASSED [ 75%]
+tests/test_extract.py::test_a_document_about_a_namesake_yields_nothing PASSED [ 76%]
+tests/test_extract.py::test_title_in_one_unit_of_the_company_is_not_the_company_wide_office PASSED [ 77%]
+tests/test_extract.py::test_markers_in_a_page_cannot_close_the_document_block PASSED [ 78%]
+tests/test_extract.py::test_store_document_replaces_older_claims_of_that_document_only PASSED [ 79%]
+tests/test_extract.py::test_the_same_fact_twice_in_one_document_is_stored_once PASSED [ 80%]
+tests/test_extract.py::test_people_are_merged_by_normalized_name PASSED  [ 81%]
+tests/test_extract.py::test_nicknames_merge_only_with_the_same_role_and_near_names_are_flagged PASSED [ 82%]
+tests/test_extract.py::test_effective_date_is_stored_apart_from_the_publication_date PASSED [ 83%]
+tests/test_extract.py::test_a_database_made_before_m3_gets_the_new_columns PASSED [ 84%]
+tests/test_extract.py::test_hidden_text_behaviour_of_the_cleaner_is_known PASSED [ 85%]
+tests/test_pipeline.py::test_run_extracts_checks_stores_and_resolves PASSED [ 86%]
+tests/test_pipeline.py::test_every_stored_claim_passes_the_evidence_check_again PASSED [ 87%]
+tests/test_pipeline.py::test_a_second_run_repeats_no_extraction PASSED   [ 88%]
+tests/test_pipeline.py::test_changed_prompt_re_extracts_and_leaves_no_claim_of_the_old_version PASSED [ 89%]
+tests/test_pipeline.py::test_changed_checks_re_process_documents_without_any_model_call PASSED [ 90%]
+tests/test_pipeline.py::test_llm_call_limit_stops_extraction_and_the_run_can_resume PASSED [ 91%]
+tests/test_pipeline.py::test_without_a_model_key_the_run_says_no_people_could_be_extracted PASSED [ 92%]
+tests/test_pipeline.py::test_second_search_round_runs_only_when_too_little_was_found PASSED [ 93%]
+tests/test_pipeline.py::test_second_search_round_is_skipped_when_a_ceo_and_three_leaders_are_found PASSED [ 94%]
+tests/test_pipeline.py::test_a_third_party_profile_page_cannot_make_a_role_current PASSED [ 95%]
+tests/test_pipeline.py::test_an_unverified_role_is_never_counted_or_listed_as_a_current_leader PASSED [ 96%]
+tests/test_evals.py::test_titles_match_by_role_or_by_the_labels_words PASSED [ 97%]
+tests/test_evals.py::test_a_perfect_page_scores_full_marks PASSED        [ 98%]
+tests/test_evals.py::test_misses_extras_outsiders_and_wrong_details_are_each_reported PASSED [ 99%]
+tests/test_evals.py::test_labelled_fixtures_are_complete_and_consistent PASSED [100%]
+
+===================== 103 passed, 6 deselected in 18.67s ======================
+
+==============================================================================
+[2] Whole fast suite (no network, no keys)
+command:  uv run pytest -q
+exit code 0 (expected 0)  ->  PASS    30.1s
+------------------------------------------------------------------------------
+........................................................................ [ 25%]
+........................................................................ [ 50%]
+........................................................................ [ 75%]
+.......................................................................  [100%]
+287 passed, 13 deselected in 27.88s
+
+==============================================================================
+[3] Real model: extraction, planted instructions, directory page, resume, outage, invalid output
+command:  uv run pytest -v -m llm tests/test_extract.py tests/test_pipeline.py
+exit code 0 (expected 0)  ->  PASS    5469.9s
+------------------------------------------------------------------------------
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0 -- C:\dev\ExecTrace\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\dev\ExecTrace
+configfile: pyproject.toml
+plugins: anyio-4.16.0
+collecting ... collected 44 items / 38 deselected / 6 selected
+
+tests/test_extract.py::test_real_model_extracts_roles_dates_and_pending_changes PASSED [ 16%]
+tests/test_extract.py::test_real_model_does_not_follow_instructions_planted_in_a_page PASSED [ 33%]
+tests/test_extract.py::test_real_model_marks_a_third_party_directory_page PASSED [ 50%]
+tests/test_pipeline.py::test_real_run_stopped_by_its_limit_resumes_without_repeating_work PASSED [ 66%]
+tests/test_pipeline.py::test_real_provider_outage_stops_the_run_cleanly_and_keeps_the_data PASSED [ 83%]
+tests/test_pipeline.py::test_real_output_that_fails_validation_is_retried_once_then_the_document_is_skipped PASSED [100%]
+
+================ 6 passed, 38 deselected in 5468.02s (1:31:08) ================
+
+==============================================================================
+[4] Extraction accuracy on five hand-labelled real pages
+command:  uv run leadership eval
+exit code 0 (expected 0)  ->  PASS    2.4s
+------------------------------------------------------------------------------
+Extraction accuracy on 5 hand-labelled pages (labelled 2026-11-13)
+Models: openai/gpt-oss-120b, gpt-5.4-mini-2026-03-17
+
+campfire-customer-cfo.txt
+    expected 1, found 0, matched 0; 1 refused by the checks; 0 model call(s)
+    MISSED: John Glasgow / CEO
+campfire-series-b.txt
+    expected 1, found 1, matched 1; 0 refused by the checks; 0 model call(s)
+robinhood-pinner-cto.txt
+    expected 2, found 2, matched 2; 0 refused by the checks; 0 model call(s)
+robinhood-howard-coo.txt
+    expected 3, found 2, matched 2; 0 refused by the checks; 0 model call(s)
+    MISSED: Vlad Tenev / CEO
+robinhood-8k-accounting-officer.txt
+    expected 4, found 4, matched 4; 2 refused by the checks; 0 model call(s)
+
+Pairs: 11 expected, 9 found, 9 matched
+Precision 100%   Recall 82%
+People from another organisation stored as leaders: 0
+Labelled claim types and effective dates that came out wrong: 0
+
+This measures five pages, not the whole pipeline. Recall is against the labels only.
+
+==============================================================================
+[5] Campfire: collect and extract (pages from the cache, real model)
+command:  uv run leadership collect https://meetcampfire.com/
+exit code 0 (expected 0)  ->  PASS    6.5s
+------------------------------------------------------------------------------
+
+Company:  Campfire
+Run:      27    Status: complete
+  - run 27 (new); company name from the site: Campfire
+  - company site: 270 links found, 82 shortlisted, 5 chosen
+  - SEC EDGAR: no SEC registrant named 'Campfire'
+  - Wikipedia: skipped: WIKIPEDIA_USER_AGENT is not set in .env
+  - web search: 20 results, 12 usable, 7 about this company and added
+  - search round 2: not needed (a current CEO and 3 current leaders found; 1 more people are unverified and not counted)
+
+Usage against limits
+  pages              0 of 40
+  search_queries     0 of 25
+  llm_calls          0 of 120
+  pages failed       0
+  pages skipped      0   (refused, robots.txt, or not verified as this company)
+  network calls      0   (this process; 0 means all from cache)
+
+Extraction: 16 claims stored about 4 people; 5 rejected by the checks this run; 0 documents skipped
+Current leaders: 3. Unverified, not counted as current: 1
+
+Leadership found (C-level, VP, Head)
+  current    John Glasgow            CEO & Founder                                 company_site  2026-11-13 
+  current    Erik Leavell            Head of Finance & Applied AI                  company_site  2026-11-13 
+  current    Chris McDonough         VP of Sales                                   news          2026-09-10 
+  unverified John Glasgow            CFO                                           news          2026-11-13 
+  unverified Paul Nichols            CTO                                           press_release 2025-02-06 
+
+Sources stored
+  tier 1  company_site  extracted   2
+  tier 2  press_release extracted   7
+  tier 3  news          extracted   3
+  tier 3  news          skipped     1
+
+Pages that could not be read (nothing from them is used)
+  tier 3  news          https://www.thecampfire.ai/about
+          skipped: not verified: this site has a name like the company's but the page never mentions campfire.ai or meetcampfire.com
+
+Run log: C:\dev\ExecTrace\logs\collect-meetcampfire.com-20261113T095238.jsonl
+
+==============================================================================
+[6] Campfire again: must make 0 model calls and repeat no extraction
+command:  uv run leadership collect https://meetcampfire.com/
+exit code 0 (expected 0)  ->  PASS    4.4s
+------------------------------------------------------------------------------
+
+Company:  Campfire
+Run:      28    Status: complete
+  - run 28 (new); company name from the site: Campfire
+  - company site: 270 links found, 82 shortlisted, 5 chosen
+  - SEC EDGAR: no SEC registrant named 'Campfire'
+  - Wikipedia: skipped: WIKIPEDIA_USER_AGENT is not set in .env
+  - web search: 20 results, 12 usable, 7 about this company and added
+  - search round 2: not needed (a current CEO and 3 current leaders found; 1 more people are unverified and not counted)
+
+Usage against limits
+  pages              0 of 40
+  search_queries     0 of 25
+  llm_calls          0 of 120
+  pages failed       0
+  pages skipped      0   (refused, robots.txt, or not verified as this company)
+  network calls      0   (this process; 0 means all from cache)
+
+Extraction: 16 claims stored about 4 people; 0 rejected by the checks this run; 0 documents skipped
+Current leaders: 3. Unverified, not counted as current: 1
+
+Leadership found (C-level, VP, Head)
+  current    John Glasgow            CEO & Founder                                 company_site  2026-11-13 
+  current    Erik Leavell            Head of Finance & Applied AI                  company_site  2026-11-13 
+  current    Chris McDonough         VP of Sales                                   news          2026-09-10 
+  unverified John Glasgow            CFO                                           news          2026-11-13 
+  unverified Paul Nichols            CTO                                           press_release 2025-02-06 
+
+Sources stored
+  tier 1  company_site  extracted   2
+  tier 2  press_release extracted   7
+  tier 3  news          extracted   3
+  tier 3  news          skipped     1
+
+Pages that could not be read (nothing from them is used)
+  tier 3  news          https://www.thecampfire.ai/about
+          skipped: not verified: this site has a name like the company's but the page never mentions campfire.ai or meetcampfire.com
+
+Run log: C:\dev\ExecTrace\logs\collect-meetcampfire.com-20261113T095245.jsonl
+
+==============================================================================
+[7] Robinhood: collect and extract (pages from the cache, real model)
+command:  uv run leadership collect https://robinhood.com/
+exit code 0 (expected 0)  ->  PASS    4.4s
+------------------------------------------------------------------------------
+
+Company:  Robinhood
+Run:      29    Status: complete
+  - run 29 (new); company name from the site: Robinhood
+  - company site: 523 links found, 120 shortlisted, 12 chosen
+  - SEC EDGAR: matched SEC registrant Robinhood Markets, Inc. (CIK 1783879); 5 filings selected
+  - Wikipedia: skipped: WIKIPEDIA_USER_AGENT is not set in .env
+  - web search: 20 results, 14 usable, 8 about this company and added
+  - search round 2: not needed (a current CEO and 5 current leaders found; 6 more people are unverified and not counted)
+
+Usage against limits
+  pages              0 of 40
+  search_queries     0 of 25
+  llm_calls          0 of 120
+  pages failed       0
+  pages skipped      0   (refused, robots.txt, or not verified as this company)
+  network calls      0   (this process; 0 means all from cache)
+
+Extraction: 67 claims stored about 25 people; 0 rejected by the checks this run; 0 documents skipped
+Current leaders: 5. Unverified, not counted as current: 6
+
+Leadership found (C-level, VP, Head)
+  current    Daniel Gallagher        Chief Legal Officer                           sec_filing    2026-04-22 
+  current    Daniel Gallagher        Chief Legal, Compliance, and Corporate Affai  sec_filing    2026-04-22 
+  current    Dara Bazzano            Chief Accounting Officer                      sec_filing    2026-06-26 
+  current    Shiv Verma              Chief Financial Officer                       sec_filing    2026-06-26 
+  current    Steven Quirk            Chief Brokerage Officer                       sec_filing    2026-04-22 
+  current    Vladimir Tenev          Chair and Chief Executive Officer             sec_filing    2026-04-22 
+  unverified Aparna Chennapragada    Chief Product Officer                         press_release 2021-03-17 
+  unverified Baiju Bhatt             Co-CEO                                        press_release 2020-05-05 
+  unverified Christina Smedley       Chief Marketing Officer                       press_release 2020-08-04 
+  unverified Gretchen Howard         Chief Operating Officer                       press_release 2020-08-04 
+  unverified Kelly Zigaitis          Chief Compliance Officer, Robinhood Securiti  press_release 2020-08-27 
+  unverified Norm Ashkenas           Chief Compliance Officer, Robinhood Financia  press_release 2020-08-27 
+  unverified Gretchen Howard         Vice President of Operations                  press_release 2019-06-24 
+  former     Anne Hoge               Chief Legal Officer                           press_release 2019-11-21 
+  former     Jason Warnick           Chief Financial Officer                       press_release 2020-08-04 
+  former     Jeffrey Pinner          Chief Technology Officer                      sec_filing    2026-04-22 
+  former     Shiv Verma              Senior Vice President of Finance and Strateg  sec_filing    2026-04-22 
+
+Sources stored
+  tier 1  company_site  extracted   2
+  tier 1  company_site  skipped     5
+  tier 1  sec_filing    extracted   5
+  tier 2  press_release extracted  12
+  tier 3  wikipedia     skipped     2
+
+Pages that could not be read (nothing from them is used)
+  tier 1  company_site  https://investors.robinhood.com/governance/board-of-directors  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/governance/leadership  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/deepak-rao  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/matt-billings  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/vlad-tenev  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 3  wikipedia     https://en.wikipedia.org/wiki/Robinhood_(company)
+          skipped: disallowed by robots.txt
+  tier 3  wikipedia     https://en.wikipedia.org/wiki/Vlad_Tenev
+          skipped: disallowed by robots.txt
+
+Run log: C:\dev\ExecTrace\logs\collect-robinhood.com-20261113T095249.jsonl
+
+==============================================================================
+[8] Robinhood again: must make 0 model calls and repeat no extraction
+command:  uv run leadership collect https://robinhood.com/
+exit code 0 (expected 0)  ->  PASS    4.6s
+------------------------------------------------------------------------------
+
+Company:  Robinhood
+Run:      30    Status: complete
+  - run 30 (new); company name from the site: Robinhood
+  - company site: 523 links found, 120 shortlisted, 12 chosen
+  - SEC EDGAR: matched SEC registrant Robinhood Markets, Inc. (CIK 1783879); 5 filings selected
+  - Wikipedia: skipped: WIKIPEDIA_USER_AGENT is not set in .env
+  - web search: 20 results, 14 usable, 8 about this company and added
+  - search round 2: not needed (a current CEO and 5 current leaders found; 6 more people are unverified and not counted)
+
+Usage against limits
+  pages              0 of 40
+  search_queries     0 of 25
+  llm_calls          0 of 120
+  pages failed       0
+  pages skipped      0   (refused, robots.txt, or not verified as this company)
+  network calls      0   (this process; 0 means all from cache)
+
+Extraction: 67 claims stored about 25 people; 0 rejected by the checks this run; 0 documents skipped
+Current leaders: 5. Unverified, not counted as current: 6
+
+Leadership found (C-level, VP, Head)
+  current    Daniel Gallagher        Chief Legal Officer                           sec_filing    2026-04-22 
+  current    Daniel Gallagher        Chief Legal, Compliance, and Corporate Affai  sec_filing    2026-04-22 
+  current    Dara Bazzano            Chief Accounting Officer                      sec_filing    2026-06-26 
+  current    Shiv Verma              Chief Financial Officer                       sec_filing    2026-06-26 
+  current    Steven Quirk            Chief Brokerage Officer                       sec_filing    2026-04-22 
+  current    Vladimir Tenev          Chair and Chief Executive Officer             sec_filing    2026-04-22 
+  unverified Aparna Chennapragada    Chief Product Officer                         press_release 2021-03-17 
+  unverified Baiju Bhatt             Co-CEO                                        press_release 2020-05-05 
+  unverified Christina Smedley       Chief Marketing Officer                       press_release 2020-08-04 
+  unverified Gretchen Howard         Chief Operating Officer                       press_release 2020-08-04 
+  unverified Kelly Zigaitis          Chief Compliance Officer, Robinhood Securiti  press_release 2020-08-27 
+  unverified Norm Ashkenas           Chief Compliance Officer, Robinhood Financia  press_release 2020-08-27 
+  unverified Gretchen Howard         Vice President of Operations                  press_release 2019-06-24 
+  former     Anne Hoge               Chief Legal Officer                           press_release 2019-11-21 
+  former     Jason Warnick           Chief Financial Officer                       press_release 2020-08-04 
+  former     Jeffrey Pinner          Chief Technology Officer                      sec_filing    2026-04-22 
+  former     Shiv Verma              Senior Vice President of Finance and Strateg  sec_filing    2026-04-22 
+
+Sources stored
+  tier 1  company_site  extracted   2
+  tier 1  company_site  skipped     5
+  tier 1  sec_filing    extracted   5
+  tier 2  press_release extracted  12
+  tier 3  wikipedia     skipped     2
+
+Pages that could not be read (nothing from them is used)
+  tier 1  company_site  https://investors.robinhood.com/governance/board-of-directors  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/governance/leadership  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/deepak-rao  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/matt-billings  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/vlad-tenev  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 3  wikipedia     https://en.wikipedia.org/wiki/Robinhood_(company)
+          skipped: disallowed by robots.txt
+  tier 3  wikipedia     https://en.wikipedia.org/wiki/Vlad_Tenev
+          skipped: disallowed by robots.txt
+
+Run log: C:\dev\ExecTrace\logs\collect-robinhood.com-20261113T095254.jsonl
+
+==============================================================================
+[9] Campfire: leaders with every claim and its evidence
+command:  uv run python tools/show_people.py meetcampfire.com
+exit code 0 (expected 0)  ->  PASS    2.4s
+------------------------------------------------------------------------------
+Company: Campfire (meetcampfire.com)    leaders: C-level, VP, Head: 5
+
+CURRENT    John Glasgow  |  CEO & Founder
+    level c_level, department other, single-holder role CEO, employment current
+    decided by rule4_listed_on_company_page; first seen 2025-02-06, last seen 2026-11-13, 7 source(s)
+      - role: "CEO & Founder"  tier 1 company_site [other], as of 2026-11-13 (retrieved), no effective date
+        "John Glasgow CEO & Founder, Campfire"
+        https://campfire.ai/basecamp
+      - role: "Founder & CEO"  tier 2 press_release [official], as of 2025-10-15 (published), no effective date
+        "— John Glasgow Founder & CEO, Campfire"
+        https://campfire.ai/blog/campfire-65-million-series-b-co-led-by-accel-and-ribbit
+      - role: "Founder & CEO"  tier 2 press_release [official], as of 2025-08-27 (published), no effective date
+        "— John Glasgow Founder & CEO, Campfire"
+        https://campfire.ai/blog/campfire-raises-35m-series-a-from-accel
+      - role: "CEO"  tier 2 press_release [other], as of 2025-02-21 (published), no effective date
+        "John Glasgow is the CEO and Founder of Campfire, the modern accounting software for tech companies."
+        https://campfire.ai/blog/from-cpa-to-cfo-ron-wangerin-cfo-trust-and-will
+      - role: "CEO and Founder"  tier 2 press_release [official], as of 2025-02-06 (published), no effective date
+        ""Our engineering team found a lot of value in Anthropic's ‘cookbook’ to build AI into our product," said John Glasgow, CEO and Founder of Campfire."
+        https://campfire.ai/blog/campfire-accelerates-accounting-with-claude
+      - role: "CEO"  tier 3 news [article], as of 2026-11-13 (retrieved), no effective date
+        "John Glasgow, founder and CEO (and still CFO) of Campfire, shares what it's really like to raise over $100M while simultaneously running sales, managing product, and closing your own books."
+        https://aircfo.com/resources/funded-how-campfire-raised-100m-while-doubling-revenue-for-6-straight-quarters-jo
+      - role: "CEO"  tier 3 news [article], as of 2026-11-13 (retrieved), no effective date
+        "John GlasgowFounderCEO / Co-founder of Campfire, the modern accounting platform for startups and mid-size tech companies."
+        https://www.ycombinator.com/companies/campfire-2
+
+CURRENT    Erik Leavell  |  Head of Finance & Applied AI
+    level head, department finance, single-holder role None, employment current
+    decided by rule4_listed_on_company_page; first seen 2026-11-13, last seen 2026-11-13, 1 source(s)
+      - role: "Head of Finance & Applied AI"  tier 1 company_site [other], as of 2026-11-13 (retrieved), no effective date
+        "Erik Leavell Head of Finance & Applied AI, Campfire"
+        https://campfire.ai/basecamp
+
+CURRENT    Chris McDonough  |  VP of Sales
+    level vp, department sales, single-holder role None, employment current
+    decided by rule5_recent_reliable_source; first seen 2026-09-10, last seen 2026-09-10, 1 source(s)
+      - role: "VP of Sales"  tier 3 news [article], as of 2026-09-10 (published), no effective date
+        "The VP of Sales at Campfire joins Sophie Buonassisi on GTMnow to break down what he learned riding hypergrowth over and over"
+        https://thegtmnewsletter.substack.com/p/gtm-205-ai-native-sales-organization-chris-mcdonough-campfire
+
+UNVERIFIED John Glasgow  |  CFO
+    level c_level, department other, single-holder role CFO, employment current
+    decided by rule6_stale_or_weak_evidence; first seen 2026-11-13, last seen 2026-11-13, 1 source(s)
+      - role: "CFO"  tier 3 news [article], as of 2026-11-13 (retrieved), no effective date
+        "John Glasgow, founder and CEO (and still CFO) of Campfire, shares what it's really like to raise over $100M while simultaneously running sales, managing product, and closing your own books."
+        https://aircfo.com/resources/funded-how-campfire-raised-100m-while-doubling-revenue-for-6-straight-quarters-jo
+
+UNVERIFIED Paul Nichols  |  CTO
+    level c_level, department engineering, single-holder role CTO, employment unknown
+    decided by rule6_stale_or_weak_evidence; first seen 2025-02-06, last seen 2025-02-06, 1 source(s)
+      - role: "CTO"  tier 2 press_release [official], as of 2025-02-06 (published), no effective date
+        "The engineering team at Campfire, led by CTO Paul Nichols, leveraged Claude's financial "recipes" API framework for rapid deployment."
+        https://campfire.ai/blog/campfire-accelerates-accounting-with-claude
+
+Totals for Campfire: 4 people, 16 claims; roles by status: 4 current, 4 unverified
+
+==============================================================================
+[10] Robinhood: leaders with every claim and its evidence
+command:  uv run python tools/show_people.py robinhood.com
+exit code 0 (expected 0)  ->  PASS    2.4s
+------------------------------------------------------------------------------
+Company: Robinhood (robinhood.com)    leaders: C-level, VP, Head: 17
+
+CURRENT    Daniel Gallagher  |  Chief Legal Officer
+    level c_level, department legal, single-holder role CLO, employment current
+    decided by rule5_recent_reliable_source; first seen 2020-08-04, last seen 2026-04-22, 3 source(s)
+      - role: "Chief Legal Officer"  tier 1 sec_filing [official], as of 2026-04-22 (published), no effective date
+        "and our Chief Legal Officer since May 2020"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+      - role: "Chief Legal Officer"  tier 2 press_release [official], as of 2020-08-04 (published), no effective date
+        "Chief Legal Officer Dan Gallagher"
+        https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer
+      - appointment: "Chief Legal Officer"  tier 2 press_release [official], as of 2020-05-05 (published), future, no date
+        "Today, we’re thrilled to announce that Dan Gallagher will be joining Robinhood as Chief Legal Officer."
+        https://robinhood.com/newsroom/dan-gallagher-robinhood-board-member-and-former-sec-commissioner-joins-robinhoo
+
+CURRENT    Daniel Gallagher  |  Chief Legal, Compliance, and Corporate Affairs Officer
+    level c_level, department legal, single-holder role Chief Legal Compliance and Corporate Affairs Officer, employment current
+    decided by rule5_recent_reliable_source; first seen 2026-02-19, last seen 2026-04-22, 2 source(s)
+      - role: "Chief Legal, Compliance, and Corporate Affairs Officer"  tier 1 sec_filing [official], as of 2026-04-22 (published), no effective date
+        "Daniel Gallagher | | | 53 | | | Chief Legal, Compliance, and Corporate Affairs Officer | |"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+      - role: "Chief Legal, Compliance and Corporate Affairs Officer"  tier 2 press_release [official], as of 2026-02-19 (published), no effective date
+        "“One of our values at Robinhood is first-principles thinking—using data, empirical evidence, and experimentation to guide decisions and deliver products aligned with our mission,” said Dan Gallagher, Chief Legal, Complia"
+        https://robinhood.com/newsroom/robinhood-welcomes-dr-naomi-boyd-as-chief-economic-advisor
+
+CURRENT    Dara Bazzano  |  Chief Accounting Officer
+    level c_level, department finance, single-holder role Chief Accounting Officer, employment current
+    decided by rule5_recent_reliable_source; first seen 2026-06-26, last seen 2026-06-26, 1 source(s)
+      - role: "Chief Accounting Officer"  tier 1 sec_filing [official], as of 2026-06-26 (published), no effective date
+        "Ms. Bazzano, age 58, has been the Company’s Chief Accounting Officer since April 2026 and has responsibilities for the Company’s accounting, tax, financial operations, financial reporting, and internal control functions."
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm
+
+CURRENT    Shiv Verma  |  Chief Financial Officer
+    level c_level, department finance, single-holder role CFO, employment current
+    decided by rule5_recent_reliable_source; first seen 2026-02-06, last seen 2026-06-26, 5 source(s)
+      - role: "Chief Financial Officer"  tier 1 sec_filing [official], as of 2026-06-26 (published), no effective date
+        "Mr. Verma continues to serve as the Company’s CFO and principal financial officer."
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm
+      - role: "Chief Financial Officer"  tier 1 sec_filing [official], as of 2026-05-08 (published), no effective date
+        "Title: Chief Financial Officer"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000065/hood-20260507.htm
+      - role: "Chief Financial Officer"  tier 1 sec_filing [official], as of 2026-04-22 (published), no effective date
+        "Shiv Verma | | | 41 | | | Chief Financial Officer | |"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+      - role: "Chief Financial Officer (Principal Financial Officer and Principal Accounting Officer)"  tier 1 sec_filing [official], as of 2026-02-18 (published), no effective date
+        "Title: | Chief Financial Officer (Principal Financial Officer and Principal Accounting Officer)"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000023/hood-20251231.htm
+      - appointment: "Chief Financial Officer"  tier 1 sec_filing [official], as of 2026-02-10 (published), effective 2026-02-06
+        "On February 6, 2026, the Company's Board of Directors (the “Board”) appointed Shiv Verma to be its Chief Financial Officer (“CFO”), effective as of the close of business on February 6, 2026"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm
+
+CURRENT    Steven Quirk  |  Chief Brokerage Officer
+    level c_level, department other, single-holder role Chief Brokerage Officer, employment current
+    decided by rule5_recent_reliable_source; first seen 2026-04-22, last seen 2026-04-22, 1 source(s)
+      - role: "Chief Brokerage Officer"  tier 1 sec_filing [official], as of 2026-04-22 (published), no effective date
+        "Steven Quirk | | | 61 | | | Chief Brokerage Officer | |"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+
+CURRENT    Vladimir Tenev  |  Chair and Chief Executive Officer
+    level c_level, department other, single-holder role CEO, employment current
+    decided by rule5_recent_reliable_source; first seen 2018-11-26, last seen 2026-04-22, 8 source(s)
+      - role: "Chair and Chief Executive Officer"  tier 1 sec_filing [official], as of 2026-04-22 (published), no effective date
+        "Vladimir Tenev | | | 39 | | | Chair and Chief Executive Officer | |"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+      - role: "Chief Executive Officer and President"  tier 1 sec_filing [official], as of 2026-02-18 (published), no effective date
+        "Title: | Chief Executive Officer and President"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000023/hood-20251231.htm
+      - role: "CEO and Co-Founder"  tier 2 press_release [official], as of 2024-08-12 (published), no effective date
+        "“Great engineering is critical to our ability to build cutting-edge financial products at Robinhood, which is why we’re excited to welcome Jeff as CTO,” said Vlad Tenev, CEO and Co-Founder of Robinhood."
+        https://robinhood.com/newsroom/robinhood-welcomes-jeff-pinner-as-chief-technology-officer
+      - role: "CEO"  tier 2 press_release [official], as of 2022-04-26 (published), no effective date
+        "Robinhood CEO Vlad Tenev shared the below to Robinhood employees following a company-wide meeting to discuss the changes."
+        https://robinhood.com/newsroom/a-message-from-our-ceo-and-co-founder-vlad-tenev
+      - role: "CEO and Co-Founder"  tier 2 press_release [official], as of 2021-03-17 (published), no effective date
+        "said Vlad Tenev, CEO and Co-Founder of Robinhood."
+        https://robinhood.com/newsroom/robinhood-welcomes-aparna-chennapragada-as-first-chief-product-officer
+      - role: "Co-CEO"  tier 2 press_release [official], as of 2020-05-05 (published), no effective date
+        "which includes Co-Founders and Co-CEOs Vlad Tenev and Baiju Bhatt"
+        https://robinhood.com/newsroom/dan-gallagher-robinhood-board-member-and-former-sec-commissioner-joins-robinhoo
+      - role: "Co-Founder and Co-CEO"  tier 2 press_release [official], as of 2019-11-21 (published), no effective date
+        "Anne will serve on our executive leadership team, which includes Co-Founders and Co-CEOs Vlad Tenev and Baiju Bhatt, Chief Financial Officer Jason Warnick, and Chief Operating Officer Gretchen Howard."
+        https://robinhood.com/newsroom/robinhood-welcomes-anne-hoge-as-chief-legal-officer
+      - role: "Co-Founder and Co-CEO"  tier 2 press_release [official], as of 2018-11-26 (published), no effective date
+        "reporting to Co-Founder and Co-CEO Vlad Tenev."
+        https://robinhood.com/newsroom/jason-warnick-joins-robinhood-as-chief-financial-officer
+
+UNVERIFIED Aparna Chennapragada  |  Chief Product Officer
+    level c_level, department product, single-holder role CPO, employment unknown
+    decided by rule6_stale_or_weak_evidence; first seen 2021-03-17, last seen 2021-03-17, 1 source(s)
+      - appointment: "Chief Product Officer"  tier 2 press_release [official], as of 2021-03-17 (published), no effective date
+        "Aparna Chennapragada is joining Robinhood as our first Chief Product Officer overseeing all of product, design and research."
+        https://robinhood.com/newsroom/robinhood-welcomes-aparna-chennapragada-as-first-chief-product-officer
+
+UNVERIFIED Baiju Bhatt  |  Co-CEO
+    level c_level, department other, single-holder role CEO, employment current
+    decided by rule6_stale_or_weak_evidence; first seen 2019-11-21, last seen 2020-05-05, 2 source(s)
+      - role: "Co-CEO"  tier 2 press_release [official], as of 2020-05-05 (published), no effective date
+        "which includes Co-Founders and Co-CEOs Vlad Tenev and Baiju Bhatt"
+        https://robinhood.com/newsroom/dan-gallagher-robinhood-board-member-and-former-sec-commissioner-joins-robinhoo
+      - role: "Co-Founder and Co-CEO"  tier 2 press_release [official], as of 2019-11-21 (published), no effective date
+        "Anne will serve on our executive leadership team, which includes Co-Founders and Co-CEOs Vlad Tenev and Baiju Bhatt, Chief Financial Officer Jason Warnick, and Chief Operating Officer Gretchen Howard."
+        https://robinhood.com/newsroom/robinhood-welcomes-anne-hoge-as-chief-legal-officer
+
+UNVERIFIED Christina Smedley  |  Chief Marketing Officer
+    level c_level, department marketing, single-holder role CMO, employment unknown
+    decided by rule6_stale_or_weak_evidence; first seen 2020-08-04, last seen 2020-08-04, 1 source(s)
+      - appointment: "Chief Marketing Officer"  tier 2 press_release [official], as of 2020-08-04 (published), future, no date
+        "Christina Smedley will join Robinhood as Chief Marketing Officer!"
+        https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer
+      - role: "Chief Marketing Officer"  tier 2 press_release [official], as of 2020-08-04 (published), no effective date
+        "said Christina Smedley, Chief Marketing Officer at Robinhood."
+        https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer
+
+UNVERIFIED Gretchen Howard  |  Chief Operating Officer
+    level c_level, department operations, single-holder role COO, employment unknown
+    decided by rule6_stale_or_weak_evidence; first seen 2019-06-24, last seen 2020-08-04, 4 source(s)
+      - role: "Chief Operating Officer"  tier 2 press_release [official], as of 2020-08-04 (published), no effective date
+        "Chief Operating Officer Gretchen Howard"
+        https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer
+      - role: "Chief Operating Officer"  tier 2 press_release [official], as of 2020-05-05 (published), no effective date
+        "which includes Co-Founders and Co-CEOs Vlad Tenev and Baiju Bhatt, Chief Operating Officer Gretchen Howard, and Chief Financial Officer Jason Warnick."
+        https://robinhood.com/newsroom/dan-gallagher-robinhood-board-member-and-former-sec-commissioner-joins-robinhoo
+      - role: "Chief Operating Officer"  tier 2 press_release [official], as of 2019-11-21 (published), no effective date
+        "Anne will serve on our executive leadership team, which includes Co-Founders and Co-CEOs Vlad Tenev and Baiju Bhatt, Chief Financial Officer Jason Warnick, and Chief Operating Officer Gretchen Howard."
+        https://robinhood.com/newsroom/robinhood-welcomes-anne-hoge-as-chief-legal-officer
+      - appointment: "Chief Operating Officer"  tier 2 press_release [official], as of 2019-06-24 (published), no effective date
+        "Gretchen Howard has been elevated to Chief Operating Officer at Robinhood."
+        https://robinhood.com/newsroom/gretchen-howard-elevated-to-chief-operating-officer
+
+UNVERIFIED Kelly Zigaitis  |  Chief Compliance Officer, Robinhood Securities
+    level c_level, department legal, single-holder role None, employment unknown
+    decided by rule6_stale_or_weak_evidence; first seen 2020-08-27, last seen 2020-08-27, 1 source(s)
+      - appointment: "Chief Compliance Officer, Robinhood Securities"  tier 2 press_release [official], as of 2020-08-27 (published), no effective date
+        "Kelly Zigaitis will serve as Chief Compliance Officer for Robinhood Securities."
+        https://robinhood.com/newsroom/robinhood-appoints-norm-ashkenas-and-kelly-zigaitis-as-chief-compliance-officer
+      - role: "Chief Compliance Officer, Robinhood Securities"  tier 2 press_release [official], as of 2020-08-27 (published), no effective date
+        "said Kelly Zigaitis, Chief Compliance Officer for Robinhood Securities."
+        https://robinhood.com/newsroom/robinhood-appoints-norm-ashkenas-and-kelly-zigaitis-as-chief-compliance-officer
+
+UNVERIFIED Norm Ashkenas  |  Chief Compliance Officer, Robinhood Financial
+    level c_level, department legal, single-holder role None, employment unknown
+    decided by rule6_stale_or_weak_evidence; first seen 2020-08-27, last seen 2020-08-27, 1 source(s)
+      - appointment: "Chief Compliance Officer, Robinhood Financial"  tier 2 press_release [official], as of 2020-08-27 (published), future, no date
+        "Norm Ashkenas will be joining as Chief Compliance Officer for Robinhood Financial"
+        https://robinhood.com/newsroom/robinhood-appoints-norm-ashkenas-and-kelly-zigaitis-as-chief-compliance-officer
+      - role: "Chief Compliance Officer, Robinhood Financial"  tier 2 press_release [official], as of 2020-08-27 (published), no effective date
+        "said Norm Ashkenas, Chief Compliance Officer for Robinhood Financial."
+        https://robinhood.com/newsroom/robinhood-appoints-norm-ashkenas-and-kelly-zigaitis-as-chief-compliance-officer
+
+UNVERIFIED Gretchen Howard  |  Vice President of Operations
+    level vp, department operations, single-holder role None, employment unknown
+    decided by rule6_stale_or_weak_evidence; first seen 2018-11-29, last seen 2019-06-24, 2 source(s)
+      - appointment: "Vice President of Operations"  tier 2 press_release [official], as of 2019-06-24 (published), no effective date
+        "Since joining Robinhood in January as Vice President of Operations,"
+        https://robinhood.com/newsroom/gretchen-howard-elevated-to-chief-operating-officer
+      - appointment: "Vice President of Operations"  tier 2 press_release [official], as of 2018-11-29 (published), no effective date
+        "Gretchen Howard is joining us as Vice President of Operations."
+        https://www.robinhood.com/us/en/newsroom/gretchen-howard-joins-robinhood-as-vice-president-of-operations
+      - role: "VP of Operations"  tier 2 press_release [official], as of 2018-11-29 (published), no effective date
+        "Gretchen Howard, VP of Operations at Robinhood"
+        https://www.robinhood.com/us/en/newsroom/gretchen-howard-joins-robinhood-as-vice-president-of-operations
+
+FORMER     Anne Hoge  |  Chief Legal Officer
+    level c_level, department legal, single-holder role CLO, employment unknown
+    decided by rule3_successor_appointed; first seen 2019-11-21, last seen 2019-11-21, 1 source(s), end date not stated (reported by a source dated 2020-08-04)
+      - departure (company): "Chief Legal Officer"  tier 2 press_release [official], as of 2020-05-05 (published), future, no date
+        "Dan is replacing Anne Hoge, our current Chief Legal Officer, who is leaving Robinhood later this month"
+        https://robinhood.com/newsroom/dan-gallagher-robinhood-board-member-and-former-sec-commissioner-joins-robinhoo
+      - appointment: "Chief Legal Officer"  tier 2 press_release [official], as of 2019-11-21 (published), no effective date
+        "Anne Hoge has joined Robinhood as Chief Legal Officer, overseeing our entire legal team which includes all global legal functions."
+        https://robinhood.com/newsroom/robinhood-welcomes-anne-hoge-as-chief-legal-officer
+
+FORMER     Jason Warnick  |  Chief Financial Officer
+    level c_level, department finance, single-holder role CFO, employment unknown
+    decided by rule1_explicit_end; first seen 2018-11-26, last seen 2020-08-04, 4 source(s), end date not stated (reported by a source dated 2026-02-10)
+      - departure (role): "Chief Financial Officer"  tier 1 sec_filing [official], as of 2026-02-10 (published), no effective date
+        "Robinhood’s then-current CFO Jason Warnick has transitioned to an advisory role and will remain employed with the Company until September 1, 2026"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm
+      - role: "Chief Financial Officer"  tier 2 press_release [official], as of 2020-08-04 (published), no effective date
+        "Chief Financial Officer Jason Warnick"
+        https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer
+      - role: "Chief Financial Officer"  tier 2 press_release [official], as of 2020-05-05 (published), no effective date
+        "which includes Co-Founders and Co-CEOs Vlad Tenev and Baiju Bhatt, Chief Operating Officer Gretchen Howard, and Chief Financial Officer Jason Warnick."
+        https://robinhood.com/newsroom/dan-gallagher-robinhood-board-member-and-former-sec-commissioner-joins-robinhoo
+      - role: "Chief Financial Officer"  tier 2 press_release [official], as of 2019-11-21 (published), no effective date
+        "Anne will serve on our executive leadership team, which includes Co-Founders and Co-CEOs Vlad Tenev and Baiju Bhatt, Chief Financial Officer Jason Warnick, and Chief Operating Officer Gretchen Howard."
+        https://robinhood.com/newsroom/robinhood-welcomes-anne-hoge-as-chief-legal-officer
+      - appointment: "Chief Financial Officer"  tier 2 press_release [official], as of 2018-11-26 (published), no effective date
+        "We’re thrilled to welcome Jason Warnick as our Chief Financial Officer and member of the leadership team."
+        https://robinhood.com/newsroom/jason-warnick-joins-robinhood-as-chief-financial-officer
+
+FORMER     Jeffrey Pinner  |  Chief Technology Officer
+    level c_level, department engineering, single-holder role CTO, employment unknown
+    decided by rule1_explicit_end; first seen 2024-08-12, last seen 2026-04-22, 2 source(s), ended on 2026-05-07
+      - departure (role): "Chief Technology Officer"  tier 1 sec_filing [official], as of 2026-05-08 (published), effective 2026-05-07
+        "On May 7, 2026, Robinhood Markets, Inc. (the "Company") determined that Jeffrey Pinner, Chief Technology Officer, would be separating from his position, effective the same day."
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000065/hood-20260507.htm
+      - role: "Chief Technology Officer"  tier 1 sec_filing [official], as of 2026-04-22 (published), no effective date
+        "Jeffrey Pinner | | | 41 | | | Chief Technology Officer | |"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+      - appointment: "Chief Technology Officer (CTO)"  tier 2 press_release [official], as of 2024-08-12 (published), no effective date
+        "Jeff Pinner has joined Robinhood as Chief Technology Officer (CTO)."
+        https://robinhood.com/newsroom/robinhood-welcomes-jeff-pinner-as-chief-technology-officer
+
+FORMER     Shiv Verma  |  Senior Vice President of Finance and Strategy, and Treasurer
+    level vp, department finance, single-holder role None, employment current
+    decided by rule1_explicit_end; first seen 2026-02-10, last seen 2026-04-22, 0 source(s), end date not stated (reported by a source dated 2026-02-10)
+      - departure (role): "Senior Vice President of Finance and Strategy, and Treasurer"  tier 1 sec_filing [official], as of 2026-04-22 (published), no effective date
+        "Prior to his current position, Mr. Verma had been our Senior Vice President of Finance and Strategy, and Treasurer since 2018"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+      - departure (role): "Senior Vice President of Finance and Strategy"  tier 1 sec_filing [official], as of 2026-02-10 (published), no effective date
+        "Mr. Verma, age 40, has been the Company's Senior Vice President of Finance and Strategy, and Treasurer since 2018"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm
+
+Totals for Robinhood: 25 people, 67 claims; roles by status: 18 current, 7 former, 11 unverified
+
+==============================================================================
+[11] Campfire: claims the checks refused
+command:  uv run python tools/show_people.py meetcampfire.com --rejected
+exit code 0 (expected 0)  ->  PASS    2.3s
+------------------------------------------------------------------------------
+Rejected in collect-meetcampfire.com-20261113T095238.jsonl: 6
+  John Locke / CEO                                              the evidence quote is not in the document
+      https://campfire.ai/blog/campfire-raises-35m-series-a-from-accel
+  Glasgow / said Glasgow                                        the person is not named in full (given name and surname)
+      https://campfire.ai/blog/campfire-accelerates-accounting-with-claude
+  John / built                                                  the person is not named in full (given name and surname)
+      https://aircfo.com/resources/funded-how-campfire-raised-100m-while-doubling-revenue-for-6-straight-quarters-jo
+  Chris McDonough / building an AI-native sales org             the evidence quote is not in the document
+      https://thegtmnewsletter.substack.com/p/gtm-205-ai-native-sales-organization-chris-mcdonough-campfire
+  Chris McDonough / interim director                            the evidence quote is not about this person (their name is not near it)
+      https://thegtmnewsletter.substack.com/p/gtm-205-ai-native-sales-organization-chris-mcdonough-campfire
+  (whole document) / None                                       the model judged the document to be about another organisation
+      https://thegtmnewsletter.substack.com/p/gtm-205-ai-native-sales-organization-chris-mcdonough-campfire
+
+==============================================================================
+[12] Robinhood: claims the checks refused
+command:  uv run python tools/show_people.py robinhood.com --rejected
+exit code 0 (expected 0)  ->  PASS    2.4s
+------------------------------------------------------------------------------
+Rejected in collect-robinhood.com-20261113T025454.jsonl: 9
+  Ms. Bazzano / principal accounting officer                    the person is not named in full (given name and surname)
+      https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm
+  Ms. Bazzano / Chief Accounting Officer                        the person is not named in full (given name and surname)
+      https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm
+  Vlad Tenev / Co-Founder                                       the person's name is not in the document
+      https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+  Baiju Bhatt / Co-Founder                                      the evidence quote is not about this person (their name is not near it)
+      https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+  (whole document) / None                                       the model judged the document to be about another organisation
+      https://www.sec.gov/Archives/edgar/data/1783879/000178387926000023/hood-20251231.htm
+  Chief Executive Officer / Chief Executive Officer             the evidence quote is not in the document
+      https://www.sec.gov/Archives/edgar/data/1783879/000178387926000023/hood-20251231.htm
+  Chief Financial Officer / Chief Financial Officer             the evidence quote is not in the document
+      https://www.sec.gov/Archives/edgar/data/1783879/000178387926000023/hood-20251231.htm
+  Shiv Verma / Chief Financial Officer                          the evidence quote is not in the document
+      https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm
+  (whole document) / None                                       the model judged the document to be about another organisation
+      https://robinhood.com/newsroom/a-message-from-our-ceo-and-co-founder-vlad-tenev
+
+==============================================================================
+[13] Every stored claim re-checked against its saved page; every current role has support
+command:  uv run python tools/check_evidence.py
+exit code 0 (expected 0)  ->  PASS    20.6s
+------------------------------------------------------------------------------
+Campfire      16 claims re-checked, 0 failed; 4 current roles, 0 without a supporting claim; 2 extraction version(s) in use
+Robinhood     67 claims re-checked, 0 failed; 18 current roles, 0 without a supporting claim; 2 extraction version(s) in use
+Microsoft      0 claims re-checked, 0 failed; 0 current roles, 0 without a supporting claim; 0 extraction version(s) in use
+Adobe          0 claims re-checked, 0 failed; 0 current roles, 0 without a supporting claim; 0 extraction version(s) in use
+
+83 claims checked: 0 problems
+
+==============================================================================
+[14] M1 rules still hold: mutation check
+command:  uv run python tools/mutation_check.py
+exit code 0 (expected 0)  ->  PASS    0.9s
+------------------------------------------------------------------------------
+Unmodified rules: 0 of 45 cases fail (must be 0)
+  caught    A news-only departure ends the role (rule 2 removed)  ->  2 case(s) fail
+  caught    Old documents count as fresh (freshness window removed)  ->  4 case(s) fail
+  caught    Undated articles count as dated  ->  1 case(s) fail
+  caught    Leaving the company no longer ends the person's roles  ->  2 case(s) fail
+  caught    Single-holder conflicts are not detected (rule 7 removed)  ->  6 case(s) fail
+  caught    Co-CEOs shown on the company page are flagged as a conflict  ->  3 case(s) fail
+  caught    One 'Co-CEO' title is enough to clear the conflict for everyone  ->  3 case(s) fail
+  caught    A shared title in any source, not only the company page, clears the conflict  ->  1 case(s) fail
+  caught    Any title starting with 'co-' counts as a shared role  ->  1 case(s) fail
+  caught    An appointment ends a co-holder shown on the same page  ->  1 case(s) fail
+  caught    Succession is never detected (rule 3 removed)  ->  6 case(s) fail
+  caught    A live page listing no longer makes a role current (rule 4 removed)  ->  17 case(s) fail
+  caught    A future departure date is treated as already past  ->  2 case(s) fail
+  caught    A future appointment ends the current holder's role on the day it is announced  ->  1 case(s) fail
+  caught    An undated 'will become' appointment takes effect on the day it is published  ->  2 case(s) fail
+  caught    An undated appointment is never confirmed by later evidence  ->  2 case(s) fail
+  caught    An announced appointment is counted as a current role  ->  2 case(s) fail
+  caught    A stale, never-confirmed announcement still shows as announced  ->  1 case(s) fail
+  caught    An undated 'will step down' ends the role on the day it is published  ->  4 case(s) fail
+  caught    An undated departure keeps the role current for ever, however old it is  ->  2 case(s) fail
+  caught    An undated 'will leave the company' counts as having left  ->  1 case(s) fail
+  caught    A search snippet can report a departure  ->  1 case(s) fail
+  caught    A later re-appointment no longer cancels an earlier departure  ->  1 case(s) fail
+
+23 of 23 broken rules were caught by the worked cases
+
+==============================================================================
+[15] No key or contact address in any file that could be committed, or in the run logs
+command:  uv run python tools/scan_secrets.py
+exit code 0 (expected 0)  ->  PASS    0.8s
+------------------------------------------------------------------------------
+154 files scanned (62 that git would track, 92 run logs), 4 values from .env checked: 0 problems
+
+==============================================================================
+SUMMARY
+  [1] PASS  M3 tests: title and name rules, evidence checks, storage, the extraction stage, scoring
+  [2] PASS  Whole fast suite (no network, no keys)
+  [3] PASS  Real model: extraction, planted instructions, directory page, resume, outage, invalid output
+  [4] PASS  Extraction accuracy on five hand-labelled real pages
+  [5] PASS  Campfire: collect and extract (pages from the cache, real model)
+  [6] PASS  Campfire again: must make 0 model calls and repeat no extraction
+  [7] PASS  Robinhood: collect and extract (pages from the cache, real model)
+  [8] PASS  Robinhood again: must make 0 model calls and repeat no extraction
+  [9] PASS  Campfire: leaders with every claim and its evidence
+  [10] PASS  Robinhood: leaders with every claim and its evidence
+  [11] PASS  Campfire: claims the checks refused
+  [12] PASS  Robinhood: claims the checks refused
+  [13] PASS  Every stored claim re-checked against its saved page; every current role has support
+  [14] PASS  M1 rules still hold: mutation check
+  [15] PASS  No key or contact address in any file that could be committed, or in the run logs
+  15 of 15 steps as expected

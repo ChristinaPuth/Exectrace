@@ -178,3 +178,46 @@ def test_runs_table_keeps_status_reasons_and_counters(conn):
     assert row["status"] == "partial_failure"
     assert [r["code"] for r in json.loads(row["reasons"])] == ["budget_exhausted", "partial_failure"]
     assert json.loads(row["counters"])["pages_fetched"] == 40
+
+
+def test_only_current_roles_appear_among_current_leaders(conn):
+    """Unverified, former and announced roles are never returned as current leadership."""
+    _seed(conn)
+    _claim(conn, 3, 2, "role", title="Chief Operating Officer", canonical="COO",
+           as_of="2020-08-04", basis="published")                   # an old press release only
+    conn.commit()
+    rebuild_roles(conn, 1, TODAY)
+    statuses = dict(conn.execute("SELECT title, status FROM leadership WHERE person = 'Alan Turing'"))
+    assert statuses["Chief Operating Officer"] == "unverified"
+    listed = [tuple(r) for r in conn.execute("SELECT person, status FROM current_leadership")]
+    assert listed == [("Ada Lovelace", "current")]
+    assert conn.execute("SELECT count(*) FROM current_leadership WHERE status != 'current'").fetchone()[0] == 0
+
+
+def test_end_date_and_report_date_are_separate_columns_in_the_view(conn):
+    _seed(conn)                                                     # Grace: departure effective 2026-09-30
+    _claim(conn, 3, 2, "role", title="CTO", canonical="CTO", as_of="2025-01-10", basis="published")
+    _claim(conn, 3, 2, "departure", title="CTO", canonical="CTO", scope="role",
+           as_of="2026-02-10", basis="published")                   # no effective date stated
+    conn.commit()
+    rebuild_roles(conn, 1, TODAY)
+    rows = {r["person"]: (r["status"], r["ended_on"], r["end_reported_on"])
+            for r in conn.execute("SELECT * FROM leadership WHERE canonical_role IN ('CFO', 'CTO')")}
+    assert rows["Grace Hopper"] == ("former", "2026-09-30", None)
+    assert rows["Alan Turing"] == ("former", None, "2026-02-10")    # the filing date is not shown as the end
+
+
+def test_views_are_rebuilt_for_a_database_made_by_an_older_version(tmp_path):
+    import sqlite3
+
+    from leadership.db import connect
+    path = tmp_path / "old.db"
+    connect(path).close()
+    raw = sqlite3.connect(path)
+    raw.executescript("DROP VIEW current_leadership; DROP VIEW leadership; "
+                      "CREATE VIEW leadership AS SELECT 1 AS old_shape;")
+    raw.close()
+    conn = connect(path)
+    columns = [d[0] for d in conn.execute("SELECT * FROM leadership").description]
+    assert "end_reported_on" in columns and "old_shape" not in columns
+    conn.close()

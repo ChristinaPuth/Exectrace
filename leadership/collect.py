@@ -1,9 +1,8 @@
-"""One collection run: discover sources, fetch them, record what happened.
+"""One collection run: discover sources, fetch them, extract claims, rebuild roles.
 
-SPEC sections 3.1, 3.2, 3.10 and 3.11. This is a fixed workflow, not an agent:
-the only model decision is which of the site's own links to read.
-
-Extraction of people from the fetched pages is the next stage (M3).
+SPEC sections 3.1 to 3.6, 3.10 and 3.11. This is a fixed workflow, not an
+agent. The model picks links, drops namesake search results and extracts
+claims; it never fetches, never decides a status and never chooses the next step.
 """
 
 from __future__ import annotations
@@ -11,7 +10,7 @@ from __future__ import annotations
 import json
 import sqlite3
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -19,15 +18,17 @@ import httpx
 
 from .cache import FileCache
 from .config import ROOT, Config, ConfigError, configured_providers
-from .db import connect
+from .db import connect, drop_people_without_claims, rebuild_roles, store_document
+from .extract import (Malformed, OverBudget, ProviderDown, Target, code_version, extract_document,
+                      processing_version)
 from .llm import LLM
 from .runlog import RunLog
 from .sources import edgar, wikipedia
-from .sources.search import Search, SearchError, round_one_queries
+from .sources.search import Search, SearchError, round_one_queries, round_two_queries
 from .sources.site import (NEWS_PATH, HomepageError, discover, pick_links, pick_results, registrable,
                            unverified_reason,
                            shortlist)
-from .sources.web import Fetcher, content_hash, find_published, find_title
+from .sources.web import Fetcher, clean_text, content_hash, find_published, find_title
 
 RESUMABLE = ("interrupted", "partial_failure", "budget_exhausted")
 PRECEDENCE = ("partial_failure", "budget_exhausted", "insufficient_data")
@@ -135,9 +136,13 @@ def _open_run(conn: sqlite3.Connection, company_id: int) -> tuple[int, dict, lis
     return cur.lastrowid, {}, [], "new"
 
 
+IN_SCOPE = ("c_level", "vp", "head")
+
+
 def collect(url: str, cfg: Config, *, refresh: bool = False, root: Path = ROOT,
-            transport: httpx.BaseTransport | None = None, sleep=None) -> RunResult:
-    """Run the discovery and fetch stages for one company."""
+            transport: httpx.BaseTransport | None = None, sleep=None,
+            extract: bool = True, today: date | None = None) -> RunResult:
+    """Run one company: discover, fetch, extract, resolve. `extract=False` stops after fetching."""
     domain = urlsplit(url if "://" in url else "https://" + url).netloc.lower().removeprefix("www.")
     if not domain or "." not in domain:
         raise ConfigError(f"'{url}' is not a company domain or URL.")
@@ -204,13 +209,11 @@ def collect(url: str, cfg: Config, *, refresh: bool = False, root: Path = ROOT,
         if wiki_url:
             plan.append(Planned(wiki_url, "wikipedia", 3, headers=wiki_headers))
 
-        if not search.available:
-            notes.append("web search: skipped, TAVILY_API_KEY is not set")
-        elif cfg.limits.max_search_rounds < 1:
-            notes.append("web search: skipped, max_search_rounds is 0")
-        else:
+        home_domain = registrable(urlsplit(site.home_url).netloc)
+
+        def search_for(queries: list[str], label: str) -> list[Planned]:
             results = []
-            for q in round_one_queries(site.name, registrable(urlsplit(site.home_url).netloc)):
+            for q in queries:
                 cached = search.cache.get(f"tavily|{search.max_results}|{q}") and not refresh
                 if not cached and not budget.take("search_queries", "discover"):
                     break
@@ -231,73 +234,216 @@ def collect(url: str, cfg: Config, *, refresh: bool = False, root: Path = ROOT,
                     counters["llm_calls"] += calls - 1
             else:
                 relevant = []
+            notes.append(f"{label}: {len(results)} results, {len(usable)} usable, "
+                         f"{len(relevant)} about this company and added")
             # The search provider's date is not used: for a profile page it is often
             # not a publication date at all. Only a date the page itself states counts.
-            for u in relevant:
-                plan.append(Planned(u, *classify(u, site.domains), from_search=True))
-            notes.append(f"web search: {len(results)} results, {len(usable)} usable, "
-                         f"{len(relevant)} about this company and added")
+            return [Planned(u, *classify(u, site.domains), from_search=True) for u in relevant]
+
+        if not search.available:
+            notes.append("web search: skipped, TAVILY_API_KEY is not set")
+        elif cfg.limits.max_search_rounds < 1:
+            notes.append("web search: skipped, max_search_rounds is 0")
+        else:
+            plan += search_for(round_one_queries(site.name, home_domain), "web search")
+            counters["search_rounds"] = max(counters.get("search_rounds", 0), 1)
         for problem in problems:
             add_reason(reasons, "partial_failure", "discover", problem)
             notes.append("degraded: " + problem)
+        reported = len(problems)
         counters["sources_found"] = len(plan)
         save_run()
 
         # --------------------------------------------------------------- fetch
-        for p in plan:
-            row = conn.execute("SELECT * FROM sources WHERE company_id = ? AND url = ?",
-                               (company_id, p.url)).fetchone()
-            if row and not refresh and row["stage"] in ("fetched", "extracted", "skipped"):
-                continue                            # done in an earlier run or before a resume
-            if row and row["stage"] == "failed" and row["attempts"] >= cfg.limits.max_source_attempts:
-                add_reason(reasons, "partial_failure", "fetch",
-                           f"gave up after {row['attempts']} attempts: {row['last_error']}", url=p.url)
-                continue
-            if not budget.take("pages", "fetch"):
-                break
-            page = fetcher.get(p.url, headers=p.headers)
-            if page.ok:
-                stage, error = "fetched", None
-                published = p.published_at
-                if not published and p.source_type in ("press_release", "news"):
-                    published = find_published(page.body)   # a page's own stated date only
-                digest, title = content_hash(page.body), find_title(page.body)
-                doubt = unverified_reason(p.url, page.body, site) if p.from_search else None
-                if doubt:                           # a namesake's site: kept as a record, never used
-                    stage, error, digest = "skipped", doubt, None
-                    counters["pages_skipped"] += 1
-                    log.event("verify", url=p.url, kept=False, reason=doubt)
-            else:
-                published, digest, title = p.published_at, None, None
-                error = page.error
-                refused = page.status in (401, 403)
-                if refused:
-                    error = f"the site refused automated access (HTTP {page.status})"
-                if refused or (error and "robots" in error):
-                    # A refusal is the site's decision, not a fault: never retried, never
-                    # bypassed. For the company's own pages and filings it is recorded as
-                    # a reason too, so the gap is visible; it does not change the status.
-                    stage = "skipped"
-                    counters["pages_skipped"] += 1
-                    if p.tier <= 2:
-                        add_reason(reasons, "access_refused", "fetch", error, url=p.url)
+        def fetch(planned: list[Planned]) -> None:
+            for p in planned:
+                row = conn.execute("SELECT * FROM sources WHERE company_id = ? AND url = ?",
+                                   (company_id, p.url)).fetchone()
+                if row and not refresh and row["stage"] in ("fetched", "extracted", "skipped"):
+                    continue                            # done in an earlier run or before a resume
+                if row and row["stage"] == "failed" and row["attempts"] >= cfg.limits.max_source_attempts:
+                    add_reason(reasons, "partial_failure", "fetch",
+                               f"gave up after {row['attempts']} attempts: {row['last_error']}", url=p.url)
+                    continue
+                if not budget.take("pages", "fetch"):
+                    break
+                page = fetcher.get(p.url, headers=p.headers)
+                if page.ok:
+                    stage, error = "fetched", None
+                    published = p.published_at
+                    if not published and p.source_type in ("press_release", "news"):
+                        published = find_published(page.body)   # a page's own stated date only
+                    digest, title = content_hash(page.body), find_title(page.body)
+                    doubt = unverified_reason(p.url, page.body, site) if p.from_search else None
+                    if doubt:                           # a namesake's site: kept as a record, never used
+                        stage, error, digest = "skipped", doubt, None
+                        counters["pages_skipped"] += 1
+                        log.event("verify", url=p.url, kept=False, reason=doubt)
                 else:
-                    stage = "failed"
-                    counters["pages_failed"] += 1
-                    add_reason(reasons, "partial_failure", "fetch", error, url=p.url)
-            # Saved immediately, one transaction per source, so a crash loses nothing.
-            conn.execute(
-                """INSERT INTO sources (company_id, url, source_type, tier, title, published_at,
-                       retrieved_at, content_hash, stage, attempts, last_error)
-                   VALUES (?,?,?,?,?,?,?,?,?,1,?)
-                   ON CONFLICT(company_id, url) DO UPDATE SET
-                       title = excluded.title, published_at = excluded.published_at,
-                       retrieved_at = excluded.retrieved_at, content_hash = excluded.content_hash,
-                       stage = excluded.stage, attempts = sources.attempts + 1,
-                       last_error = excluded.last_error""",
-                (company_id, p.url, p.source_type, p.tier, title, published,
-                 page.retrieved_at or _now(), digest, stage, error))
-            save_run()
+                    published, digest, title = p.published_at, None, None
+                    error = page.error
+                    refused = page.status in (401, 403)
+                    if refused:
+                        error = f"the site refused automated access (HTTP {page.status})"
+                    if refused or (error and "robots" in error):
+                        # A refusal is the site's decision, not a fault: never retried, never
+                        # bypassed. For the company's own pages and filings it is recorded as
+                        # a reason too, so the gap is visible; it does not change the status.
+                        stage = "skipped"
+                        counters["pages_skipped"] += 1
+                        if p.tier <= 2:
+                            add_reason(reasons, "access_refused", "fetch", error, url=p.url)
+                    else:
+                        stage = "failed"
+                        counters["pages_failed"] += 1
+                        add_reason(reasons, "partial_failure", "fetch", error, url=p.url)
+                # Saved immediately, one transaction per source, so a crash loses nothing.
+                conn.execute(
+                    """INSERT INTO sources (company_id, url, source_type, tier, title, published_at,
+                           retrieved_at, content_hash, stage, attempts, last_error)
+                       VALUES (?,?,?,?,?,?,?,?,?,1,?)
+                       ON CONFLICT(company_id, url) DO UPDATE SET
+                           title = excluded.title, published_at = excluded.published_at,
+                           retrieved_at = excluded.retrieved_at, content_hash = excluded.content_hash,
+                           stage = excluded.stage, attempts = sources.attempts + 1,
+                           last_error = excluded.last_error""",
+                    (company_id, p.url, p.source_type, p.tier, title, published,
+                     page.retrieved_at or _now(), digest, stage, error))
+                save_run()
+
+        fetch(plan)
+
+        # ------------------------------------------------------------- extract
+        today = today or date.today()
+        stopped: list[str] = []             # why extraction ended early, if it did
+
+        def extract_pending() -> None:
+            """Extract every fetched document not yet extracted by the current prompt and model."""
+            versions = {processing_version(model) for _, model in llm.chain}
+            target = Target(site.name, set(site.domains), site.description)
+            rows = conn.execute("SELECT * FROM sources WHERE company_id = ? AND stage IN "
+                                "('fetched', 'extracted') ORDER BY tier, id", (company_id,)).fetchall()
+            for row in rows:
+                if row["stage"] == "extracted" and row["extraction_version"] in versions:
+                    continue                        # done; a resume never repeats it
+                cached = fetcher.cache.get(row["url"])
+                if not cached or not cached.get("body"):
+                    log.event("extract", url=row["url"], skipped="the page is not in the cache")
+                    continue
+                try:
+                    found = extract_document(
+                        llm, target, clean_text(cached["body"]), source_type=row["source_type"],
+                        doc_date=row["published_at"], url=row["url"],
+                        max_chunks=cfg.limits.max_chunks_per_page,
+                        cache=FileCache(root / "cache" / "llm"), log=log,
+                        take_call=lambda: budget.take("llm_calls", "extract"))
+                except OverBudget:
+                    stopped.append("budget")
+                    return
+                except ProviderDown as e:
+                    add_reason(reasons, "partial_failure", "extract",
+                               f"extraction stopped: {e}. Documents already done are kept")
+                    stopped.append("provider")
+                    return
+                except Malformed as e:
+                    with conn:
+                        conn.execute("UPDATE sources SET stage = 'failed', last_error = ? WHERE id = ?",
+                                     ("extraction: the model's output was invalid twice", row["id"]))
+                    counters["documents_skipped"] = counters.get("documents_skipped", 0) + 1
+                    add_reason(reasons, "partial_failure", "extract",
+                               "the model's output was invalid twice; document skipped", url=row["url"])
+                    log.event("extract", url=row["url"], skipped=f"malformed output: {str(e)[:200]}")
+                    save_run()
+                    continue
+                # A third-party profile, directory or summary page is not original
+                # reporting: it drops to tier 4 and can never make a role current alone.
+                lowered = row["tier"] == 3 and found.page_kind == "profile_or_directory"
+                basis = "published" if row["published_at"] else "retrieved"
+                stored = store_document(
+                    conn, company_id, row["id"], found.accepted,
+                    version=(f"{min(found.versions)}+{code_version()}" if found.versions
+                             else min(versions)), page_kind=found.page_kind,
+                    as_of_date=(row["published_at"] or row["retrieved_at"])[:10], as_of_basis=basis,
+                    tier=4 if lowered else None)
+                counters["documents_extracted"] = counters.get("documents_extracted", 0) + 1
+                counters["claims_rejected"] = counters.get("claims_rejected", 0) + len(found.rejected)
+                log.event("extract", url=row["url"], claims=stored, rejected=len(found.rejected),
+                          page_kind=found.page_kind, about_target=found.about_target,
+                          tier_lowered=lowered, llm_calls=found.calls)
+                save_run()
+
+        def resolve_now() -> tuple[bool, int]:
+            """Rebuild roles from all claims. Returns (a current CEO exists, in-scope people)."""
+            drop_people_without_claims(conn, company_id)
+            rebuild_roles(conn, company_id, today, cfg.limits.freshness_window_months)
+            marks = ",".join("?" * len(IN_SCOPE))
+            ceo = conn.execute("SELECT count(*) FROM roles WHERE company_id = ? AND status = 'current' "
+                               "AND canonical_role = 'CEO'", (company_id,)).fetchone()[0] > 0
+            def leaders(status: str) -> int:
+                return conn.execute(
+                    f"SELECT count(DISTINCT person_id) FROM roles WHERE company_id = ? AND status = ? "
+                    f"AND level IN ({marks})", (company_id, status, *IN_SCOPE)).fetchone()[0]
+
+            # Kept apart everywhere: an unverified role is a lead, never a confirmed leader.
+            counters["current_leaders"] = leaders("current")
+            counters["unverified_leaders"] = conn.execute(
+                f"SELECT count(DISTINCT person_id) FROM roles WHERE company_id = ? AND status = 'unverified' "
+                f"AND level IN ({marks}) AND person_id NOT IN (SELECT person_id FROM roles WHERE "
+                f"company_id = ? AND status = 'current' AND level IN ({marks}))",
+                (company_id, *IN_SCOPE, company_id, *IN_SCOPE)).fetchone()[0]
+            return ceo, counters["current_leaders"]
+
+        if extract and llm is not None:
+            extract_pending()
+            ceo, people = resolve_now()
+            # Round 2 runs only when round 1 found too little (SPEC 3.10).
+            trigger = None if stopped else ("no current CEO found" if not ceo else
+                                            f"only {people} current leaders found" if people < 3 else None)
+            if not trigger:
+                why = "extraction stopped early" if stopped else (
+                    f"a current CEO and {people} current leaders found; "
+                    f"{counters['unverified_leaders']} more people are unverified and not counted")
+                notes.append(f"search round 2: not needed ({why})")
+                log.event("search_round", round=2, ran=False, reason=why)
+            elif not search.available or cfg.limits.max_search_rounds < 2:
+                notes.append(f"search round 2: wanted ({trigger}) but search is off")
+                log.event("search_round", round=2, ran=False, reason="search is not available", trigger=trigger)
+            elif counters.get("search_rounds", 0) >= 2 and not refresh:
+                notes.append(f"search round 2: already done for this run ({trigger})")
+                log.event("search_round", round=2, ran=False, reason="already done", trigger=trigger)
+            else:
+                before = conn.execute("SELECT count(*) FROM claims WHERE company_id = ?",
+                                      (company_id,)).fetchone()[0]
+                extra = search_for(round_two_queries(site.name, home_domain), "search round 2")
+                counters["search_rounds"] = 2
+                plan.extend(extra)
+                fetch(extra)
+                extract_pending()
+                ceo, people = resolve_now()
+                after = conn.execute("SELECT count(*) FROM claims WHERE company_id = ?",
+                                     (company_id,)).fetchone()[0]
+                notes.append(f"search round 2 ran because {trigger}: {len(extra)} pages, "
+                             f"{after - before} more claims. No further round is ever run")
+                log.event("search_round", round=2, ran=True, trigger=trigger, pages=len(extra),
+                          new_claims=after - before)
+            for problem in problems[reported:]:     # model trouble during round 2
+                add_reason(reasons, "partial_failure", "discover", problem)
+                notes.append("degraded: " + problem)
+            counters["sources_found"] = len(plan)
+            if not stopped:
+                if not ceo:
+                    add_reason(reasons, "insufficient_data", "extract", "no current CEO was found")
+                if people == 0:
+                    add_reason(reasons, "insufficient_data", "extract",
+                               "no current leader (C-level, VP or Head) was found")
+            counters["people"] = conn.execute("SELECT count(*) FROM people WHERE company_id = ?",
+                                              (company_id,)).fetchone()[0]
+            counters["claims"] = conn.execute("SELECT count(*) FROM claims WHERE company_id = ?",
+                                              (company_id,)).fetchone()[0]
+        elif extract:
+            notes.append("extraction: skipped, no LLM key is configured")
+            add_reason(reasons, "insufficient_data", "extract",
+                       "no LLM key is configured, so no people could be extracted")
 
         # ----------------------------------------------------------------- end
         have = conn.execute(
@@ -346,6 +492,25 @@ def print_report(result: RunResult, cfg: Config, conn_path: Path) -> None:
             where = f"  [{r['url']}]" if r.get("url") else ""
             print(f"  {r['code']:<18}{r['stage']:<9}{r['detail']}{where}")
     conn = connect(conn_path)
+    if "claims" in c:
+        print(f"\nExtraction: {c.get('claims', 0)} claims stored about {c.get('people', 0)} people; "
+              f"{c.get('claims_rejected', 0)} rejected by the checks this run; "
+              f"{c.get('documents_skipped', 0)} documents skipped")
+        people = conn.execute(
+            """SELECT person, title, level, status, status_reason, conflict, source_type, source_date
+                 FROM leadership WHERE company = ? AND level IN ('c_level', 'vp', 'head')
+                ORDER BY CASE status WHEN 'current' THEN 0 WHEN 'announced' THEN 1
+                         WHEN 'unverified' THEN 2 ELSE 3 END, level, person""",
+            (result.company,)).fetchall()
+        print(f"Current leaders: {c.get('current_leaders', 0)}. Unverified, not counted as current: "
+              f"{c.get('unverified_leaders', 0)}")
+        print("\nLeadership found (C-level, VP, Head)")
+        for r in people:
+            flag = "  CONFLICT" if r["conflict"] else ""
+            print(f"  {r['status']:<11}{r['person']:<24}{r['title'][:44]:<46}"
+                  f"{r['source_type'] or '':<14}{r['source_date'] or '':<11}{flag}")
+        if not people:
+            print("  (none)")
     rows = conn.execute(
         """SELECT s.source_type, s.tier, s.stage, count(*) AS n FROM sources s
              JOIN companies c ON c.id = s.company_id WHERE c.name = ?

@@ -104,6 +104,8 @@ def _cfg(**limits):
 
 
 def _run(tmp_path, web, cfg=None, url="acme-robotics.com", **kw):
+    # These tests cover discovery and fetching; extraction has its own tests.
+    kw.setdefault("extract", False)
     return collect(url, cfg or _cfg(), root=tmp_path, transport=web.transport,
                    sleep=lambda s: None, **kw)
 
