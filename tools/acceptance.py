@@ -38,6 +38,19 @@ STAGES: dict[str, list[tuple[str, list[str], dict[str, str], int]]] = {
         ("Key check with no keys (must explain what to do)",
          CHECK, {"OPENAI_API_KEY": "", "GROQ_API_KEY": ""}, 2),
     ],
+    "M1": [
+        ("Resolution rules: one test per worked case, plus rule-specific tests",
+         PYTEST + ["tests/test_resolve.py"], {}, 0),
+        ("Database: schema, constraints, views, rebuilding roles from claims",
+         PYTEST + ["tests/test_db.py"], {}, 0),
+        ("Whole fast suite (no network, no keys)", ["uv", "run", "pytest", "-q"], {}, 0),
+        ("Worked cases printed as a table for manual review",
+         ["uv", "run", "python", "tools/show_cases.py"], {}, 0),
+        ("Mutation check: each deliberately broken rule must fail at least one case",
+         ["uv", "run", "python", "tools/mutation_check.py"], {}, 0),
+        ("Database schema as created: tables, views and columns",
+         ["uv", "run", "python", "tools/show_schema.py"], {}, 0),
+    ],
 }
 
 

@@ -4,8 +4,10 @@ Given a company domain, collects its leadership (C-level, VPs, Heads) from
 public sources into a verifiable SQLite dataset, and answers questions over it
 through an LLM chat.
 
-Status: **milestone M0** (project setup). See [SPEC.md](SPEC.md) for the design
-and `SPEC_checklist.xlsx` for the requirement checklist.
+Status: **M0** (project setup) and **M1** (database schema, role resolution
+rules) are done and accepted; collection and chat are not built yet. See [SPEC.md](SPEC.md) for
+the design, `SPEC_checklist.xlsx` for the requirement checklist, and
+`acceptance/` for each milestone's test results.
 
 ## Setup
 
