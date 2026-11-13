@@ -1,0 +1,65 @@
+{
+  "about": "Hand-labelled answers for five saved real pages. Labelled by reading each page's text, before looking at what extraction returned for it. 'expected' pairs must be found; 'optional' pairs are correct but need not be found; 'forbidden_people' are named on the page but hold no title at the target company.",
+  "labelled_on": "2026-11-13",
+  "companies": {
+    "campfire": {"name": "Campfire", "domains": ["meetcampfire.com", "campfire.ai"],
+                 "description": "Campfire is an AI-native ERP built for lean finance teams."},
+    "robinhood": {"name": "Robinhood", "domains": ["robinhood.com"],
+                  "description": "Robinhood offers commission-free investing, crypto and banking products."}
+  },
+  "pages": [
+    {
+      "file": "campfire-customer-cfo.txt",
+      "url": "https://campfire.ai/blog/from-cpa-to-cfo-ron-wangerin-cfo-trust-and-will",
+      "company": "campfire", "source_type": "press_release", "published": "2025-02-21",
+      "why": "A company blog post whose subject is a customer's CFO. Only the host belongs to Campfire.",
+      "expected": [{"person": "John Glasgow", "title": "CEO"}],
+      "optional": [{"person": "John Glasgow", "title": "Founder"}],
+      "forbidden_people": ["Ron Wangerin"]
+    },
+    {
+      "file": "campfire-series-b.txt",
+      "url": "https://campfire.ai/blog/campfire-65-million-series-b-co-led-by-accel-and-ribbit",
+      "company": "campfire", "source_type": "press_release", "published": "2025-10-15",
+      "why": "A funding announcement naming five investors with titles at other companies.",
+      "expected": [{"person": "John Glasgow", "title": "CEO"}],
+      "optional": [{"person": "John Glasgow", "title": "Founder"}],
+      "forbidden_people": ["Karim Atiyeh", "Brad Floering", "Steve Sidhu", "Scott Buxton", "Naeem Ishaq"]
+    },
+    {
+      "file": "robinhood-pinner-cto.txt",
+      "url": "https://robinhood.com/newsroom/robinhood-welcomes-jeff-pinner-as-chief-technology-officer",
+      "company": "robinhood", "source_type": "press_release", "published": "2024-08-12",
+      "why": "An appointment, with the appointee's earlier job as CTO of another company.",
+      "expected": [{"person": "Jeff Pinner", "title": "CTO", "claim_type": "appointment"},
+                   {"person": "Vlad Tenev", "title": "CEO"}],
+      "optional": [{"person": "Vlad Tenev", "title": "Co-Founder"}],
+      "forbidden_people": []
+    },
+    {
+      "file": "robinhood-howard-coo.txt",
+      "url": "https://robinhood.com/newsroom/gretchen-howard-elevated-to-chief-operating-officer",
+      "company": "robinhood", "source_type": "press_release", "published": "2019-06-24",
+      "why": "A promotion: a new title and the title held before it.",
+      "expected": [{"person": "Gretchen Howard", "title": "COO", "claim_type": "appointment"},
+                   {"person": "Gretchen Howard", "title": "Vice President of Operations"},
+                   {"person": "Vlad Tenev", "title": "CEO"}],
+      "optional": [{"person": "Vlad Tenev", "title": "Co-Founder"}],
+      "forbidden_people": []
+    },
+    {
+      "file": "robinhood-8k-accounting-officer.txt",
+      "url": "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm",
+      "company": "robinhood", "source_type": "sec_filing", "published": "2026-06-26",
+      "why": "An officer-change filing: an appointment and a role-scoped departure with the same effective date, and five earlier employers.",
+      "expected": [{"person": "Dara Bazzano", "title": "principal accounting officer", "claim_type": "appointment",
+                    "effective_date": "2026-06-25"},
+                   {"person": "Dara Bazzano", "title": "Chief Accounting Officer"},
+                   {"person": "Shiv Verma", "title": "CFO"},
+                   {"person": "Shiv Verma", "title": "principal accounting officer", "claim_type": "departure",
+                    "departure_scope": "role", "effective_date": "2026-06-25"}],
+      "optional": [{"person": "Shiv Verma", "title": "principal financial officer"}],
+      "forbidden_people": []
+    }
+  ]
+}

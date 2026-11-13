@@ -32,6 +32,13 @@ def round_one_queries(company: str, domain: str) -> list[str]:
             f'"{company}" {domain} "head of"']
 
 
+def round_two_queries(company: str, domain: str) -> list[str]:
+    """Used only when round one found no CEO or too few leaders. SPEC 3.10."""
+    return [f'"{company}" {domain} CEO "chief executive"',
+            f'"{company}" {domain} founder CEO interview',
+            f'"{company}" {domain} appoints OR joins OR hires executive']
+
+
 class Search:
     def __init__(self, limits: Limits, cache_dir: Path, log: RunLog | None = None, *,
                  refresh: bool = False, transport: httpx.BaseTransport | None = None,

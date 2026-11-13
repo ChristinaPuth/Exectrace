@@ -1,6 +1,6 @@
 # SPEC: Company Leadership RAG Agent
 
-Status: **revision 9, 2026-11-13** — design agreed; implementation in progress.
+Status: **revision 10, 2026-11-13** — design agreed; implementation in progress.
 Remaining open decisions are in [section 9](#9-open-decisions).
 
 | Milestone | State |
@@ -8,7 +8,8 @@ Remaining open decisions are in [section 9](#9-open-decisions).
 | M0 Project setup, key check | Done; manual tests passed 2026-11-11; merged to `main` |
 | M1 Schema + resolution logic | Done; manual tests passed 2026-11-12; merged to `main` |
 | M2 Discovery, fetch, cache | Done; accepted 2026-11-13 (`acceptance/M2.md`) |
-| M3 – M7 | Not started |
+| M3 Extraction + normalization | Built on branch `m3-extract`; automated acceptance run; manual tests pending |
+| M4 – M7 | Not started |
 
 Evidence for each finished milestone is in `acceptance/`.
 
@@ -147,17 +148,20 @@ leadership/
   runlog.py         # built: JSON-lines run log; chat log in M5
   collect.py        # built: one collection run (discover, fetch, budgets, status, resume)
   sources/          # built: web.py (fetcher), site.py, search.py, edgar.py, wikipedia.py
-  extract.py        # M3: document -> claims, evidence check
-  normalize.py      # M3: title -> level, name normalization
+  extract.py        # built: document -> claims with a real model, then checks without one
+  normalize.py      # built: title -> level and single-holder role; name matching
+  evals.py          # built: `leadership eval`, extraction accuracy on labelled pages
   verify.py         # M4: targeted checks for unverified / conflicting roles
   agent.py          # M5: tool-calling loop
 app.py              # M6: Streamlit UI
 config.toml         # models, limits, agent limits, eval thresholds
 tools/              # acceptance.py, show_cases.py, mutation_check.py, show_schema.py,
-                    # show_run.py, scan_secrets.py, manual_checks_m2.py
+                    # show_run.py, scan_secrets.py, manual_checks_m2.py,
+                    # show_people.py, check_evidence.py
 data/               # working database, not committed (leadership.db)
 acceptance/         # per milestone: M<n>_results.log and M<n>.md
-fixtures/           # M4+: leadership.db, <company>.json, gold/, eval report
+fixtures/           # labelled/ (five hand-labelled pages, built); M4+: leadership.db,
+                    # <company>.json, gold/, eval report
 tests/              # worked_cases.py drives the resolution tests
 SPEC.md  SPEC_checklist.xlsx  README.md  .env.example  pyproject.toml
 ```
@@ -268,12 +272,41 @@ from cache when possible.
   from the document's publication date.
 - Each claim records the `extraction_version` that produced it (section 6.3).
   Re-extracting a document replaces that document's claims from older versions.
-- **Evidence check (no LLM)**: a claim is rejected unless its evidence quote and
-  the person's name both appear in the source text after whitespace
-  normalization. Rejections are logged.
+- **Checks after the model (no LLM).** A claim is rejected, and the rejection
+  logged with its reason, unless all of these hold:
+  1. *Evidence.* The evidence quote is in the source text. Whitespace, curly
+     quotes, long dashes and table-cell separators are treated as formatting.
+  2. *Name.* The person's full name, as the claim gives it, is in the source
+     text. An honorific with a surname ("Mr. Tenev") or a single name is not
+     a full name.
+  3. *The quote is about that person.* Their surname is in the quote or
+     within 250 characters of it.
+  4. *Organisation.* The model states the organisation where the title is
+     held. It must be the target company or a unit of it. A title at a
+     customer, an investor or an earlier employer is rejected.
+- **A unit of the company is not the company.** "Chief Compliance Officer"
+  of Robinhood Financial keeps the unit in its title and gets no
+  single-holder role, so it cannot conflict with a company-wide office.
+- **Effective dates must be stated in full.** A date is kept only when the
+  source text writes that exact day. If the model completes "since May 2020"
+  to a day, the date is dropped and the claim is kept without one.
+- **A document about a namesake** (the model says it is about a different
+  organisation) yields no claims.
+- **Page kind.** The model classifies each document as official, article,
+  profile-or-directory, or other. A tier-3 source classified as
+  profile-or-directory drops to tier 4, so it can never make a role
+  `current` alone (rule 5 needs tier 1 to 3). This rule does not depend on
+  a list of site names. It can only lower a third-party source, never raise
+  one, and it never touches tier 1 or 2.
+- **Long documents.** A document is cut at paragraph ends into pieces of at
+  most 4,500 characters. If there are more than `max_chunks_per_page`, the
+  pieces with the most leadership wording (named offices count most) are
+  kept. An annual report is therefore read only in part.
 - A claim that passes is **supported**: the source said it. It is stored but
   not yet believed. Belief is decided in 3.6.
-- Only claims about the target company are kept.
+- The name is stored as the source wrote it (`person_as_written`) as well as
+  under the merged person, so any stored claim can be re-checked against its
+  page at any time (`tools/check_evidence.py`).
 
 ### 3.4 Normalize
 
@@ -283,13 +316,22 @@ from cache when possible.
   (engineering, product, marketing, sales, finance, legal, people, operations,
   design, data, security, other).
 - **Canonical role** for single-holder titles: CEO, CFO, CTO, COO, CMO, etc.
+  Any other "Chief X Officer" keeps its wording as the canonical role, with
+  commas and "and" spelled one way. "President and CEO" is the CEO. A title
+  naming two offices uses the first; extraction is asked for one claim per
+  office.
+- A president (not a vice president) and a general counsel count as
+  `c_level`. Directors, board members and founders without an office are
+  `other`: stored, but outside the leadership scope.
 
 ### 3.5 Entity resolution
 
 - Match people within a company on normalized name (case, accents, middle
   initials, suffixes).
 - Nicknames ("Vlad" / "Vladimir") are merged only when the surname and a role
-  also match. Other near-matches are left separate and flagged.
+  also match. Other near-matches are left separate and flagged
+  (`people.possible_duplicate_of`). An initial ("V. Tenev") is never merged.
+- The nickname list is a fixed table of common English short forms.
 
 ### 3.6 Resolve roles (deterministic)
 
@@ -301,7 +343,7 @@ Source tiers:
 | 1 | SEC filing | filing date |
 | 2 | Press release or blog post on the company's domain | publication date |
 | 3 | News article, Wikipedia | publication date; undated counts as weak |
-| 4 | Search-result snippet | never sufficient alone for `current` |
+| 4 | Search-result snippet; third-party profile, directory or compiled summary page | never sufficient alone for `current` |
 
 Three dates are kept per claim: when the source was **published**, when it was
 **retrieved**, and when the change **took effect**. Events are ordered by
@@ -494,6 +536,9 @@ points, to be confirmed against free-tier quotas in M0.
 | Longest pacing wait before falling back to the next provider | 30 seconds |
 | Freshness window | 12 months |
 
+- **Round 2 queries**: three fixed queries about the CEO, founders and
+  executive appointments. Round 2 runs at most once per run; there is never
+  a round 3.
 - **Round 2 trigger**: no CEO found, or fewer than three in-scope people,
   after round 1.
 - **Stop conditions**: a budget is reached, or a round adds no new people or
@@ -593,10 +638,14 @@ sources   (id, company_id, url, source_type,   -- company_site | sec_filing | pr
                                                -- | news | wikipedia | search_snippet
            tier, title, published_at NULL, retrieved_at, content_hash,
            stage,                              -- fetched | extracted | failed | skipped
-           attempts, last_error NULL)
+           attempts, last_error NULL,
+           extraction_version NULL,            -- prompt + schema + model + checks
+           page_kind NULL)                     -- official | article
+                                               -- | profile_or_directory | other
 
 people    (id, company_id, full_name, normalized_name, linkedin_url NULL,
-           employment_status)                  -- DERIVED: current | former | unknown
+           employment_status,                  -- DERIVED: current | former | unknown
+           possible_duplicate_of NULL)         -- a near-match name, kept separate
 
 claims    (id, company_id, person_id, source_id,
            claim_type,                         -- role | appointment | departure
@@ -609,7 +658,8 @@ claims    (id, company_id, person_id, source_id,
            effective_date NULL,                -- stated in the text, for
                                                -- appointments and departures
            effective_pending,                  -- 1: a future change, no date given
-           extraction_version)                 -- prompt + schema + model
+           extraction_version,                 -- prompt + schema + model
+           person_as_written)                  -- the name as this source wrote it
 
 roles     (id, company_id, person_id,          -- DERIVED, rebuilt by resolve
            title, level, department, canonical_role,
@@ -764,6 +814,10 @@ Three independent caches, so changing one stage never invalidates another:
 - Stored claims carry their `extraction_version`. When a document is
   re-extracted, its claims from older versions are replaced, then roles are
   rebuilt. No stale claims survive a prompt change.
+- The checks and the title and name rules run after the model. Each source
+  records a second version that also covers that code. When only that code
+  changes, every document is processed again from the cached model answer,
+  with no model call.
 - **Writes are atomic** (write to a temporary file, then rename), so a crash
   never leaves a half-written entry.
 - `cache/` is gitignored; `fixtures/` is committed.
@@ -792,8 +846,10 @@ chat. No other observability infrastructure.
   worst produce a false claim, which source tiers and the resolution rules
   then constrain. The evidence check does not stop this by itself, because
   planted text is present in the page.
-- **Hidden text.** Check whether the cleaner drops hidden page elements;
-  document the behaviour either way.
+- **Hidden text.** Measured in M3: the cleaner drops scripts, comments and
+  templates, but it does not evaluate CSS, so text hidden with a style is
+  kept and reaches the model. The defence is therefore the structure above
+  and the checks in 3.3, not the cleaner.
 - **Injection reaching the chat.** Bios and quotes are web text. They are
   kept short and labelled as data, and the chat agent's only capability is
   the guarded read-only query.
@@ -909,7 +965,7 @@ The next milestone starts only after the author has run the manual tests.
 | M6 | Streamlit UI | Runs from committed fixtures with one LLM key; shows answer, SQL, and sources | 0.5 h |
 | M7 | README + deliverables | Fresh-clone test passes; README covers design decisions, measured results, and limits; key scan clean; fixtures, eval report, citation review, and session export committed | 0.75 h |
 
-Progress: M0, M1 and M2 accepted. M0 also
+Progress: M0, M1 and M2 accepted. M3 built and awaiting manual acceptance. M0 also
 delivered the Groq-first provider chain with pacing and fallback, which the
 original plan had placed in M3.
 

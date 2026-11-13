@@ -23,7 +23,8 @@ from leadership.llm import redact  # noqa: E402
 
 PYTEST = ["uv", "run", "pytest", "-v"]
 CHECK = ["uv", "run", "leadership", "check"]
-COLLECT = ["uv", "run", "leadership", "collect"]
+COLLECT = ["uv", "run", "leadership", "collect", "--no-extract"]     # the M2 stage: fetch only
+RUN = ["uv", "run", "leadership", "collect"]
 
 # (title, command, environment overrides, expected exit code)
 # An override of "" hides that key from the command, as if it were not in .env.
@@ -68,6 +69,34 @@ STAGES: dict[str, list[tuple[str, list[str], dict[str, str], int]]] = {
          ["uv", "run", "python", "tools/show_run.py", "robinhood.com"], {}, 0),
         ("Unreachable homepage: must stop with a clear error and store nothing",
          COLLECT + ["https://no-such-company-exectrace.invalid/"], {}, 1),
+        ("No key or contact address in any file that could be committed, or in the run logs",
+         ["uv", "run", "python", "tools/scan_secrets.py"], {}, 0),
+    ],
+    # M3 reads the pages M2 cached: no page is fetched and no search query is made,
+    # unless the cache is empty. It does make real model calls.
+    "M3": [
+        ("M3 tests: title and name rules, evidence checks, storage, the extraction stage, scoring",
+         PYTEST + ["tests/test_normalize.py", "tests/test_extract.py", "tests/test_pipeline.py",
+                   "tests/test_evals.py"], {}, 0),
+        ("Whole fast suite (no network, no keys)", ["uv", "run", "pytest", "-q"], {}, 0),
+        ("Real model: extraction, planted instructions, directory page, resume, outage, invalid output",
+         PYTEST + ["-m", "llm", "tests/test_extract.py", "tests/test_pipeline.py"], {}, 0),
+        ("Extraction accuracy on five hand-labelled real pages", ["uv", "run", "leadership", "eval"], {}, 0),
+        ("Campfire: collect and extract (pages from the cache, real model)", RUN + ["https://meetcampfire.com/"], {}, 0),
+        ("Campfire again: must make 0 model calls and repeat no extraction", RUN + ["https://meetcampfire.com/"], {}, 0),
+        ("Robinhood: collect and extract (pages from the cache, real model)", RUN + ["https://robinhood.com/"], {}, 0),
+        ("Robinhood again: must make 0 model calls and repeat no extraction", RUN + ["https://robinhood.com/"], {}, 0),
+        ("Campfire: leaders with every claim and its evidence",
+         ["uv", "run", "python", "tools/show_people.py", "meetcampfire.com"], {}, 0),
+        ("Robinhood: leaders with every claim and its evidence",
+         ["uv", "run", "python", "tools/show_people.py", "robinhood.com"], {}, 0),
+        ("Campfire: claims the checks refused",
+         ["uv", "run", "python", "tools/show_people.py", "meetcampfire.com", "--rejected"], {}, 0),
+        ("Robinhood: claims the checks refused",
+         ["uv", "run", "python", "tools/show_people.py", "robinhood.com", "--rejected"], {}, 0),
+        ("Every stored claim re-checked against its saved page; every current role has support",
+         ["uv", "run", "python", "tools/check_evidence.py"], {}, 0),
+        ("M1 rules still hold: mutation check", ["uv", "run", "python", "tools/mutation_check.py"], {}, 0),
         ("No key or contact address in any file that could be committed, or in the run logs",
          ["uv", "run", "python", "tools/scan_secrets.py"], {}, 0),
     ],

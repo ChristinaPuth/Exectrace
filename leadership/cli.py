@@ -15,6 +15,9 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("collect", help="discover and fetch a company's public leadership sources")
     p.add_argument("url", help="company domain or URL, e.g. robinhood.com")
     p.add_argument("--refresh", action="store_true", help="ignore the page and search caches")
+    p.add_argument("--no-extract", action="store_true",
+                   help="stop after fetching; do not extract people (no LLM extraction calls)")
+    sub.add_parser("eval", help="measure extraction accuracy on the hand-labelled pages (real LLM)")
     args = parser.parse_args(argv)
 
     try:
@@ -23,11 +26,15 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "check":
             from . import check
             return check.run(cfg)
+        if args.command == "eval":
+            from . import evals
+            return evals.run_extraction_eval(cfg)
         if args.command == "collect":
             from . import collect
             from .sources.site import HomepageError
             try:
-                result = collect.collect(args.url, cfg, refresh=args.refresh)
+                result = collect.collect(args.url, cfg, refresh=args.refresh,
+                                         extract=not args.no_extract)
             except HomepageError as e:
                 print(f"Stopped: {e}. Nothing was stored.", file=sys.stderr)
                 return 1

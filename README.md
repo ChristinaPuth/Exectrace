@@ -6,7 +6,8 @@ through an LLM chat.
 
 Status: **M0** (project setup) and **M1** (database schema, role resolution
 rules) and **M2** (finding and fetching sources) are done and accepted.
-Extracting people from the sources, and the chat, are not built yet. See [SPEC.md](SPEC.md) for
+**M3** (extracting people and roles from the sources) is built.
+Verification of uncertain roles, the export and the chat are not built yet. See [SPEC.md](SPEC.md) for
 the design, `SPEC_checklist.xlsx` for the requirement checklist, and
 `acceptance/` for each milestone's test results.
 
@@ -66,6 +67,60 @@ Known limits of collection:
   evidence. The list is by site name, so a new such site is not caught.
 - **Publication dates** come only from the page itself or the SEC's filing
   index. Many pages state none; their date is left empty.
+
+## Extract people and roles
+
+`leadership collect` now also reads every fetched page with the model and
+stores what each page says about the company's leaders:
+
+```bash
+uv run leadership collect https://robinhood.com/
+```
+
+It needs an LLM key. Add `--no-extract` to stop after fetching. To see the
+result, with the evidence behind every role:
+
+```bash
+uv run python tools/show_people.py robinhood.com
+```
+
+Each role is `current`, `former`, `unverified` or `announced`, decided by
+fixed rules from the stored claims, never by the model. What the model
+returns is checked without a model before it is stored: the quoted evidence
+and the person's full name must be on the page, the quote must be about that
+person, and the title must be at this company. Refused claims are listed by:
+
+```bash
+uv run python tools/show_people.py robinhood.com --rejected
+```
+
+To re-check every stored claim against its saved page, and to measure
+extraction on five hand-labelled pages:
+
+```bash
+uv run python tools/check_evidence.py
+```
+
+```bash
+uv run leadership eval
+```
+
+Known limits of extraction:
+
+- **Old appointments stay `unverified`.** A 2020 press release saying someone
+  joined as an officer does not show they still hold the office. Such roles
+  are listed as `unverified` until a recent source confirms or ends them.
+  Targeted verification is the next milestone.
+- **Long documents are read in part.** At most three pieces of a document are
+  sent to the model, chosen by how much leadership wording they hold.
+- **The model can miss or misquote.** A misquoted claim is refused by the
+  evidence check, so it costs coverage, not correctness. On the five
+  labelled pages the last measurement is in `acceptance/M3.md`.
+- **Text hidden by a page's style is still read.** The page cleaner drops
+  scripts and comments but does not apply CSS.
+- **A company whose name is inside another name** ("Camp Fire" for Campfire)
+  passes the organisation check by name; the model is also asked whether the
+  page is about a different organisation.
 
 ## Tests
 
