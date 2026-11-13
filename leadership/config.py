@@ -58,6 +58,15 @@ class Limits(_Strict):
     freshness_window_months: int = Field(gt=0)
 
 
+class Discovery(_Strict):
+    site_pages: int = Field(12, gt=0)                 # company pages the link picker may choose
+    link_candidates: int = Field(120, gt=0)           # links offered to the link picker
+    max_sitemaps: int = Field(4, ge=0)                # sitemap files read per company
+    search_results_per_query: int = Field(5, gt=0)
+    news_pages: int = Field(10, ge=0)                 # search results fetched as pages
+    filings_8k: int = Field(3, ge=0)                  # recent 8-K filings on officer changes
+
+
 class Agent(_Strict):
     max_steps: int = Field(gt=0)
     max_sql_retries: int = Field(ge=0)
@@ -73,6 +82,7 @@ class Eval(_Strict):
 class Config(_Strict):
     models: Models
     limits: Limits
+    discovery: Discovery = Discovery()
     agent: Agent
     eval: Eval
 

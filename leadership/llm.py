@@ -48,8 +48,9 @@ def make_client(provider: str, cfg: Config, max_retries: int | None = None) -> O
 
 
 def redact(text: str) -> str:
-    """Remove any configured secret from text before it is printed or logged."""
-    for name in ("OPENAI_API_KEY", "GROQ_API_KEY", "TAVILY_API_KEY"):
+    """Remove configured secrets, and the SEC contact address, from text before it is saved."""
+    for name in ("OPENAI_API_KEY", "GROQ_API_KEY", "TAVILY_API_KEY", "SEC_USER_AGENT",
+                 "WIKIPEDIA_USER_AGENT"):
         value = os.environ.get(name, "").strip()
         if value:
             text = text.replace(value, "***")

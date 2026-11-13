@@ -23,6 +23,7 @@ from leadership.llm import redact  # noqa: E402
 
 PYTEST = ["uv", "run", "pytest", "-v"]
 CHECK = ["uv", "run", "leadership", "check"]
+COLLECT = ["uv", "run", "leadership", "collect"]
 
 # (title, command, environment overrides, expected exit code)
 # An override of "" hides that key from the command, as if it were not in .env.
@@ -50,6 +51,25 @@ STAGES: dict[str, list[tuple[str, list[str], dict[str, str], int]]] = {
          ["uv", "run", "python", "tools/mutation_check.py"], {}, 0),
         ("Database schema as created: tables, views and columns",
          ["uv", "run", "python", "tools/show_schema.py"], {}, 0),
+    ],
+    "M2": [
+        ("M2 tests: cache, fetcher, robots, discovery, SEC matching, runs, budgets, resume",
+         PYTEST + ["tests/test_sources.py", "tests/test_collect.py"], {}, 0),
+        ("Whole fast suite (no network, no keys)", ["uv", "run", "pytest", "-q"], {}, 0),
+        ("Real model: picks leadership pages, may choose none, drops a namesake search result",
+         PYTEST + ["-m", "llm", "tests/test_sources.py"], {}, 0),
+        ("Campfire: real collection, caches ignored", COLLECT + ["https://meetcampfire.com/", "--refresh"], {}, 0),
+        ("Campfire: second run must make 0 network calls", COLLECT + ["https://meetcampfire.com/"], {}, 0),
+        ("Robinhood: real collection, caches ignored", COLLECT + ["https://robinhood.com/", "--refresh"], {}, 0),
+        ("Robinhood: second run must make 0 network calls", COLLECT + ["https://robinhood.com/"], {}, 0),
+        ("Campfire: runs, reasons and sources as stored",
+         ["uv", "run", "python", "tools/show_run.py", "meetcampfire.com"], {}, 0),
+        ("Robinhood: runs, reasons and sources as stored",
+         ["uv", "run", "python", "tools/show_run.py", "robinhood.com"], {}, 0),
+        ("Unreachable homepage: must stop with a clear error and store nothing",
+         COLLECT + ["https://no-such-company-exectrace.invalid/"], {}, 1),
+        ("No key or contact address in any file that could be committed, or in the run logs",
+         ["uv", "run", "python", "tools/scan_secrets.py"], {}, 0),
     ],
 }
 

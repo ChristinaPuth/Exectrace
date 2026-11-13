@@ -40,6 +40,14 @@ host_delay_seconds = 1.0          # between requests to the same host
 request_timeout_seconds = 20
 freshness_window_months = 12      # SPEC 3.6, rule 5 only
 
+[discovery]
+site_pages = 12
+link_candidates = 120
+max_sitemaps = 4
+search_results_per_query = 5
+news_pages = 10
+filings_8k = 3
+
 [agent]
 max_steps = 5
 max_sql_retries = 2
