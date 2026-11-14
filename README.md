@@ -2,26 +2,27 @@
 
 Give it a company's domain or URL. It finds the company's leadership
 (C-level, vice presidents, heads of department) in public sources, stores
-every fact with the source and the quote that support it, and answers
-questions about it through an LLM chat that can only read that data.
+every fact with its source and evidence quote, and answers questions through
+an LLM chat that can only read that data. The collected data for
+**Campfire** and **Robinhood** is included, so the chat runs straight after
+cloning.
 
-The repository includes the collected data for both test companies,
-**Campfire** (`meetcampfire.com`) and **Robinhood** (`robinhood.com`), so the
-chat runs straight after cloning, with one LLM key and no collection step.
+## Quick Start
 
-- [Quick start](#quick-start)
-- [What is delivered](#what-is-delivered)
-- [How it works](#how-it-works): data sourcing, storage design, agent architecture
-- [Measured results](#measured-results)
-- [Known limits](#known-limits)
-- [How this was built with Claude Code](#how-this-was-built-with-claude-code)
-- [Collecting a new company](#collecting-a-new-company)
-- [Tests and configuration](#tests-and-configuration)
+### Try it online
 
-## Quick start
+**https://exectrace-hluji2himqv9ks3ds5ejnw.streamlit.app/**
 
-Requires [uv](https://docs.astral.sh/uv/) and Python 3.11 or newer (uv
-installs it if needed).
+1. Paste your own Groq or OpenAI key in the sidebar and press **Check key**.
+   Groq keys are free at https://console.groq.com/keys.
+2. Pick Campfire or Robinhood and ask, for example "Who is the CEO?", "How
+   many VPs do they have?", "Who heads marketing?", "Where is their CEO
+   based?" or "Who was the previous CFO?".
+
+### Run it locally
+
+Needs [uv](https://docs.astral.sh/uv/getting-started/installation/). uv
+installs Python 3.11+ if it is missing.
 
 ```bash
 git clone https://github.com/ChristinaPuth/Exectrace.git
@@ -35,46 +36,81 @@ cd Exectrace
 uv sync
 ```
 
-Copy `.env.example` to `.env` and set **one** of `GROQ_API_KEY` or
-`OPENAI_API_KEY`. That is all the chat needs.
+```bash
+cp .env.example .env
+```
 
-**Web chat:**
+Open `.env` and set **one** key: `GROQ_API_KEY` or `OPENAI_API_KEY`. That is
+the only setting the chat needs. Then start the chat:
 
 ```bash
 uv run python -m streamlit run app.py
 ```
 
-It opens at http://localhost:8501. Pick a company in the sidebar and ask, for
-example "Who is the CEO?", "How many VPs do they have?", "Who heads
-marketing?", "Where is their CEO based?" or "Who was the previous CFO?".
-Under each answer, **SQL and source rows** shows the queries that ran and the
-rows they returned.
+Open **http://localhost:8501** in your browser. Under each answer, **SQL and
+source rows** shows the query that ran and the rows behind the answer.
 
-**Command-line chat:**
+Prefer the terminal?
 
 ```bash
-uv run leadership chat robinhood.com
+uv run leadership chat robinhood.com -q "Who is the CEO?" --show-sql
 ```
 
-Type a question; `exit` stops. Ask one question with
-`-q "Who is the CEO?"`, and add `--show-sql` to see the SQL.
+### Where everything is
+
+| What | Where |
+|---|---|
+| **Collected data**, Campfire and Robinhood | [`fixtures/leadership.db`](fixtures/leadership.db) (SQLite, what the chat reads); [`fixtures/meetcampfire.com.json`](fixtures/meetcampfire.com.json) and [`fixtures/robinhood.com.json`](fixtures/robinhood.com.json) (every person, role, source and evidence quote, readable without tools) |
+| Hand-verified gold sets and evaluations | [`fixtures/gold/`](fixtures/gold/), [`fixtures/chat_eval_results.json`](fixtures/chat_eval_results.json), [`fixtures/citation_review.md`](fixtures/citation_review.md) |
+| **Claude Code session export** | [`session/`](session/), one transcript per session, with an index in [`session/index.md`](session/index.md) |
+| Chat code | [`app.py`](app.py) (web page), [`leadership/agent.py`](leadership/agent.py) (agent), [`leadership/sqlguard.py`](leadership/sqlguard.py) (read-only SQL), [`leadership/grounding.py`](leadership/grounding.py) (source check) |
+| Collection pipeline | [`leadership/collect.py`](leadership/collect.py), [`extract.py`](leadership/extract.py), [`verify.py`](leadership/verify.py), [`resolve.py`](leadership/resolve.py) |
+| Design and requirements | [`SPEC.md`](SPEC.md), [`SPEC_checklist.xlsx`](SPEC_checklist.xlsx) (173 requirements with status) |
+| Test results per milestone | [`acceptance/`](acceptance/): `M0.md` to `M7.md`, each with its raw log |
+
+### More detail
+
+- [Running the chat](#running-the-chat): web page, command line, deploying
+  with visitors' own keys
+- [How it works](#how-it-works): data sourcing, storage design, agent
+  architecture
+- [Measured results](#measured-results) and [Known limits](#known-limits)
+- [How this was built with Claude Code](#how-this-was-built-with-claude-code)
+- [Collecting a new company](#collecting-a-new-company): running the data
+  collection pipeline
+- [Tests and configuration](#tests-and-configuration): tests, evaluations,
+  `.env` and `config.toml`
+
+## Running the chat
+
+**Web page:** `uv run python -m streamlit run app.py`, then open
+http://localhost:8501. Pick a company in the sidebar and ask.
+
+**Command line:** `uv run leadership chat robinhood.com`. Type a question;
+`exit` stops. Ask a single question with `-q "Who is the CEO?"`, and add
+`--show-sql` to see the SQL.
+
+**Deployed, or with no key on the server.** When the server has no LLM key,
+the page asks each visitor for theirs:
+1. Choose Groq or OpenAI in the sidebar, paste the key and press **Check
+   key**. The check lists the provider's models, which uses no tokens.
+2. The chat opens only after a key passes.
+
+The key is used only for that visitor's questions and kept only in that
+browser session's memory. It is never put in the server's environment,
+never written to disk and never logged. Answers already in the server's
+cache are reused for every visitor. Questions are logged on the server
+(`logs/`); keys are not.
+
+To deploy on [Streamlit Community Cloud](https://streamlit.io/cloud):
+1. Pick this repository and branch, with main file `app.py`.
+2. Don't add an LLM key to the app's secrets: a key there would be used for
+   every visitor instead of their own.
 
 (`python -m streamlit` rather than `streamlit`: some Windows security
 policies block the `streamlit.exe` launcher. The tables on the page are
 plain Markdown for the same reason: `st.dataframe` needs pyarrow's compiled
 library.)
-
-## What is delivered
-
-| Deliverable | Where |
-|---|---|
-| Runnable repository | this repo: `uv sync`, one key, then the commands above |
-| Collected data, both companies | `fixtures/leadership.db` (SQLite, what the chat reads), `fixtures/meetcampfire.com.json`, `fixtures/robinhood.com.json` (every person, role, claim, source and evidence quote) |
-| Chat interface | web page (`app.py`, Streamlit) and command line (`leadership chat`) |
-| Coding-agent session export | `session/` (Claude Code transcripts; see [below](#how-this-was-built-with-claude-code)) |
-| Design | `SPEC.md` (design and decisions), `SPEC_checklist.xlsx` (173 requirements with status) |
-| Evidence per milestone | `acceptance/M0.md` ... `M7.md`, each with its raw test log |
-| Gold sets and evaluations | `fixtures/gold/` (hand-verified leadership), `fixtures/chat_eval.json` and `chat_eval_results.json` (chat evaluation), `fixtures/citation_review.md` (manual review of 10 answers) |
 
 ## How it works
 

@@ -2,13 +2,19 @@
 
     uv run python -m streamlit run app.py
 
-Reads the committed fixtures (fixtures/leadership.db); needs one LLM key in
-.env and no collection step. Each answer has a panel with the SQL that ran
-and the rows it returned.
+Reads the committed fixtures (fixtures/leadership.db); no collection step.
+Each answer has a panel with the SQL that ran and the rows it returned.
+
+The LLM key: if the server has one (.env, or the host's secrets), it is used.
+If not, as on a public deployment, each visitor enters their own key in the
+sidebar and checks it before asking. A visitor's key lives only in that
+browser session's memory: it is never put in os.environ (which all visitors
+of the server share), never written to disk and never logged.
 """
 
 from __future__ import annotations
 
+import hashlib
 import sqlite3
 
 import streamlit as st
@@ -17,10 +23,13 @@ from leadership.agent import Agent, collected_on
 from leadership.citations import add_count_note, add_missing_sources, unread_sources
 from leadership.grounding import grounded_ask
 from leadership.config import ROOT, ConfigError, configured_providers, load_config, load_env
+from leadership.llm import LLM, check_key
 
 FIXTURE = ROOT / "fixtures" / "leadership.db"
 EXAMPLES = ["Who is the CEO?", "Who are the current C-level executives?",
             "How many C-level executives were found?", "Who was the previous CFO?"]
+PROVIDER_NAMES = {"groq": "Groq", "openai": "OpenAI"}
+KEY_PAGES = {"groq": "https://console.groq.com/keys", "openai": "https://platform.openai.com/api-keys"}
 
 
 def companies() -> list[tuple[str, str]]:
@@ -34,7 +43,47 @@ def companies() -> list[tuple[str, str]]:
 
 @st.cache_resource(show_spinner=False)
 def agent_for(domain: str) -> Agent:
+    """With the server's own key: one agent per company, shared by all sessions."""
     return Agent(load_config(), domain, FIXTURE)
+
+
+def visitor_agent(domain: str) -> Agent | None:
+    """With the visitor's own key: the key box in the sidebar, and an agent for this session only.
+    None until a key has been checked and is still the one in the box."""
+    cfg = load_config()
+    with st.sidebar:
+        st.divider()
+        st.markdown("**Your API key**")
+        provider = st.selectbox("Provider", list(PROVIDER_NAMES), format_func=PROVIDER_NAMES.get, key="provider")
+        key = st.text_input(f"{PROVIDER_NAMES[provider]} API key", type="password", key="api_key").strip()
+        if st.button("Check key"):
+            ok, message = check_key(cfg, provider, key)
+            st.session_state["checked"] = _fingerprint(provider, key) if ok else None
+            st.session_state["check_message"] = (ok, message)
+        current = bool(key) and st.session_state.get("checked") == _fingerprint(provider, key)
+        if "check_message" in st.session_state:
+            ok, message = st.session_state["check_message"]
+            if ok and current:
+                st.success(message)
+            elif not ok:
+                st.error(message)
+            else:
+                st.info("The key changed. Press Check key again.")
+        st.caption(f"The key is used only for your questions and kept only in this browser session's memory; it "
+                   f"is not saved or logged. Get one at {KEY_PAGES[provider]}"
+                   + (" (free)." if provider == "groq" else "."))
+    if not current:
+        return None
+    agents: dict = st.session_state.setdefault("agents", {})
+    name = (domain, _fingerprint(provider, key))
+    if name not in agents:
+        agents[name] = Agent(cfg, domain, FIXTURE, llm=LLM(cfg, "chat", keys={provider: key}))
+    return agents[name]
+
+
+def _fingerprint(provider: str, key: str) -> str:
+    """Identifies a checked key without keeping a second copy of it."""
+    return provider + ":" + hashlib.sha256(key.encode()).hexdigest()
 
 
 def rows_table(columns: list[str], rows: list[list]) -> str:
@@ -88,14 +137,14 @@ def main() -> None:
         st.caption("Answers come only from public sources collected for this company. Each answer has a "
                    "panel with the SQL that ran and the rows behind it.")
         st.markdown("**Try:**\n" + "\n".join(f"- {q}" for q in EXAMPLES))
-    if not configured_providers():
-        st.error("No LLM key found. Copy .env.example to .env and set GROQ_API_KEY or OPENAI_API_KEY, then "
-                 "reload this page.")
-        return
     try:
-        agent = agent_for(domain)
+        agent = agent_for(domain) if configured_providers() else visitor_agent(domain)
     except ConfigError as e:
         st.error(f"Configuration problem: {e}")
+        return
+    if agent is None:
+        st.info("This app uses your own LLM key. Enter a Groq or OpenAI key in the sidebar and press "
+                "**Check key**; then ask about the company's leadership.")
         return
     with st.container(border=True):
         st.markdown(f"**{agent.company}** &nbsp;·&nbsp; {domain} &nbsp;·&nbsp; "

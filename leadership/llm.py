@@ -16,7 +16,7 @@ from __future__ import annotations
 import os
 import time
 from collections import deque
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 
 import openai
@@ -33,9 +33,10 @@ _UNAVAILABLE = (openai.RateLimitError, openai.APIConnectionError,
 _OUTPUT_RESERVE = 800   # tokens assumed for the reply when estimating a call
 
 
-def make_client(provider: str, cfg: Config, max_retries: int | None = None) -> OpenAI:
+def make_client(provider: str, cfg: Config, max_retries: int | None = None, key: str | None = None) -> OpenAI:
+    """A client for one provider. `key`, when given, is used instead of the environment's (a web visitor's own)."""
     p = PROVIDERS[provider]
-    key = os.environ.get(p["key_env"], "").strip()
+    key = (os.environ.get(p["key_env"], "") if key is None else key).strip()
     if not key:
         raise ConfigError(f"{p['key_env']} is not set in .env.")
     # The SDK retries timeouts, 429s and 5xx with backoff and honors Retry-After.
@@ -45,6 +46,26 @@ def make_client(provider: str, cfg: Config, max_retries: int | None = None) -> O
         timeout=cfg.limits.request_timeout_seconds,
         max_retries=cfg.limits.max_retries if max_retries is None else max_retries,
     )
+
+
+def check_key(cfg: Config, provider: str, key: str) -> tuple[bool, str]:
+    """Whether a key works for this provider's chat model: lists the provider's models, which uses no tokens.
+
+    The message never contains the key or the provider's error text (which can echo part of it)."""
+    if provider not in PROVIDERS:
+        return False, f"Unknown provider {provider!r}."
+    if not key.strip():
+        return False, "Enter a key first."
+    model = getattr(cfg.models, provider).chat
+    try:
+        available = {m.id for m in make_client(provider, cfg, max_retries=0, key=key).models.list()}
+    except openai.AuthenticationError:
+        return False, f"{provider.capitalize()} rejected this key."
+    except openai.OpenAIError as e:
+        return False, f"Could not check the key with {provider.capitalize()} ({type(e).__name__}). Try again."
+    if model not in available:
+        return False, f"The key works, but it cannot use the chat model {model}."
+    return True, f"The key works with {model}."
 
 
 def redact(text: str) -> str:
@@ -121,9 +142,19 @@ class LLM:
 
     def __init__(self, cfg: Config, role: str, *,
                  sleep: Callable[[float], None] = time.sleep,
-                 clock: Callable[[], float] = time.monotonic):
+                 clock: Callable[[], float] = time.monotonic,
+                 keys: Mapping[str, str] | None = None):
+        """`keys` ({provider: key}), when given, replaces the environment's keys for this object only.
+        The web page passes a visitor's own key this way; it is never put in os.environ, which every
+        visitor of the same server shares."""
         self.cfg = cfg
-        self.chain = resolve_chain(cfg, role)
+        self._keys = dict(keys) if keys is not None else None
+        env = None
+        if self._keys is not None:
+            key_vars = {p["key_env"] for p in PROVIDERS.values()}
+            env = {k: v for k, v in os.environ.items() if k not in key_vars}
+            env |= {PROVIDERS[p]["key_env"]: v for p, v in self._keys.items()}
+        self.chain = resolve_chain(cfg, role, env)
         self._sleep = sleep
         self._throttles = {p: Throttle(getattr(cfg.models, p).tokens_per_minute, clock)
                            for p, _ in self.chain}
@@ -133,7 +164,8 @@ class LLM:
         if provider not in self._clients:
             # Earlier providers fail fast so the fallback is prompt; the last one retries fully.
             self._clients[provider] = make_client(
-                provider, self.cfg, max_retries=None if is_last else 1)
+                provider, self.cfg, max_retries=None if is_last else 1,
+                key=self._keys.get(provider, "") if self._keys is not None else None)
         return self._clients[provider]
 
     def chat(self, messages: list[dict], **kwargs) -> Completion:

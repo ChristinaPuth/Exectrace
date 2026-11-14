@@ -28,10 +28,69 @@ def test_the_page_lists_the_companies_in_the_fixtures(no_keys):
                                                            "Robinhood (robinhood.com)"}
 
 
-def test_without_a_key_the_page_says_what_to_do_and_asks_nothing(no_keys):
+def test_without_a_server_key_the_page_asks_for_the_visitors_key_and_nothing_else(no_keys):
     at = AppTest.from_file(APP, default_timeout=30).run()
-    assert "No LLM key found" in at.error[0].value
-    assert not at.chat_input                          # no question can be asked without a model
+    assert not at.exception
+    assert "Enter a Groq or OpenAI key in the sidebar" in at.info[0].value
+    assert at.sidebar.text_input[0].label == "Groq API key"
+    assert not at.chat_input                          # no question can be asked without a checked key
+
+
+def _fake_check(calls):
+    def check(cfg, provider, key):
+        calls.append((provider, key))
+        return (key == "gsk_good_test_key"), ("The key works." if key == "gsk_good_test_key" else "Rejected.")
+    return check
+
+
+def test_a_checked_visitor_key_opens_the_chat_and_never_reaches_the_environment(no_keys, monkeypatch):
+    import os
+    import leadership.llm
+    calls = []
+    monkeypatch.setattr(leadership.llm, "check_key", _fake_check(calls))   # no network in fast tests
+    at = AppTest.from_file(APP, default_timeout=30).run()
+    at.sidebar.text_input[0].set_value("gsk_bad_test_key").run()
+    at.sidebar.button[0].click().run()
+    assert at.sidebar.error[0].value == "Rejected." and not at.chat_input
+    at.sidebar.text_input[0].set_value("gsk_good_test_key").run()
+    at.sidebar.button[0].click().run()
+    assert not at.exception and at.sidebar.success[0].value == "The key works."
+    assert at.chat_input[0].placeholder == "Ask about Campfire's leadership"
+    assert calls == [("groq", "gsk_bad_test_key"), ("groq", "gsk_good_test_key")]
+    # The key is for this session's agent only: not in the environment, not stored as a fingerprint.
+    assert os.environ["GROQ_API_KEY"] == "" and "gsk_good_test_key" not in at.session_state["checked"]
+    agent = next(iter(at.session_state["agents"].values()))
+    assert agent.llm.chain[0][0] == "groq" and agent.llm._keys == {"groq": "gsk_good_test_key"}
+    # Changing the key closes the chat until the new one is checked.
+    at.sidebar.text_input[0].set_value("gsk_other_test_key").run()
+    assert not at.chat_input and "The key changed" in at.sidebar.info[0].value
+
+
+def test_the_key_check_needs_a_key_and_a_known_provider():
+    from leadership.config import load_config
+    from leadership.llm import check_key
+    assert check_key(load_config(), "groq", " ") == (False, "Enter a key first.")
+    assert check_key(load_config(), "acme", "x")[0] is False
+
+
+@pytest.mark.llm
+def test_real_key_check_and_a_question_with_the_visitors_key(no_keys):
+    """A rejected key (one request, no tokens), then the real Groq key from .env typed in as a visitor would."""
+    from dotenv import dotenv_values
+    from leadership.config import load_config
+    from leadership.llm import check_key
+    ok, message = check_key(load_config(), "groq", "gsk_invalid_key_for_acceptance_test")
+    assert not ok and message == "Groq rejected this key."
+    key = dotenv_values(ROOT / ".env").get("GROQ_API_KEY")
+    if not key:
+        pytest.skip("no GROQ_API_KEY in .env")
+    at = AppTest.from_file(APP, default_timeout=180).run()
+    at.sidebar.selectbox[0].select("robinhood.com").run()
+    at.sidebar.text_input[0].set_value(key).run()
+    at.sidebar.button[0].click().run()
+    assert at.sidebar.success[0].value.startswith("The key works")
+    at.chat_input[0].set_value("Who is the CEO?").run()
+    assert not at.exception and "Tenev" in " ".join(m.value for m in at.markdown)
 
 
 @pytest.mark.llm
