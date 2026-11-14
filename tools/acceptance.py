@@ -161,6 +161,19 @@ STAGES: dict[str, list[tuple[str, list[str], dict[str, str], int]]] = {
         ("No key or contact address in any file that could be committed, or in the run logs",
          ["uv", "run", "python", "tools/scan_secrets.py"], {}, 0),
     ],
+    # M7: delivery. The fresh-clone step makes real model calls (about 20): the clone has no cache.
+    "M7": [
+        ("Whole fast suite (no network, no keys)", ["uv", "run", "pytest", "-q"], {}, 0),
+        ("Deliverables committed: database and JSON for both companies, eval results, citation review, gold sets",
+         ["git", "ls-files", "--error-unmatch", "fixtures/leadership.db", "fixtures/meetcampfire.com.json",
+          "fixtures/robinhood.com.json", "fixtures/chat_eval_results.json", "fixtures/citation_review.md",
+          "fixtures/gold/meetcampfire.com.json", "fixtures/gold/robinhood.com.json", "README.md", "SPEC.md"], {}, 0),
+        ("Chat evaluation (answers from the cache)", ["uv", "run", "leadership", "eval", "--chat"], {}, 0),
+        ("Fresh clone: install, fast suite, the four sample questions for both companies, the web page",
+         ["uv", "run", "python", "tools/fresh_clone.py", "--max-calls", "40"], {}, 0),
+        ("No key or contact address in any file that could be committed (session export included), or in the "
+         "run logs", ["uv", "run", "python", "tools/scan_secrets.py"], {}, 0),
+    ],
 }
 
 

@@ -1,0 +1,7 @@
+# Keep line endings stable on every platform. The chat cache key hashes agent.py and
+# sqlguard.py byte for byte, so a CRLF checkout would invalidate every cached answer.
+* text=auto eol=lf
+*.db binary
+*.xlsx binary
+*.png binary
+*.jpg binary

@@ -175,7 +175,7 @@
           "SELECT person, title, status, employment_status, ended_on, end_reported_on, ended_by_source_url, ended_by_source_date, source_url, source_date FROM leadership WHERE person = 'Jason Warnick' ORDER BY CASE WHEN status='current' THEN 0 WHEN status='announced' THEN 1 WHEN status='former' THEN 2 ELSE 3 END, COALESCE(ended_on, end_reported_on, last_seen) DESC LIMIT 10;"
         ],
         "sample": null,
-        "cached": false,
+        "cached": true,
         "grounding": [],
         "corrected": [
           "Jason Warnick: the end of the role is cited to https://fortune.com/2025/12/29/who-is-robinhoods-cfo-shiv-verma-transition, which is not a source showing it ended; cite ended_by_source_url (https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm, https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm)",

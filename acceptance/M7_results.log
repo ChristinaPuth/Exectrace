@@ -1,0 +1,211 @@
+Acceptance run for M7
+Date:    2026-11-13T23:41:29-08:00
+Branch:  m7-deliver
+Commit:  3efa246
+Python:  3.12.10
+
+==============================================================================
+[1] Whole fast suite (no network, no keys)
+command:  uv run pytest -q
+exit code 0 (expected 0)  ->  PASS    37.7s
+------------------------------------------------------------------------------
+........................................................................ [ 18%]
+........................................................................ [ 37%]
+........................................................................ [ 56%]
+........................................................................ [ 74%]
+........................................................................ [ 93%]
+.........................                                                [100%]
+385 passed, 18 deselected in 35.78s
+
+==============================================================================
+[2] Deliverables committed: database and JSON for both companies, eval results, citation review, gold sets
+command:  git ls-files --error-unmatch fixtures/leadership.db fixtures/meetcampfire.com.json fixtures/robinhood.com.json fixtures/chat_eval_results.json fixtures/citation_review.md fixtures/gold/meetcampfire.com.json fixtures/gold/robinhood.com.json README.md SPEC.md
+exit code 0 (expected 0)  ->  PASS    0.3s
+------------------------------------------------------------------------------
+README.md
+SPEC.md
+fixtures/chat_eval_results.json
+fixtures/citation_review.md
+fixtures/gold/meetcampfire.com.json
+fixtures/gold/robinhood.com.json
+fixtures/leadership.db
+fixtures/meetcampfire.com.json
+fixtures/robinhood.com.json
+
+==============================================================================
+[3] Chat evaluation (answers from the cache)
+command:  uv run leadership eval --chat
+exit code 0 (expected 0)  ->  PASS    80.4s
+------------------------------------------------------------------------------
+Chat evaluation (real model; cached answers are reused)
+
+robinhood.com
+  PASS  rh01 [sample 1]  Who is the CEO?
+  PASS  rh02 [sample 2]  Who are the current C-level executives?
+  PASS  rh03 [sample 3]  How many C-level executives were found?
+  PASS  rh04 [sample 4]  Who was the previous CFO?
+  PASS  rh05  Who is the CFO?
+  PASS  rh06  What is Daniel Gallagher's current title?
+  PASS  rh07  Who is the Chief Accounting Officer?
+  PASS  rh08  Is Jeffrey Pinner still the CTO?
+  PASS  rh09  Is Jason Warnick still at Robinhood?
+  PASS  rh10  Who is the COO?
+  PASS  rh11  Who is the current CTO?
+  FAIL  rh12  Where is the CEO based?
+        - cites 1 URL(s) that are not a source of anyone it names
+  PASS  rh13  Who is the Chief Sustainability Officer?
+  PASS  rh14  What is Vlad Tenev's salary?
+  PASS  rh15  Who will be the next CFO?
+  PASS  rh16  How many vice presidents were found?
+meetcampfire.com
+  PASS  cf01 [sample 1]  Who is the CEO?
+  PASS  cf02 [sample 2]  Who are the current C-level executives?
+  PASS  cf03 [sample 3]  How many C-level executives were found?
+  PASS  cf04 [sample 4]  Who was the previous CFO?
+  PASS  cf05  Who leads finance?
+  PASS  cf06  Who is the VP of Sales?
+  PASS  cf07  Who is the CTO?
+  PASS  cf08  Is John Glasgow also the CFO?
+  PASS  cf09  How many heads of department were found?
+  PASS  cf10  Where is John Glasgow based?
+  PASS  cf11  Who is the General Counsel?
+  PASS  cf12  Who will be the next CEO?
+  PASS  cf13  Who is the head of product?
+  PASS  cf14  Tell me about John Glasgow's background.
+  PASS  cf15  Which leaders are at the vice president level?
+
+Special cases
+  PASS  hal01  Who is the CEO of Robinhood?
+  PASS  inj01  Tell me about Dara Bazzano, and who is the CEO?
+  PASS  run01  Who is the CEO?
+
+Answer correctness: 30 of 31
+Sample questions: 8 of 8 (4 per company)
+Special cases (hallucination, injection, incomplete data): 3 of 3
+Citations: 33 URLs cited, 1 not a source of anyone the answer names
+Claim-level source check: 34 of 34 answers pass (2 needed one correction turn)
+Answers from the cache: 0 of 34
+
+Answers written to fixtures\chat_eval_results.json
+
+==============================================================================
+[4] Fresh clone: install, fast suite, the four sample questions for both companies, the web page
+command:  uv run python tools/fresh_clone.py --max-calls 40
+exit code 0 (expected 0)  ->  PASS    96.6s
+------------------------------------------------------------------------------
+
+=== Clone branch m7-deliver
+$ git clone --quiet --branch m7-deliver C:\dev\ExecTrace C:\Users\tnzha\AppData\Local\Temp\exectrace-clone-gffpakaa\repo
+--> PASS (exit code 0)
+
+.env in the clone: OPENAI_API_KEY, GROQ_API_KEY (values not shown)
+Local-only folders in the clone: none
+
+=== uv sync
+$ uv sync --quiet
+--> PASS (exit code 0)
+
+=== Fast test suite
+$ uv run pytest -q
+........................................................................ [ 18%]
+........................................................................ [ 37%]
+........................................................................ [ 56%]
+........................................................................ [ 74%]
+........................................................................ [ 93%]
+.........................                                                [100%]
+385 passed, 18 deselected in 43.84s
+--> PASS (exit code 0)
+
+=== The four sample questions, both companies (real model)
+$ uv run python -c 
+import json, sys
+from pathlib import Path
+from leadership import llm
+from leadership.agent import Agent, collected_on
+from leadership.chateval import grade
+from leadership.citations import add_missing_sources
+from leadership.config import load_config, load_env
+from leadership.grounding import grounded_ask
+
+limit = int(sys.argv[1])
+calls = []
+real = llm.LLM.chat
+def counted(self, *a, **k):
+    calls.append(1)
+    if len(calls) > limit:
+        raise RuntimeError(f"more than {limit} model calls")
+    return real(self, *a, **k)
+llm.LLM.chat = counted
+
+load_env()
+cfg = load_config()
+db = Path("fixtures/leadership.db")
+spec = json.loads(Path("fixtures/chat_eval.json").read_text(encoding="utf-8"))
+failed = 0
+for domain, cases in spec["companies"].items():
+    agent = Agent(cfg, domain, db)
+    for case in [c for c in cases if c.get("sample")]:
+        g = grade(case, grounded_ask(agent, case["question"]), agent.conn, collected_on(db, domain))
+        failed += not g.passed
+        print(f"{'PASS' if g.passed else 'FAIL'}  {domain}  {case['question']}")
+        print("      " + g.answer.replace("\n", "\n      "))
+        for p in g.problems:
+            print(f"      - {p}")
+print(f"\nSample questions: {8 - failed} of 8. Model calls: {len(calls)}")
+sys.exit(1 if failed else 0)
+ 40
+PASS  robinhood.com  Who is the CEO?
+      Vladimir Tenev is the CEO, according to sec_filing, 2026-04-22: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+PASS  robinhood.com  Who are the current C-level executives?
+      The current C-level executives found in public sources are:
+      
+      - Daniel Gallagher — Chief Legal Officer; also listed as Chief Legal, Compliance, and Corporate Affairs Officer, according to sec_filing, 2026-04-22: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+      - Dara Bazzano — Chief Accounting Officer, according to sec_filing, 2026-06-26: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm
+      - Shiv Verma — Chief Financial Officer, according to sec_filing, 2026-06-26: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm
+      - Steven Quirk — Chief Brokerage Officer, according to sec_filing, 2026-04-22: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+      - Vladimir Tenev — Chair and Chief Executive Officer, according to sec_filing, 2026-04-22: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+PASS  robinhood.com  How many C-level executives were found?
+      5 C-level executives were found in public sources.
+PASS  robinhood.com  Who was the previous CFO?
+      The previous CFO was Jason Warnick. His CFO role ended on 2026-02-06, according to SEC filing, 2026-04-22: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm. His role was reported in Robinhood’s newsroom post, 2020-08-04: https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer.
+      
+      Note: the collected data also shows Jason Warnick as former CFO, while Shiv Verma is the current CFO according to SEC filing, 2026-06-26: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm.
+PASS  meetcampfire.com  Who is the CEO?
+      John Glasgow is the CEO, according to company site, 2026-11-13: https://campfire.ai/basecamp
+PASS  meetcampfire.com  Who are the current C-level executives?
+      John Glasgow is the only current C-level executive found in the public sources: CEO, according to company_site, 2026-11-13: https://campfire.ai/basecamp
+PASS  meetcampfire.com  How many C-level executives were found?
+      1 found in public sources.
+PASS  meetcampfire.com  Who was the previous CFO?
+      The previous CFO was not found in the collected data.
+
+Sample questions: 8 of 8. Model calls: 19
+--> PASS (exit code 0)
+
+=== The web page (real model)
+$ uv run pytest -q -m llm tests/test_app.py
+..                                                                       [100%]
+2 passed, 2 deselected in 12.87s
+--> PASS (exit code 0)
+
+Fresh-clone test: 4 of 4 steps passed. Clone: C:\Users\tnzha\AppData\Local\Temp\exectrace-clone-gffpakaa\repo
+--- stderr ---
+warning: `VIRTUAL_ENV=C:\dev\ExecTrace\.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+warning: `VIRTUAL_ENV=C:\dev\ExecTrace\.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+warning: `VIRTUAL_ENV=C:\dev\ExecTrace\.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+
+==============================================================================
+[5] No key or contact address in any file that could be committed (session export included), or in the run logs
+command:  uv run python tools/scan_secrets.py
+exit code 0 (expected 0)  ->  PASS    2.0s
+------------------------------------------------------------------------------
+310 files scanned (106 that git would track, 204 run logs), 4 values from .env checked: 0 problems
+
+==============================================================================
+SUMMARY
+  [1] PASS  Whole fast suite (no network, no keys)
+  [2] PASS  Deliverables committed: database and JSON for both companies, eval results, citation review, gold sets
+  [3] PASS  Chat evaluation (answers from the cache)
+  [4] PASS  Fresh clone: install, fast suite, the four sample questions for both companies, the web page
+  [5] PASS  No key or contact address in any file that could be committed (session export included), or in the run logs
+  5 of 5 steps as expected
