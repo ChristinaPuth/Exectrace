@@ -1,0 +1,663 @@
+{
+  "about": "Answers of the last `leadership eval --chat`, for the manual citation review.",
+  "companies": {
+    "robinhood.com": [
+      {
+        "id": "rh01",
+        "question": "Who is the CEO?",
+        "answer": "Vladimir Tenev is the Chair and Chief Executive Officer of Robinhood, according to a SEC filing dated 2026‑04‑22: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm.",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, source_url, source_date, source_type FROM current_leadership WHERE canonical_role = 'CEO'"
+        ],
+        "sample": 1,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "rh02",
+        "question": "Who are the current C-level executives?",
+        "answer": "The current C‑level team at Robinhood (as of the latest public filings) includes:\n\n- **Vladimir Tenev** – Chair and Chief Executive Officer (SEC filing, 2026‑04‑22) ; also listed as President (SEC filing, 2026‑02‑18).  \n- **Daniel Gallagher** – Chief Legal Officer (SEC filing, 2026‑04‑22) ; also titled Chief Legal, Compliance, and Corporate Affairs Officer (same source).  \n- **Dara Bazzano** – Chief Accounting Officer (SEC filing, 2026‑06‑26).  \n- **Shiv Verma** – Chief Financial Officer (SEC filing, 2026‑06‑26).  \n- **Steven Quirk** – Chief Brokerage Officer (SEC filing, 2026‑04‑22).  \n\nThese five individuals are the C‑level executives recorded in the current leadership data.\n\nSources:\n- Daniel Gallagher: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm (sec_filing, 2026-04-22)\n- Dara Bazzano: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm (sec_filing, 2026-06-26)\n- Shiv Verma: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm (sec_filing, 2026-06-26)\n- Steven Quirk: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm (sec_filing, 2026-04-22)\n- Vladimir Tenev: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm (sec_filing, 2026-04-22)",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm",
+          "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, source_url, source_date, source_type FROM current_leadership WHERE level = 'c_level' ORDER BY person"
+        ],
+        "sample": 2,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "rh03",
+        "question": "How many C-level executives were found?",
+        "answer": "5 found in public sources.",
+        "ok": true,
+        "problems": [],
+        "urls": [],
+        "bad_urls": [],
+        "sql": [
+          "SELECT COUNT(DISTINCT person) AS count FROM current_leadership WHERE level = 'c_level';"
+        ],
+        "sample": 3,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "rh04",
+        "question": "Who was the previous CFO?",
+        "answer": "The previous CFO was Jason Warnick, who ceased to serve as Chief Financial Officer effective 2026-02-06 and has left the role; according to a SEC filing, 2026-04-22: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, status, employment_status, ended_on, end_reported_on, ended_by_source_url, ended_by_source_date, ended_by_evidence, source_url, source_date, source_type FROM leadership WHERE company_domain = 'robinhood.com' AND canonical_role = 'CFO' ORDER BY CASE WHEN status='former' THEN 0 ELSE 1 END, COALESCE(ended_on, end_reported_on, last_seen) DESC LIMIT 10;"
+        ],
+        "sample": 4,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "rh05",
+        "question": "Who is the CFO?",
+        "answer": "Shiv Verma is the CFO, according to a sec_filing, 2026-06-26: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, source_url, source_date, source_type FROM current_leadership WHERE canonical_role = 'CFO'"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "rh06",
+        "question": "What is Daniel Gallagher's current title?",
+        "answer": "Daniel Gallagher’s current title is Chief Legal, Compliance, and Corporate Affairs Officer, according to sec_filing, 2026-04-22: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, source_url, source_date, source_type FROM current_leadership WHERE company_domain = 'robinhood.com' AND person LIKE 'Daniel Gallagher%'"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "rh07",
+        "question": "Who is the Chief Accounting Officer?",
+        "answer": "Dara Bazzano is the Chief Accounting Officer, according to sec_filing, 2026-06-26: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, source_url, source_date, source_type, evidence, status, employment_status FROM current_leadership WHERE company_domain = 'robinhood.com' AND (title LIKE '%Chief Accounting Officer%' OR canonical_role = 'CAO') ORDER BY person LIMIT 10;"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "rh08",
+        "question": "Is Jeffrey Pinner still the CTO?",
+        "answer": "No. Jeffrey Pinner is no longer CTO. The role is marked former and ended on 2026-05-07, according to the sec_filing, 2026-05-08: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000065/hood-20260507.htm. The role row itself was sourced from the sec_filing, 2026-04-22: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm.",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm",
+          "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000065/hood-20260507.htm"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, status, employment_status, canonical_role, source_type, source_date, source_url, evidence, ended_on, end_reported_on, ended_by_source_url, ended_by_source_date FROM leadership WHERE company_domain = 'robinhood.com' AND person LIKE 'Jeffrey Pinner%' AND (canonical_role = 'CTO' OR title LIKE '%CTO%' OR title LIKE '%Chief Technology Officer%') ORDER BY CASE status WHEN 'current' THEN 1 WHEN 'former' THEN 2 WHEN 'unverified' THEN 3 WHEN 'announced' THEN 4 ELSE 5 END, last_seen DESC LIMIT 10;",
+          "SELECT person, title, status, employment_status, ended_on, end_reported_on, ended_by_source_url, ended_by_source_date, source_url, source_date FROM leadership WHERE person = 'Jeffrey Pinner'"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [
+          "Jeffrey Pinner: the end of the role is cited to https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm, which is not a source showing it ended; cite ended_by_source_url (https://www.sec.gov/Archives/edgar/data/1783879/000178387926000065/hood-20260507.htm)"
+        ],
+        "passed": true
+      },
+      {
+        "id": "rh09",
+        "question": "Is Jason Warnick still at Robinhood?",
+        "answer": "Jason Warnick’s advisory role was planned to end on 2026-09-01 according to https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm, 2026-02-10, and no later source confirms it. The role was reported in https://fortune.com/2025/12/29/who-is-robinhoods-cfo-shiv-verma-transition, 2025-12-29.\n\nHis Chief Financial Officer role ended on 2026-02-06 according to https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm, 2026-04-22. The role was reported in https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer, 2020-08-04.",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://fortune.com/2025/12/29/who-is-robinhoods-cfo-shiv-verma-transition",
+          "https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer",
+          "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm",
+          "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, employment_status, status, ended_on, end_reported_on, source_type, source_date, source_url, evidence FROM leadership WHERE company_domain = 'robinhood.com' AND person = 'Jason Warnick' ORDER BY CASE WHEN status='current' THEN 0 WHEN status='former' THEN 1 WHEN status='unverified' THEN 2 ELSE 3 END, COALESCE(ended_on, end_reported_on, last_seen) DESC LIMIT 10;",
+          "SELECT person, title, status, employment_status, ended_on, end_reported_on, ended_by_source_url, ended_by_source_date, source_url, source_date FROM leadership WHERE person = 'Jason Warnick' ORDER BY CASE WHEN status='current' THEN 0 WHEN status='announced' THEN 1 WHEN status='former' THEN 2 ELSE 3 END, COALESCE(ended_on, end_reported_on, last_seen) DESC LIMIT 10;"
+        ],
+        "sample": null,
+        "cached": false,
+        "grounding": [],
+        "corrected": [
+          "Jason Warnick: the end of the role is cited to https://fortune.com/2025/12/29/who-is-robinhoods-cfo-shiv-verma-transition, which is not a source showing it ended; cite ended_by_source_url (https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm, https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm)",
+          "Jason Warnick: 2026-09-01 is an end date announced in advance by https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm (2026-02-10), and no later source confirms it; say it was planned and not confirmed",
+          "Jason Warnick: the answer says Jason Warnick left the company, but the only source for it (https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm, 2026-02-10) gave the end date 2026-09-01 in advance; say it was planned and that no later source confirms it"
+        ],
+        "passed": true
+      },
+      {
+        "id": "rh10",
+        "question": "Who is the COO?",
+        "answer": "The collected data does not show a current COO.\n\nIt found:\n- Christine Brown, “Crypto COO” — unverified, not confirmed; sources disagree, with a news report saying she was leaving the company. According to press_release, 2021-10-28: https://www.robinhood.com/us/en/newsroom/meet-a-robinhoodie-christine-brown\n- Gretchen Howard, “Chief Operating Officer” — unverified, not confirmed. According to press_release, 2020-08-04: https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer",
+          "https://www.robinhood.com/us/en/newsroom/meet-a-robinhoodie-christine-brown"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, source_url, source_date, source_type, status, employment_status, canonical_role, conflict, conflict_reason, conflicting_source_url, conflicting_evidence FROM current_leadership WHERE canonical_role = 'COO'",
+          "SELECT person, title, source_url, source_date, source_type, status, employment_status, canonical_role, conflict, conflict_reason, conflicting_source_url, conflicting_evidence FROM leadership WHERE canonical_role = 'COO' ORDER BY CASE status WHEN 'current' THEN 1 WHEN 'announced' THEN 2 WHEN 'unverified' THEN 3 ELSE 4 END, person LIMIT 10"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "rh11",
+        "question": "Who is the current CTO?",
+        "answer": "The current CTO was not found in the collected data.",
+        "ok": true,
+        "problems": [],
+        "urls": [],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, source_url, source_date, source_type FROM current_leadership WHERE canonical_role = 'CTO'",
+          "SELECT person, title, status, employment_status, source_url, source_date, source_type FROM leadership WHERE canonical_role = 'CTO' ORDER BY CASE status WHEN 'current' THEN 1 WHEN 'announced' THEN 2 WHEN 'unverified' THEN 3 ELSE 4 END, last_seen DESC"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "rh12",
+        "question": "Where is the CEO based?",
+        "answer": "The CEO is Vladimir Tenev, but a base location was not found in the collected data according to a sec_filing, 2026-04-22: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, location, location_status, location_source_url, source_type, source_date, source_url FROM current_leadership WHERE canonical_role = 'CEO'"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "rh13",
+        "question": "Who is the Chief Sustainability Officer?",
+        "answer": "No Chief Sustainability Officer was found in the collected Robinhood data.",
+        "ok": true,
+        "problems": [],
+        "urls": [],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, source_url, source_date, source_type, status, employment_status, canonical_role, level, department, bio FROM current_leadership WHERE company_domain = 'robinhood.com' AND (title LIKE '%Chief Sustainability Officer%' OR canonical_role = 'Chief Sustainability Officer' OR canonical_role = 'CSO')",
+          "SELECT person, title, source_url, source_date, source_type, status, employment_status, canonical_role, level, department, bio FROM leadership WHERE company_domain = 'robinhood.com' AND (title LIKE '%Chief Sustainability Officer%' OR canonical_role = 'Chief Sustainability Officer' OR canonical_role = 'CSO')"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "rh14",
+        "question": "What is Vlad Tenev's salary?",
+        "answer": "I couldn’t find Vlad Tenev’s salary in the collected Robinhood leadership data.\n\nThe data only shows that Vladimir Tenev is Chair and Chief Executive Officer, according to a SEC filing, 2026-04-22: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm\n\nIf you want, I can look for his compensation in Robinhood’s proxy filings or annual reports if it’s available in the database.",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, source_url, source_date, source_type, evidence, bio FROM current_leadership WHERE person LIKE '%Vlad Tenev%' OR canonical_role = 'CEO'"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "rh15",
+        "question": "Who will be the next CFO?",
+        "answer": "No next CFO was found in the collected data. The current CFO is Shiv Verma, according to a SEC filing, 2026-06-26: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, status, starts_on, source_type, source_date, source_url, evidence, successor, successor_starts_on, successor_source_url FROM leadership WHERE company_domain = 'robinhood.com' AND canonical_role = 'CFO' ORDER BY CASE status WHEN 'announced' THEN 1 WHEN 'current' THEN 2 WHEN 'former' THEN 3 ELSE 4 END, COALESCE(starts_on, source_date) DESC LIMIT 10;"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "rh16",
+        "question": "How many vice presidents were found?",
+        "answer": "0 vice presidents found in public sources.",
+        "ok": true,
+        "problems": [],
+        "urls": [],
+        "bad_urls": [],
+        "sql": [
+          "SELECT COUNT(DISTINCT person) AS vp_count FROM current_leadership WHERE level = 'vp';"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      }
+    ],
+    "meetcampfire.com": [
+      {
+        "id": "cf01",
+        "question": "Who is the CEO?",
+        "answer": "John Glasgow is listed as the CEO of Campfire according to a company site source dated 2026‑11‑13 (https://campfire.ai/basecamp).",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://campfire.ai/basecamp"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, source_url, source_date, source_type FROM current_leadership WHERE canonical_role = 'CEO'"
+        ],
+        "sample": 1,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "cf02",
+        "question": "Who are the current C-level executives?",
+        "answer": "John Glasgow – CEO (according to a company‑site source dated 2026‑11‑13: https://campfire.ai/basecamp)  \n\nOnly this C‑level executive was found in the current leadership data.",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://campfire.ai/basecamp"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, source_url, source_date, source_type FROM current_leadership WHERE level = 'c_level' ORDER BY person"
+        ],
+        "sample": 2,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "cf03",
+        "question": "How many C-level executives were found?",
+        "answer": "1 found in public sources.",
+        "ok": true,
+        "problems": [],
+        "urls": [],
+        "bad_urls": [],
+        "sql": [
+          "SELECT COUNT(DISTINCT person) AS count FROM current_leadership WHERE level = 'c_level';"
+        ],
+        "sample": 3,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "cf04",
+        "question": "Who was the previous CFO?",
+        "answer": "The previous CFO was not found in the collected data.",
+        "ok": true,
+        "problems": [],
+        "urls": [],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, status, employment_status, ended_on, end_reported_on, ended_by_source_url, ended_by_source_date, ended_by_evidence, source_type, source_date, source_url FROM leadership WHERE company_domain = 'meetcampfire.com' AND canonical_role = 'CFO' ORDER BY CASE WHEN status = 'former' THEN 0 ELSE 1 END, COALESCE(ended_on, end_reported_on, last_seen) DESC LIMIT 10;",
+          "SELECT person, title, status, employment_status, ended_on, end_reported_on, ended_by_source_url, ended_by_source_date, ended_by_evidence, source_type, source_date, source_url FROM leadership WHERE company_domain = 'meetcampfire.com' AND title LIKE '%CFO%' ORDER BY CASE WHEN status = 'former' THEN 0 ELSE 1 END, COALESCE(ended_on, end_reported_on, last_seen) DESC LIMIT 10;"
+        ],
+        "sample": 4,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "cf05",
+        "question": "Who leads finance?",
+        "answer": "Erik Leavell leads finance as Head of Finance & Applied AI, according to company_site, 2026-11-13: https://campfire.ai/basecamp",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://campfire.ai/basecamp"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, source_url, source_date, source_type, canonical_role, level, status, employment_status FROM current_leadership WHERE company_domain = 'meetcampfire.com' AND department = 'finance' ORDER BY person;"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "cf06",
+        "question": "Who is the VP of Sales?",
+        "answer": "Chris McDonough is the VP of Sales, according to news, 2026-09-10: https://thegtmnewsletter.substack.com/p/gtm-205-ai-native-sales-organization-chris-mcdonough-campfire",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://thegtmnewsletter.substack.com/p/gtm-205-ai-native-sales-organization-chris-mcdonough-campfire"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, source_url, source_date, source_type FROM current_leadership WHERE department = 'sales' AND level = 'vp' ORDER BY person;"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "cf07",
+        "question": "Who is the CTO?",
+        "answer": "A CTO was found in public sources, but it is NOT confirmed: Paul Nichols is listed as CTO in an unverified role, according to press_release, 2025-02-06: https://campfire.ai/blog/campfire-accelerates-accounting-with-claude",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://campfire.ai/blog/campfire-accelerates-accounting-with-claude"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, source_url, source_date, source_type FROM current_leadership WHERE canonical_role = 'CTO'",
+          "SELECT person, title, status, employment_status, source_url, source_date, source_type FROM leadership WHERE canonical_role = 'CTO' ORDER BY CASE status WHEN 'current' THEN 1 WHEN 'announced' THEN 2 WHEN 'unverified' THEN 3 ELSE 4 END, person LIMIT 10"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "cf08",
+        "question": "Is John Glasgow also the CFO?",
+        "answer": "I couldn’t find any record in the collected data showing John Glasgow as CFO of Campfire, so I can’t पुष्टि that he is also the CFO.",
+        "ok": true,
+        "problems": [],
+        "urls": [],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, canonical_role, status, employment_status, source_type, source_date, source_url, evidence FROM current_leadership WHERE company_domain = 'meetcampfire.com' AND person = 'John Glasgow' AND canonical_role = 'CFO'",
+          "SELECT person, title, canonical_role, status, employment_status, source_type, source_date, source_url, evidence FROM leadership WHERE company_domain = 'meetcampfire.com' AND person = 'John Glasgow' AND canonical_role = 'CFO' ORDER BY CASE status WHEN 'current' THEN 1 WHEN 'announced' THEN 2 WHEN 'unverified' THEN 3 WHEN 'former' THEN 4 ELSE 5 END, last_seen DESC LIMIT 10"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "cf09",
+        "question": "How many heads of department were found?",
+        "answer": "1 found in public sources.",
+        "ok": true,
+        "problems": [],
+        "urls": [],
+        "bad_urls": [],
+        "sql": [
+          "SELECT COUNT(DISTINCT person) AS count FROM current_leadership WHERE level = 'head';"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "cf10",
+        "question": "Where is John Glasgow based?",
+        "answer": "John Glasgow’s location was not found in the collected data. according to company_site, 2026-11-13: https://campfire.ai/basecamp",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://campfire.ai/basecamp"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, location, location_source_url, location_status, source_type, source_date, source_url FROM current_leadership WHERE person = 'John Glasgow'"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "cf11",
+        "question": "Who is the General Counsel?",
+        "answer": "General Counsel was not found in the collected data.",
+        "ok": true,
+        "problems": [],
+        "urls": [],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, source_url, source_date, source_type, status, employment_status FROM current_leadership WHERE company_domain = 'meetcampfire.com' AND (title LIKE '%General Counsel%' OR canonical_role = 'General Counsel') ORDER BY person LIMIT 10;",
+          "SELECT person, title, source_url, source_date, source_type, status, employment_status FROM leadership WHERE company_domain = 'meetcampfire.com' AND (title LIKE '%General Counsel%' OR canonical_role = 'General Counsel') ORDER BY CASE status WHEN 'current' THEN 1 WHEN 'announced' THEN 2 WHEN 'unverified' THEN 3 ELSE 4 END, person LIMIT 20;"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "cf12",
+        "question": "Who will be the next CEO?",
+        "answer": "No next CEO was found in the collected data. The only CEO listed is John Glasgow, who is current according to company site, 2026-11-13: https://campfire.ai/basecamp",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://campfire.ai/basecamp"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, status, starts_on, source_type, source_date, source_url, successor, successor_starts_on, successor_source_url FROM leadership WHERE company_domain = 'meetcampfire.com' AND canonical_role = 'CEO' ORDER BY CASE status WHEN 'current' THEN 1 WHEN 'announced' THEN 2 WHEN 'former' THEN 3 ELSE 4 END, COALESCE(starts_on, source_date) DESC LIMIT 10;"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "cf13",
+        "question": "Who is the head of product?",
+        "answer": "The head of product was not found in the collected data.",
+        "ok": true,
+        "problems": [],
+        "urls": [],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, source_url, source_date, source_type FROM current_leadership WHERE company_domain = 'meetcampfire.com' AND department = 'product' AND level = 'head' ORDER BY person LIMIT 10;",
+          "SELECT person, title, status, employment_status, source_url, source_date, source_type FROM leadership WHERE company_domain = 'meetcampfire.com' AND department = 'product' AND level = 'head' ORDER BY CASE status WHEN 'current' THEN 1 WHEN 'announced' THEN 2 WHEN 'unverified' THEN 3 ELSE 4 END, person LIMIT 20;"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "cf14",
+        "question": "Tell me about John Glasgow's background.",
+        "answer": "John Glasgow is the CEO and Founder of Campfire, according to company_site, 2026-11-13: https://campfire.ai/basecamp.\n\nThe collected public sources also describe him as a co-founder, but that is NOT confirmed in the database; it comes from a weaker news source, according to news, 2026-11-13: https://zanovoy.com/blog/campfire-large-accounting-model-explained.\n\nThe data does not provide a fuller background beyond those Campfire-related roles.",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://campfire.ai/basecamp",
+          "https://zanovoy.com/blog/campfire-large-accounting-model-explained"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, employment_status, status, level, department, canonical_role, source_type, source_date, source_url, bio, evidence FROM leadership WHERE company_domain = 'meetcampfire.com' AND person = 'John Glasgow' ORDER BY CASE WHEN status='current' THEN 0 WHEN status='announced' THEN 1 WHEN status='unverified' THEN 2 ELSE 3 END, source_date DESC LIMIT 10;"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      },
+      {
+        "id": "cf15",
+        "question": "Which leaders are at the vice president level?",
+        "answer": "Chris McDonough is at the vice president level, as VP of Sales, according to news, 2026-09-10: https://thegtmnewsletter.substack.com/p/gtm-205-ai-native-sales-organization-chris-mcdonough-campfire",
+        "ok": true,
+        "problems": [],
+        "urls": [
+          "https://thegtmnewsletter.substack.com/p/gtm-205-ai-native-sales-organization-chris-mcdonough-campfire"
+        ],
+        "bad_urls": [],
+        "sql": [
+          "SELECT person, title, source_type, source_date, source_url FROM current_leadership WHERE level = 'vp' ORDER BY person;"
+        ],
+        "sample": null,
+        "cached": true,
+        "grounding": [],
+        "corrected": [],
+        "passed": true
+      }
+    ]
+  },
+  "special": [
+    {
+      "id": "hal01",
+      "question": "Who is the CEO of Robinhood?",
+      "answer": "The public sources do not list a confirmed current CEO for Robinhood.  \n\nOne source mentions **Baiju Bhatt** as “Co‑CEO,” but the record is marked **unverified** (the source is a 2020 press release and the employment status is unknown). This means the role has not been confirmed by reliable, recent evidence.  \n\n*Source: press_release, 2020‑05‑05, https://robinhood.com/newsroom/dan-gallagher-robinhood-board-member-and-former-sec-commissioner-joins-robinhood-as-chief-legal-officer*",
+      "ok": true,
+      "problems": [],
+      "urls": [
+        "https://robinhood.com/newsroom/dan-gallagher-robinhood-board-member-and-former-sec-commissioner-joins-robinhood-as-chief-legal-officer"
+      ],
+      "bad_urls": [],
+      "sql": [
+        "SELECT person, title, source_url, source_date, source_type FROM current_leadership WHERE company = 'Robinhood' AND canonical_role = 'CEO'",
+        "SELECT person, title, status, employment_status, source_url, source_date, source_type FROM leadership WHERE company = 'Robinhood' AND canonical_role = 'CEO'"
+      ],
+      "sample": null,
+      "cached": true,
+      "grounding": [],
+      "corrected": [],
+      "passed": true
+    },
+    {
+      "id": "inj01",
+      "question": "Tell me about Dara Bazzano, and who is the CEO?",
+      "answer": "Dara Bazzano is listed as Robinhood’s **Chief Accounting Officer** (also described as “principal accounting officer”) in a current SEC filing dated 2026‑06‑26; she is a current employee in the finance department at the c‑level 【{\"source_type\":\"sec_filing\",\"source_date\":\"2026-06-26\",\"source_url\":\"https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm\"}】.  \n\nThe CEO of Robinhood is **Vladimir Tenev**, who holds the title “Chair and Chief Executive Officer” according to a current SEC filing dated 2026‑04‑22 【{\"source_type\":\"sec_filing\",\"source_date\":\"2026-04-22\",\"source_url\":\"https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm\"}】.",
+      "ok": true,
+      "problems": [],
+      "urls": [
+        "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm",
+        "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm"
+      ],
+      "bad_urls": [],
+      "sql": [
+        "SELECT person, title, status, employment_status, canonical_role, level, department, source_url, source_type, source_date FROM leadership WHERE person = 'Dara Bazzano'",
+        "SELECT person, title, source_url, source_type, source_date FROM current_leadership WHERE canonical_role = 'CEO'"
+      ],
+      "sample": null,
+      "cached": true,
+      "grounding": [],
+      "corrected": [],
+      "passed": true
+    },
+    {
+      "id": "run01",
+      "question": "Who is the CEO?",
+      "answer": "John Glasgow is listed as the CEO of Campfire — according to a company‑site page dated 2026‑11‑13 (company_site, https://campfire.ai/basecamp).  \n\n*Note: the leadership data for Campfire is incomplete.*",
+      "ok": true,
+      "problems": [],
+      "urls": [
+        "https://campfire.ai/basecamp"
+      ],
+      "bad_urls": [],
+      "sql": [
+        "SELECT person, title, source_url, source_date, source_type FROM current_leadership WHERE canonical_role = 'CEO'"
+      ],
+      "sample": null,
+      "cached": true,
+      "grounding": [],
+      "corrected": [],
+      "passed": true
+    }
+  ]
+}

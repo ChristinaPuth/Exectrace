@@ -134,6 +134,22 @@ STAGES: dict[str, list[tuple[str, list[str], dict[str, str], int]]] = {
         ("No key or contact address in any file that could be committed, or in the run logs",
          ["uv", "run", "python", "tools/scan_secrets.py"], {}, 0),
     ],
+    # M5 answers come from the cache after the first evaluation run, so a rerun of this
+    # stage makes no model call except the two real-model agent tests.
+    "M5": [
+        ("M5 tests: SQL guard, chat grading, test copies, reference queries, claim-level source check",
+         PYTEST + ["tests/test_sqlguard.py", "tests/test_chat.py", "tests/test_grounding.py"], {}, 0),
+        ("Whole fast suite (no network, no keys)", ["uv", "run", "pytest", "-q"], {}, 0),
+        ("Real model: a cited answer with a full chat log; a provider failure gives an error, not an answer; "
+         "the finance-roles question answered with each claim cited to its own source",
+         PYTEST + ["-m", "llm", "tests/test_chat.py", "tests/test_grounding.py"], {}, 0),
+        ("Chat evaluation: correctness, sample questions, hallucination, injection, incomplete data, citations",
+         ["uv", "run", "leadership", "eval", "--chat"], {}, 0),
+        ("Command-line chat: one question with the SQL shown",
+         ["uv", "run", "leadership", "chat", "robinhood.com", "-q", "Who is the CEO?", "--show-sql"], {}, 0),
+        ("No key or contact address in any file that could be committed, or in the run logs",
+         ["uv", "run", "python", "tools/scan_secrets.py"], {}, 0),
+    ],
 }
 
 
