@@ -55,11 +55,10 @@
       {
         "id": "rh04",
         "question": "Who was the previous CFO?",
-        "answer": "The previous CFO was Jason Warnick, who ceased to serve as Chief Financial Officer effective 2026-02-06 and has left the role; according to a SEC filing, 2026-04-22: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm\n\nSources:\n- Jason Warnick: https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer (press_release, 2020-08-04)",
+        "answer": "The previous CFO was Jason Warnick, who ceased to serve as Chief Financial Officer effective 2026-02-06 and has left the role; according to a SEC filing, 2026-04-22: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm",
         "ok": true,
         "problems": [],
         "urls": [
-          "https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer",
           "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm"
         ],
         "bad_urls": [],

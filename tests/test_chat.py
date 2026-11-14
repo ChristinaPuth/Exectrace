@@ -158,3 +158,85 @@ def test_curly_apostrophes_and_markdown_do_not_break_the_grading(hood):
     nf = {"id": "t", "question": "Salary?", "check": "not_found", "sql": "SELECT person FROM leadership WHERE 0"}
     assert grade(nf, _answer("I couldn’t find Vlad Tenev’s salary in the collected data."), hood).passed
     assert urls_in(f"*Source: {SEC}*") == [SEC]
+
+
+# ------------------------------------------------------------------ regressions found in the M5 review
+def _rows(conn, sql):
+    r = sqlguard.run(conn, sql)
+    return Step(sql=sql, columns=r.columns, rows=[list(x) for x in r.rows])
+
+
+def test_a_person_cited_by_the_source_that_ended_the_role_gets_no_unrelated_source(hood):
+    """The previous-CFO answer cited the SEC filing that ended Warnick's role; a 2020 press release
+    about another executive's hire was still appended as his source."""
+    from leadership.citations import add_missing_sources
+    step = _rows(hood, "SELECT person, title, status, ended_on, ended_by_source_url, ended_by_source_date, "
+                       "source_url, source_date, source_type FROM leadership WHERE canonical_role = 'CFO'")
+    answer = f"The previous CFO was Jason Warnick, effective 2026-02-06, according to a SEC filing: {SEC}"
+    assert add_missing_sources(answer, [step]) == answer
+    # Named without a URL: the source that ended the role is the one appended, not the old press release.
+    added = add_missing_sources("The previous CFO was Jason Warnick.", [step])
+    assert f"Jason Warnick: {SEC}" in added and "smedley" not in added
+
+
+def test_a_shared_surname_alone_does_not_add_the_other_persons_source():
+    from leadership.citations import add_missing_sources
+    step = Step(sql="x", columns=["person", "source_url"],
+                rows=[["Anna Smith", "https://a.example/1"], ["Bob Smith", "https://b.example/2"]])
+    text = add_missing_sources("Anna Smith is the CEO.", [step])
+    assert "https://a.example/1" in text and "https://b.example/2" not in text
+    assert add_missing_sources("Smith is the CEO.", [step]) == "Smith is the CEO."   # ambiguous: add nothing
+
+
+@pytest.mark.parametrize("domain, other_person", [("robinhood.com", "John Glasgow"),
+                                                  ("meetcampfire.com", "Vladimir Tenev")])
+def test_the_agent_reads_only_the_selected_companys_data(domain, other_person, tmp_path):
+    from leadership.agent import Agent
+    from leadership.config import load_config
+    from leadership.runlog import RunLog
+    agent = Agent(load_config(), domain, FIXTURE, llm=object(), log=RunLog(tmp_path / "c.jsonl"))
+    for table in ("leadership", "current_leadership"):
+        assert sqlguard.run(agent.conn, f"SELECT DISTINCT company_domain FROM {table}").rows == [(domain,)]
+        assert not sqlguard.run(agent.conn, f"SELECT 1 FROM {table} WHERE person = '{other_person}'").rows
+    other = "meetcampfire.com" if domain == "robinhood.com" else "robinhood.com"
+    assert other not in agent.system
+    with pytest.raises(sqlguard.GuardError):                     # the full database is not reachable either
+        sqlguard.run(agent.conn, "SELECT * FROM companies")
+
+
+@pytest.mark.parametrize("word", ["exit", "Quit", "q", "quit.", ""])
+def test_the_command_line_chat_stops_on_exit_or_quit(word, monkeypatch, capsys):
+    from leadership import agent as agent_module, cli
+
+    class Fake:
+        company, status, source_db = "Robinhood", "complete", FIXTURE
+
+        def __init__(self, *a, **k):
+            pass
+
+        def ask(self, question):
+            raise AssertionError(f"asked {question!r}")
+
+    monkeypatch.setattr(agent_module, "Agent", Fake)
+    monkeypatch.setattr("builtins.input", lambda prompt="": word)
+    assert cli.main(["chat", "robinhood.com"]) == 0
+    assert "exit, quit" in capsys.readouterr().out
+
+
+def test_a_count_says_what_it_can_miss_when_sources_could_not_be_read():
+    from leadership.citations import add_count_note, unread_sources
+    unread = unread_sources(FIXTURE, "robinhood.com")
+    assert "https://investors.robinhood.com/governance/leadership" in unread
+    zero = [Step(sql="SELECT COUNT(DISTINCT person) FROM current_leadership WHERE level = 'vp'",
+                 columns=["n"], rows=[[0]])]
+    text = add_count_note("0 vice presidents found in public sources.", zero, "robinhood.com", unread)
+    assert text.startswith("0 vice presidents found in public sources.\n\nNote: this counts only")
+    assert f"{len(unread)} sources found for this company could not be read" in text
+    assert "on the company's own site" in text and "None found does not mean there are none" in text
+    five = [Step(sql="select count(*) from current_leadership", columns=["n"], rows=[[5]])]
+    assert "None found" not in add_count_note("5 found.", five, "robinhood.com", unread)
+    partial = add_count_note("5 found.", five, "acme.com", [], "partial_failure")
+    assert "did not finish normally (status partial_failure)" in partial
+    assert add_count_note("5 found.", five, "acme.com", [], "complete") == "5 found."      # nothing missed
+    names = [Step(sql="SELECT person FROM current_leadership", columns=["person"], rows=[["A B"]])]
+    assert add_count_note("A B.", names, "robinhood.com", unread) == "A B."             # not a count
