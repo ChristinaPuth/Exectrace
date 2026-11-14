@@ -1,235 +1,352 @@
 # Company Leadership RAG Agent
 
-Given a company domain, collects its leadership (C-level, VPs, Heads) from
-public sources into a verifiable SQLite dataset, and answers questions over it
-through an LLM chat.
+Give it a company's domain or URL. It finds the company's leadership
+(C-level, vice presidents, heads of department) in public sources, stores
+every fact with the source and the quote that support it, and answers
+questions about it through an LLM chat that can only read that data.
 
-Status: **M0** (project setup) and **M1** (database schema, role resolution
-rules) and **M2** (finding and fetching sources) are done and accepted.
-**M3** (extracting people and roles from the sources) is done and accepted.
-**M4** (verification, location and biography, export, measurement) is done and accepted;
-its recall limits are listed below.
-**M5** (the chat agent, command line) and **M6** (the web UI) are done and accepted. See [SPEC.md](SPEC.md) for
-the design, `SPEC_checklist.xlsx` for the requirement checklist, and
-`acceptance/` for each milestone's test results.
+The repository includes the collected data for both test companies,
+**Campfire** (`meetcampfire.com`) and **Robinhood** (`robinhood.com`), so the
+chat runs straight after cloning, with one LLM key and no collection step.
 
-## Setup
+- [Quick start](#quick-start)
+- [What is delivered](#what-is-delivered)
+- [How it works](#how-it-works): data sourcing, storage design, agent architecture
+- [Measured results](#measured-results)
+- [Known limits](#known-limits)
+- [How this was built with Claude Code](#how-this-was-built-with-claude-code)
+- [Collecting a new company](#collecting-a-new-company)
+- [Tests and configuration](#tests-and-configuration)
 
-Requires [uv](https://docs.astral.sh/uv/).
+## Quick start
+
+Requires [uv](https://docs.astral.sh/uv/) and Python 3.11 or newer (uv
+installs it if needed).
+
+```bash
+git clone https://github.com/ChristinaPuth/Exectrace.git
+```
+
+```bash
+cd Exectrace
+```
 
 ```bash
 uv sync
 ```
 
-Copy `.env.example` to `.env` and fill in at least one of `OPENAI_API_KEY` or
-`GROQ_API_KEY`. Then verify the keys:
+Copy `.env.example` to `.env` and set **one** of `GROQ_API_KEY` or
+`OPENAI_API_KEY`. That is all the chat needs.
 
-```bash
-uv run leadership check
-```
-
-This makes real calls: it lists the models each key can use and tests JSON
-output and tool calling on the models named in `config.toml`.
-
-## Collect sources
-
-```bash
-uv run leadership collect https://robinhood.com/
-```
-
-Finds and fetches the company's public leadership sources: its own pages,
-SEC filings if it is a public company, and web search results. Pages are
-cached, so a second run makes no network calls; add `--refresh` to fetch
-again. Each run prints its usage against the limits in `config.toml` and
-writes a log to `logs/`. To see what was stored:
-
-```bash
-uv run python tools/show_run.py robinhood.com
-```
-
-Optional keys in `.env`: `TAVILY_API_KEY` (web search), `SEC_USER_AGENT` (SEC
-filings), `WIKIPEDIA_USER_AGENT` (Wikipedia). Each source is skipped, and the
-run says so, when its key is missing.
-
-Known limits of collection:
-
-- **Team pages may be missing or unreadable.** Campfire has no team page.
-  Robinhood's leadership page is on a site that refuses automated clients;
-  it is recorded as `skipped` with the reason. The tool never imitates a
-  browser to get past a refusal. Every run report ends with the list of
-  pages that could not be read, the company's own pages first.
-- **Wikipedia is not used.** Wikimedia requires a contact address, and none
-  is configured.
-- **Namesakes.** A search result on a site whose name resembles the
-  company's is used only if the page names the company's own domain;
-  otherwise it is recorded as `skipped` and never read for people.
-- **Original sources only.** Machine-generated summary pages from search
-  and AI companies (`tavily.com`, `exa.ai`, `vectorshift.ai`, `derrick-app.com`)
-  are never used as
-  evidence. The list is by site name, so a new such site is not caught.
-- **Publication dates** come only from the page itself or the SEC's filing
-  index. Many pages state none; their date is left empty.
-
-## Extract people and roles
-
-`leadership collect` now also reads every fetched page with the model and
-stores what each page says about the company's leaders:
-
-```bash
-uv run leadership collect https://robinhood.com/
-```
-
-It needs an LLM key. Add `--no-extract` to stop after fetching. To see the
-result, with the evidence behind every role:
-
-```bash
-uv run python tools/show_people.py robinhood.com
-```
-
-Each role is `current`, `former`, `unverified` or `announced`, decided by
-fixed rules from the stored claims, never by the model. What the model
-returns is checked without a model before it is stored: the quoted evidence
-and the person's full name must be on the page, the quote must be about that
-person, and the title must be at this company. Refused claims are listed by:
-
-```bash
-uv run python tools/show_people.py robinhood.com --rejected
-```
-
-To re-check every stored claim against its saved page, and to measure
-extraction on five hand-labelled pages:
-
-```bash
-uv run python tools/check_evidence.py
-```
-
-```bash
-uv run leadership eval
-```
-
-Known limits of extraction:
-
-- **Old appointments stay `unverified`.** A 2020 press release saying someone
-  joined as an officer does not show they still hold the office. Such roles
-  are listed as `unverified` until a recent source confirms or ends them.
-  Targeted verification is the next milestone.
-- **Long documents are read in part.** At most three pieces of a document are
-  sent to the model, chosen by how much leadership wording they hold. For
-  an SEC proxy statement or annual report that is 2 to 3% of the text.
-- **A stated date can be missed.** If the model does not return the sentence
-  that gives a date, the date is not stored. Example: Robinhood's proxy
-  statement gives 2026-02-06 as the day its former CFO ceased; the database
-  has no end date for him. An end date is never filled in from a filing or
-  announcement date.
-- **A page can be refused whole by mistake.** If the model judges a page to be
-  about a different organisation with the same name, all its claims are
-  dropped. It has done so wrongly for one of Robinhood's own newsroom pages.
-- **The evidence window is a fixed 250 characters.** A quote must have the
-  person's surname, and any effective date, in it or that close to it. This
-  can refuse a correct claim in a long paragraph, and it cannot tell two
-  people with the same surname apart.
-- **"C-level" is a convention**: any "Chief ... Officer", a President who is
-  not a Vice President, and a General Counsel. It includes officers such as
-  a Chief Accounting Officer and the chief officer of a single unit.
-- **The model can miss or misquote.** A misquoted claim is refused by the
-  evidence check, so it costs coverage, not correctness. On the five
-  labelled pages the last measurement is in `acceptance/M3.md`.
-- **Text hidden by a page's style is still read.** The page cleaner drops
-  scripts and comments but does not apply CSS.
-- **A company whose name is inside another name** ("Camp Fire" for Campfire)
-  passes the organisation check by name; the model is also asked whether the
-  page is about a different organisation.
-
-## Verify, enrich, export, measure
-
-`leadership collect` goes on after extraction: it looks for dates the held
-documents state, makes one targeted web search per uncertain leader role,
-and looks up location and a short biography for current leaders. Add
-`--no-verify` to stop before that. Then:
-
-```bash
-uv run leadership export meetcampfire.com robinhood.com
-```
-
-```bash
-uv run leadership eval
-```
-
-`export` writes `fixtures/<domain>.json` and `fixtures/leadership.db`. `eval`
-measures extraction on the labelled pages, and the fixtures against the
-hand-verified gold sets in `fixtures/gold/` (`--gold-only` needs no key).
-To see every targeted check and its outcome:
-
-```bash
-uv run python tools/show_people.py robinhood.com --checks
-```
-
-What the measurement shows, and its limits:
-
-- **What is reported is right; much is missing.** Every role marked current
-  that the gold sets cover is correct. But for Robinhood the pipeline found
-  5 of 11 C-level leaders and none of 14 vice presidents. Recall is shown
-  twice: against the whole gold set, and against the people whose sources
-  the tool was allowed to read. For Robinhood the second is 5 of 5: every
-  miss is named only on the official leadership page, which refuses the
-  tool's fetcher.
-- **The gold sets are not fully blind.** They were written after earlier
-  pipeline runs, from primary sources, and approved by the project owner.
-- **Verification rarely settles old roles.** They stay `unverified`.
-- **No personal location was found**; "not found" is stored.
-- **More searching did not help Robinhood.** A search limited to the
-  company's own domains found a page for each missing leader, all on the site
-  that refuses the tool. PDFs (such as Wise's annual report) are found but
-  not read.
-- **One automatic search pass per company.** After it, `collect` makes no
-  automatic search; add `--refresh` to allow another pass.
-
-## Ask questions (command line)
-
-```bash
-uv run leadership chat robinhood.com
-```
-
-Type a question, or `exit` (or an empty line) to stop. Add `-q "Who is the CEO?"` to ask
-one question, and `--show-sql` to see the SQL that ran. The chat reads
-`fixtures/leadership.db` and needs one LLM key.
-
-The agent answers only from the collected data, through one read-only SQL
-query tool, and cites a source URL for every person it names. It says "not
-found" when the data does not have the answer, marks unconfirmed roles as
-such, and says when a company's data collection was incomplete. Answers are
-cached, so asking again costs nothing.
-
-```bash
-uv run leadership eval --chat
-```
-
-measures it on 31 questions with hand-written reference queries, plus
-hallucination, injection and incomplete-data cases.
-
-## Ask questions (web page)
+**Web chat:**
 
 ```bash
 uv run python -m streamlit run app.py
 ```
 
-opens a page at http://localhost:8501. Choose a company in the sidebar and
-ask. Under each answer, "SQL and source rows" shows the queries that ran and
-the rows they returned. The page reads `fixtures/leadership.db` and needs one
-LLM key and no collection step. (Use `python -m streamlit` rather than the
-`streamlit` command: some security policies block the `streamlit.exe`
-launcher. For the same reason the rows are shown as plain tables, which do
-not need pyarrow.)
+It opens at http://localhost:8501. Pick a company in the sidebar and ask, for
+example "Who is the CEO?", "How many VPs do they have?", "Who heads
+marketing?", "Where is their CEO based?" or "Who was the previous CFO?".
+Under each answer, **SQL and source rows** shows the queries that ran and the
+rows they returned.
 
-## Tests
+**Command-line chat:**
+
+```bash
+uv run leadership chat robinhood.com
+```
+
+Type a question; `exit` stops. Ask one question with
+`-q "Who is the CEO?"`, and add `--show-sql` to see the SQL.
+
+(`python -m streamlit` rather than `streamlit`: some Windows security
+policies block the `streamlit.exe` launcher. The tables on the page are
+plain Markdown for the same reason: `st.dataframe` needs pyarrow's compiled
+library.)
+
+## What is delivered
+
+| Deliverable | Where |
+|---|---|
+| Runnable repository | this repo: `uv sync`, one key, then the commands above |
+| Collected data, both companies | `fixtures/leadership.db` (SQLite, what the chat reads), `fixtures/meetcampfire.com.json`, `fixtures/robinhood.com.json` (every person, role, claim, source and evidence quote) |
+| Chat interface | web page (`app.py`, Streamlit) and command line (`leadership chat`) |
+| Coding-agent session export | `session/` (Claude Code transcripts; see [below](#how-this-was-built-with-claude-code)) |
+| Design | `SPEC.md` (design and decisions), `SPEC_checklist.xlsx` (173 requirements with status) |
+| Evidence per milestone | `acceptance/M0.md` ... `M7.md`, each with its raw test log |
+| Gold sets and evaluations | `fixtures/gold/` (hand-verified leadership), `fixtures/chat_eval.json` and `chat_eval_results.json` (chat evaluation), `fixtures/citation_review.md` (manual review of 10 answers) |
+
+## How it works
+
+```
+domain ──► discover ──► fetch + cache ──► extract (LLM) ──► check evidence ──► claims
+                                                                                │
+                      chat (LLM + one read-only SQL tool) ◄── views ◄── rules ◄─┘
+```
+
+### 1. Data sourcing
+
+- **Where it looks** (`leadership/collect.py`, `leadership/sources/`):
+  - the company's own site: leadership, team and about pages, and its newsroom;
+  - SEC EDGAR filings when the company is public (proxy statements, 8-Ks);
+  - web search through Tavily: generic leadership queries, then one targeted
+    search per uncertain role.
+
+  LinkedIn is never fetched.
+- **Sources are ranked by tier.** Tier 1 is the company's live leadership
+  page or an SEC filing; tier 2 its own press releases; tier 3 news; tier 4
+  snippets and directory pages, which are never enough on their own to make
+  someone current.
+- **It respects refusals.** `robots.txt` and HTTP refusals are honoured, and
+  the tool never imitates a browser. A page it may not read is stored as
+  `skipped` with the reason. Every run report lists these pages, the
+  company's own first.
+- **Extraction** (`leadership/extract.py`): an LLM reads each page and
+  returns claims as JSON: a role, an appointment or a departure, each with a
+  verbatim evidence quote. Before anything is stored, code checks without a
+  model that:
+  - the quote is on the page;
+  - the person's full name is next to it;
+  - the title belongs to this person and this company.
+
+  Claims that fail are kept as rejected, with the reason.
+- **Verification and enrichment** (`leadership/verify.py`):
+  - dates that the held documents state but extraction missed are recovered;
+  - one targeted search is made per uncertain role;
+  - location and a short biography are looked up for current leaders. They
+    are kept only when the quote ties them to the person; otherwise "not
+    found" is stored.
+- **Bounded and resumable.** Every run has limits on pages, searches, model
+  calls and time (`config.toml`). Pages, searches and model calls are
+  cached, so a rerun makes no network calls. A company gets one automatic
+  search pass; `--refresh` allows another.
+
+### 2. Storage design
+
+SQLite, in two layers (`leadership/db.py`):
+
+- **Claims** are the facts as sources state them. Each one keeps its
+  source, evidence quote, and three dates: published, retrieved, and
+  effective. The other tables are `sources`, `people` (one row per person,
+  merged across name variants), `checks` (verification outcomes) and `runs`
+  (status and reasons for each run).
+- **Roles** are derived from the claims by fixed rules, never by the model
+  (SPEC 3.6, rules 0 to 7):
+  - an explicit departure ends a role;
+  - an appointment of a successor ends a single-holder role;
+  - an announced change waits until it takes effect;
+  - an old, uncorroborated role becomes `unverified`;
+  - sources that disagree are flagged as a conflict.
+
+  Each role records the rule that decided it. Statuses are `current`,
+  `former`, `unverified` and `announced`. Leaving a role is kept apart from
+  leaving the company (`employment_status`).
+- **Two views are the only thing the chat sees.** `leadership` has every
+  role with its source, dates, evidence, conflict, successor and the source
+  that ended it. `current_leadership` has current roles only.
+- **Dates are honest.** An end date is only ever a date a source states.
+  When no date is stated, `ended_on` is empty and `end_reported_on` holds the
+  date of the source that reported the end.
+
+Why SQLite rather than a vector store: the questions are structured lookups
+and counts over a few hundred rows, which SQL answers exactly. SQL also lets
+every answer show the query and the rows behind it.
+
+### 3. Agent architecture
+
+`leadership/agent.py`, `sqlguard.py`, `grounding.py`, `citations.py`:
+
+- **One tool**, `query_db(sql)`, in a loop of at most 5 model calls, with up
+  to 2 SQL retries. The model writes SQL, sees the rows, and answers.
+- **The SQL guard is enforced by SQLite, not by reading the SQL text.**
+  - The agent reads a snapshot that holds only the two views, for the
+    selected company only.
+  - The snapshot is opened read-only, and an authorizer refuses writes,
+    PRAGMA, ATTACH and the schema.
+  - One statement per call, at most 50 rows and 5 seconds.
+- **Answers only from data.** The prompt gives the schema, examples, the
+  company's run status and the collection date. A final answer is accepted
+  only after at least one successful query; otherwise the reply is "I could
+  not look this up".
+- **Claim-level source check** (`grounding.py`): after the model answers,
+  code checks each claim against the source that supports it:
+  - role held: a source of that person;
+  - role ended: the source that showed the end;
+  - still at the company: a source of a current role;
+  - role change: a source of the old role's end or of the new role.
+
+  It also checks the dates (stated end date, report date, source date), and
+  that a planned end date is not stated as a departure. If something fails,
+  the model is asked once more with the problems listed. Anything still
+  wrong is shown as a warning, never passed silently.
+- **Additions made in code, not by the model:**
+  - source URLs are appended for named people the model left uncited, from
+    the rows it queried;
+  - a count answer gets a note when sources could not be read, so "0 found"
+    is not read as "none exist".
+- **Providers.** Groq first (`openai/gpt-oss-120b`), with OpenAI
+  (`gpt-5.4-mini`) as fallback when Groq is rate-limited or unreachable. One
+  key is enough.
+- **Cached and logged.** Answers are cached by question, prompt, model, data
+  and code. Every question, model call, SQL attempt and answer is logged to
+  `logs/chat-*.jsonl`.
+
+## Measured results
+
+The full figures are in `acceptance/M4.md` (data) and `acceptance/M5.md`
+(chat).
+
+**Data, against hand-verified gold sets** (`fixtures/gold/`):
+
+| | Campfire | Robinhood |
+|---|---|---|
+| Sources found / read / refused | 25 / 20 / 4 | 73 / 44 / 29 |
+| People / stored claims | 5 / 17 | 27 / 149 |
+| Precision of `current` roles | 100% | 100% |
+| C-level recall | 1 of 1 | **5 of 11** (all 5 whose sources could be read) |
+| VP recall | (none in gold set) | **0 of 14** |
+| Head recall | 1 of 2 | (none in gold set) |
+| Former leaders reported as current | 0 | 0 |
+
+Robinhood's missing leaders are all named only on its leadership page
+(`investors.robinhood.com`), which refuses automated clients. The tool does
+not get around that. So each recall figure is shown twice: against the whole
+gold set, and against the people whose sources could be read (5 of 5).
+
+**Held-out company (Wise, run once before any tuning):** the CEO was found
+and correct; 4 people were stored with no errors on a hand-check. Coverage
+was 1 of 9, for the same reason: Wise's leadership page refuses the fetcher.
+A domain with no leadership information (`example.com`) ends
+`insufficient_data` without an error.
+
+**Chat** (`uv run leadership eval --chat`, 31 questions with hand-written
+reference SQL, plus 3 special cases):
+
+| Measure | Result |
+|---|---|
+| Answer correctness | 31 of 31 |
+| The four sample questions (CEO, C-level team, C-level count, previous CFO) × 2 companies | 8 of 8 |
+| Hallucination (CEO deleted from a test copy), prompt injection (instruction planted in a bio), incomplete data | 3 of 3 |
+| Cited URLs that are not a source of anyone the answer names | 0 of 32 |
+| Claim-level source check | 34 of 34 (2 after one correction turn) |
+| Manual citation review (10 answers, three-question rubric) | 10 of 10 |
+
+## Known limits
+
+- **Coverage is limited by what may be read.** Robinhood's and Wise's
+  leadership pages refuse automated clients, so most of their executives are
+  missing. Robinhood has no vice presidents in the data. The chat says "not
+  found", and count answers say how many sources could not be read.
+- **The gold sets are not fully blind.** Claude drafted them from primary
+  sources after earlier pipeline runs, and the owner approved them row by
+  row.
+- **Old roles stay `unverified`.** A 2020 press release does not show
+  someone still holds an office.
+- **Long documents are read in part.** At most three pieces of an SEC filing
+  go to the model.
+- **PDFs are found but not read.**
+- **No personal location was found** for any leader; "not found" is stored
+  and said.
+- **The source check finds claims by English keywords** and checks only
+  paragraphs about one person. The model is not fully repeatable; the cache
+  makes an answer stable, not right.
+- **Status rules work from the collection date.** A planned end date that has
+  passed, with no later source, is shown as planned, not as confirmed.
+
+The full list is in `SPEC.md` and the "Limitations" section of each
+acceptance report.
+
+## How this was built with Claude Code
+
+The whole project was built in Claude Code sessions. The transcripts are in
+`session/`. The working loop was:
+
+1. **Spec first.** Claude drafted `SPEC.md` and a requirement checklist
+   (`SPEC_checklist.xlsx`, 173 rows). I (the owner) reviewed them, and they
+   were revised as decisions were made; the spec is at revision 14.
+2. **Milestones on branches.** M0 (setup and key check) through M7
+   (delivery) each ran on its own branch. Each ended with:
+   - `acceptance/M<n>_results.log`: an automated stage run by
+     `tools/acceptance.py`;
+   - `acceptance/M<n>.md`: the results, decisions made, issues met, limits,
+     and a list of manual tests for me to run.
+
+   A branch was merged only after my sign-off.
+3. **I tested by hand and pushed back.** Examples:
+   - The gold sets were drafted by Claude and approved row by row.
+   - When recall was low, I chose to report it honestly, with two figures,
+     rather than tune the gold set.
+   - I ruled out getting past bot refusals.
+   - In M6 manual testing I found an answer that cited a 2020 press release
+     for a 2026 departure. Claude traced it to the model attaching the wrong
+     row's source, and built the claim-level source check with a regression
+     test from the exact logged answer. Run on the cached evaluation, the
+     check then caught two more answers the earlier grader had passed.
+   - I pointed out that a planned end date was being stated as a departure;
+     that is now checked too.
+4. **Real models only, with budgets.** Every model call is real; nothing is
+   stubbed. Caching kept reruns free, and each change that needed model
+   calls stated its budget first.
+
+To regenerate the export from the local transcripts (the email address and
+the `.env` values are redacted):
+
+```bash
+uv run python tools/export_session.py
+```
+
+## Collecting a new company
+
+```bash
+uv run leadership check
+```
+
+```bash
+uv run leadership collect https://robinhood.com/
+```
+
+```bash
+uv run leadership export meetcampfire.com robinhood.com
+```
+
+- `check` makes a few real calls to confirm the keys and models.
+- `collect` runs discovery, fetch, extraction, verification and enrichment
+  into `data/leadership.db`. It prints a run report that lists the pages it
+  could not read.
+- `export` writes `fixtures/<domain>.json` for each company listed. It
+  rebuilds `fixtures/leadership.db` with exactly those companies, so list
+  every company the chat should keep, plus the new one.
+
+Collection uses optional keys in `.env`:
+- `TAVILY_API_KEY` for web search;
+- `SEC_USER_AGENT` for SEC EDGAR, which asks automated clients to identify
+  themselves.
+
+Without them, those sources are skipped and the run says so. To inspect a
+run:
+
+```bash
+uv run python tools/show_people.py robinhood.com --checks
+```
+
+## Tests and configuration
 
 ```bash
 uv run pytest
 ```
 
-The default run needs no network or keys.
+runs 385 tests with no network and no keys. `uv run pytest -m llm` runs the
+real-model tests. They use the cache where they can, so a rerun makes only a
+few calls.
 
-## Configuration
+| Command | What it does |
+|---|---|
+| `uv run leadership eval` | extraction on five hand-labelled pages, and the fixtures against the gold sets (`--gold-only` needs no key) |
+| `uv run leadership eval --chat` | the chat evaluation above |
+| `uv run python tools/check_evidence.py` | re-checks every stored claim against its saved page |
+| `uv run python tools/scan_secrets.py` | scans everything that would be committed for keys and contact addresses |
 
-- `.env` — secrets only. Never committed.
-- `config.toml` — models, collection limits, agent limits, eval thresholds.
+Configuration:
+- `.env` holds secrets only and is never committed.
+- `config.toml` holds the models, provider order, collection limits, agent
+  limits and evaluation thresholds.
