@@ -17,6 +17,8 @@
         ],
         "sample": 1,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -35,6 +37,8 @@
         ],
         "sample": 2,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -50,6 +54,8 @@
         ],
         "sample": 3,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -67,6 +73,8 @@
         ],
         "sample": 4,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -84,6 +92,8 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -101,6 +111,8 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -118,40 +130,56 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
         "id": "rh08",
         "question": "Is Jeffrey Pinner still the CTO?",
-        "answer": "No. Jeffrey Pinner is no longer CTO; the role is marked former and ended on 2026-05-07, according to a sec_filing, 2026-04-22: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm.",
+        "answer": "No. Jeffrey Pinner is no longer CTO. The role is marked former and ended on 2026-05-07, according to the sec_filing, 2026-05-08: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000065/hood-20260507.htm. The role row itself was sourced from the sec_filing, 2026-04-22: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm.",
         "ok": true,
         "problems": [],
         "urls": [
-          "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm"
+          "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm",
+          "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000065/hood-20260507.htm"
         ],
         "bad_urls": [],
         "sql": [
-          "SELECT person, title, status, employment_status, canonical_role, source_type, source_date, source_url, evidence, ended_on, end_reported_on, ended_by_source_url, ended_by_source_date FROM leadership WHERE company_domain = 'robinhood.com' AND person LIKE 'Jeffrey Pinner%' AND (canonical_role = 'CTO' OR title LIKE '%CTO%' OR title LIKE '%Chief Technology Officer%') ORDER BY CASE status WHEN 'current' THEN 1 WHEN 'former' THEN 2 WHEN 'unverified' THEN 3 WHEN 'announced' THEN 4 ELSE 5 END, last_seen DESC LIMIT 10;"
+          "SELECT person, title, status, employment_status, canonical_role, source_type, source_date, source_url, evidence, ended_on, end_reported_on, ended_by_source_url, ended_by_source_date FROM leadership WHERE company_domain = 'robinhood.com' AND person LIKE 'Jeffrey Pinner%' AND (canonical_role = 'CTO' OR title LIKE '%CTO%' OR title LIKE '%Chief Technology Officer%') ORDER BY CASE status WHEN 'current' THEN 1 WHEN 'former' THEN 2 WHEN 'unverified' THEN 3 WHEN 'announced' THEN 4 ELSE 5 END, last_seen DESC LIMIT 10;",
+          "SELECT person, title, status, employment_status, ended_on, end_reported_on, ended_by_source_url, ended_by_source_date, source_url, source_date FROM leadership WHERE person = 'Jeffrey Pinner'"
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [
+          "Jeffrey Pinner: the end of the role is cited to https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm, which is not a source showing it ended; cite ended_by_source_url (https://www.sec.gov/Archives/edgar/data/1783879/000178387926000065/hood-20260507.htm)"
+        ],
         "passed": true
       },
       {
         "id": "rh09",
         "question": "Is Jason Warnick still at Robinhood?",
-        "answer": "Jason Warnick is no longer at Robinhood. The collected data shows him as former, with his role ending on 2026-09-01, according to news, 2025-12-29: https://fortune.com/2025/12/29/who-is-robinhoods-cfo-shiv-verma-transition",
+        "answer": "Jason Warnick is no longer at Robinhood. The collected data shows him as former, with employment_status also former.\n\nFor his advisory role, the role is former and ended on 2026-09-01; the role held is supported by https://fortune.com/2025/12/29/who-is-robinhoods-cfo-shiv-verma-transition, 2025-12-29, and the end of the role is supported by https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm, 2026-02-10.\n\nFor his Chief Financial Officer role, the role is former and ended on 2026-02-06; the role held is supported by https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer, 2020-08-04, and the end of the role is supported by https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm, 2026-04-22.",
         "ok": true,
         "problems": [],
         "urls": [
-          "https://fortune.com/2025/12/29/who-is-robinhoods-cfo-shiv-verma-transition"
+          "https://fortune.com/2025/12/29/who-is-robinhoods-cfo-shiv-verma-transition",
+          "https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer",
+          "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm",
+          "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm"
         ],
         "bad_urls": [],
         "sql": [
-          "SELECT person, title, employment_status, status, ended_on, end_reported_on, source_type, source_date, source_url, evidence FROM leadership WHERE company_domain = 'robinhood.com' AND person = 'Jason Warnick' ORDER BY CASE WHEN status='current' THEN 0 WHEN status='former' THEN 1 WHEN status='unverified' THEN 2 ELSE 3 END, COALESCE(ended_on, end_reported_on, last_seen) DESC LIMIT 10;"
+          "SELECT person, title, employment_status, status, ended_on, end_reported_on, source_type, source_date, source_url, evidence FROM leadership WHERE company_domain = 'robinhood.com' AND person = 'Jason Warnick' ORDER BY CASE WHEN status='current' THEN 0 WHEN status='former' THEN 1 WHEN status='unverified' THEN 2 ELSE 3 END, COALESCE(ended_on, end_reported_on, last_seen) DESC LIMIT 10;",
+          "SELECT person, title, status, employment_status, ended_on, end_reported_on, ended_by_source_url, ended_by_source_date, source_url, source_date FROM leadership WHERE person = 'Jason Warnick' ORDER BY CASE WHEN status='current' THEN 0 WHEN status='former' THEN 1 ELSE 2 END, COALESCE(ended_on, end_reported_on, last_seen) DESC LIMIT 10;"
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [
+          "Jason Warnick: the end of the role is cited to https://fortune.com/2025/12/29/who-is-robinhoods-cfo-shiv-verma-transition, which is not a source showing it ended; cite ended_by_source_url (https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm, https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm)"
+        ],
         "passed": true
       },
       {
@@ -171,6 +199,8 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -187,6 +217,8 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -204,6 +236,8 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -220,6 +254,8 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -237,6 +273,8 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -254,6 +292,8 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -269,6 +309,8 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       }
     ],
@@ -288,6 +330,8 @@
         ],
         "sample": 1,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -305,6 +349,8 @@
         ],
         "sample": 2,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -320,6 +366,8 @@
         ],
         "sample": 3,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -336,6 +384,8 @@
         ],
         "sample": 4,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -353,6 +403,8 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -370,6 +422,8 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -388,6 +442,8 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -404,6 +460,8 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -419,6 +477,8 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -436,6 +496,8 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -452,6 +514,8 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -469,6 +533,8 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -485,6 +551,8 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -503,6 +571,8 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       },
       {
@@ -520,6 +590,8 @@
         ],
         "sample": null,
         "cached": true,
+        "grounding": [],
+        "corrected": [],
         "passed": true
       }
     ]
@@ -541,6 +613,8 @@
       ],
       "sample": null,
       "cached": true,
+      "grounding": [],
+      "corrected": [],
       "passed": true
     },
     {
@@ -560,6 +634,8 @@
       ],
       "sample": null,
       "cached": true,
+      "grounding": [],
+      "corrected": [],
       "passed": true
     },
     {
@@ -577,6 +653,8 @@
       ],
       "sample": null,
       "cached": true,
+      "grounding": [],
+      "corrected": [],
       "passed": true
     }
   ]

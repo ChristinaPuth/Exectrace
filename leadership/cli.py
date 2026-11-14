@@ -80,6 +80,7 @@ def _chat(cfg, args) -> int:
 
     from .agent import Agent
     from .citations import add_count_note, add_missing_sources, unread_sources
+    from .grounding import grounded_ask
     domain = args.domain.lower().removeprefix("https://").removeprefix("http://").removeprefix("www.").strip("/")
     try:
         agent = Agent(cfg, domain, Path(args.db) if args.db else None)
@@ -94,7 +95,7 @@ def _chat(cfg, args) -> int:
     unread = unread_sources(agent.source_db, domain)
 
     def answer(question: str) -> None:
-        result = agent.ask(question)
+        result = grounded_ask(agent, question)
         text = add_missing_sources(result.text, result.steps)
         print("\n" + add_count_note(text, result.steps, domain, unread, agent.status))
         if args.show_sql:
