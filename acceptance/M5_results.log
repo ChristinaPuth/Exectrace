@@ -1,13 +1,13 @@
 Acceptance run for M5
-Date:    2026-11-13T22:11:01-08:00
+Date:    2026-11-13T23:18:49-08:00
 Branch:  m5-chat
-Commit:  bfd017f
+Commit:  72bceb6
 Python:  3.12.10
 
 ==============================================================================
-[1] M5 tests: SQL guard, chat grading, test copies, reference queries
-command:  uv run pytest -v tests/test_sqlguard.py tests/test_chat.py
-exit code 0 (expected 0)  ->  PASS    7.6s
+[1] M5 tests: SQL guard, chat grading, test copies, reference queries, claim-level source check
+command:  uv run pytest -v tests/test_sqlguard.py tests/test_chat.py tests/test_grounding.py
+exit code 0 (expected 0)  ->  PASS    6.2s
 ------------------------------------------------------------------------------
 ============================= test session starts =============================
 platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0 -- C:\dev\ExecTrace\.venv\Scripts\python.exe
@@ -15,67 +15,79 @@ cachedir: .pytest_cache
 rootdir: C:\dev\ExecTrace
 configfile: pyproject.toml
 plugins: anyio-4.16.0
-collecting ... collected 41 items / 2 deselected / 39 selected
+collecting ... collected 54 items / 3 deselected / 51 selected
 
-tests/test_sqlguard.py::test_reads_through_the_views_are_allowed PASSED  [  2%]
-tests/test_sqlguard.py::test_rows_are_capped_and_the_cap_is_reported PASSED [  5%]
-tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[SELECT * FROM people] PASSED [  7%]
-tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[SELECT full_name FROM people JOIN leadership ON 1 = 1] PASSED [ 10%]
-tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[SELECT * FROM claims] PASSED [ 12%]
-tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[SELECT * FROM sqlite_master] PASSED [ 15%]
-tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[SELECT sql FROM sqlite_schema] PASSED [ 17%]
-tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[PRAGMA table_info(people)] PASSED [ 20%]
-tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[ATTACH DATABASE 'x.db' AS x] PASSED [ 23%]
-tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[DELETE FROM roles] PASSED [ 25%]
-tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[UPDATE people SET full_name = 'x'] PASSED [ 28%]
-tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[INSERT INTO companies (domain, name) VALUES ('a', 'b')] PASSED [ 30%]
-tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[DROP VIEW leadership] PASSED [ 33%]
-tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[CREATE TABLE t (x)] PASSED [ 35%]
-tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[BEGIN] PASSED [ 38%]
-tests/test_sqlguard.py::test_only_one_statement_per_call PASSED          [ 41%]
-tests/test_sqlguard.py::test_a_slow_query_is_stopped PASSED              [ 43%]
-tests/test_sqlguard.py::test_the_connection_itself_cannot_write PASSED   [ 46%]
-tests/test_sqlguard.py::test_errors_are_short_and_say_what_is_allowed PASSED [ 48%]
-tests/test_sqlguard.py::test_a_snapshot_can_hold_one_company_only PASSED [ 51%]
-tests/test_chat.py::test_the_prompt_tells_the_model_when_data_is_incomplete PASSED [ 53%]
-tests/test_chat.py::test_names_are_matched_by_surname_without_accents PASSED [ 56%]
-tests/test_chat.py::test_a_correct_cited_answer_passes PASSED            [ 58%]
-tests/test_chat.py::test_missing_names_uncited_names_and_foreign_urls_fail PASSED [ 61%]
-tests/test_chat.py::test_not_found_caveat_count_and_write_checks PASSED  [ 64%]
-tests/test_chat.py::test_the_special_test_copies_change_only_what_they_should PASSED [ 66%]
-tests/test_chat.py::test_every_reference_query_runs_through_the_guard PASSED [ 69%]
-tests/test_chat.py::test_missing_source_urls_are_added_from_the_queried_rows_only PASSED [ 71%]
-tests/test_chat.py::test_curly_apostrophes_and_markdown_do_not_break_the_grading PASSED [ 74%]
-tests/test_chat.py::test_a_person_cited_by_the_source_that_ended_the_role_gets_no_unrelated_source PASSED [ 76%]
-tests/test_chat.py::test_a_shared_surname_alone_does_not_add_the_other_persons_source PASSED [ 79%]
-tests/test_chat.py::test_the_agent_reads_only_the_selected_companys_data[robinhood.com-John Glasgow] PASSED [ 82%]
-tests/test_chat.py::test_the_agent_reads_only_the_selected_companys_data[meetcampfire.com-Vladimir Tenev] PASSED [ 84%]
-tests/test_chat.py::test_the_command_line_chat_stops_on_exit_or_quit[exit] PASSED [ 87%]
-tests/test_chat.py::test_the_command_line_chat_stops_on_exit_or_quit[Quit] PASSED [ 89%]
-tests/test_chat.py::test_the_command_line_chat_stops_on_exit_or_quit[q] PASSED [ 92%]
-tests/test_chat.py::test_the_command_line_chat_stops_on_exit_or_quit[quit.] PASSED [ 94%]
-tests/test_chat.py::test_the_command_line_chat_stops_on_exit_or_quit[] PASSED [ 97%]
-tests/test_chat.py::test_a_count_says_what_it_can_miss_when_sources_could_not_be_read PASSED [100%]
+tests/test_sqlguard.py::test_reads_through_the_views_are_allowed PASSED  [  1%]
+tests/test_sqlguard.py::test_rows_are_capped_and_the_cap_is_reported PASSED [  3%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[SELECT * FROM people] PASSED [  5%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[SELECT full_name FROM people JOIN leadership ON 1 = 1] PASSED [  7%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[SELECT * FROM claims] PASSED [  9%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[SELECT * FROM sqlite_master] PASSED [ 11%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[SELECT sql FROM sqlite_schema] PASSED [ 13%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[PRAGMA table_info(people)] PASSED [ 15%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[ATTACH DATABASE 'x.db' AS x] PASSED [ 17%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[DELETE FROM roles] PASSED [ 19%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[UPDATE people SET full_name = 'x'] PASSED [ 21%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[INSERT INTO companies (domain, name) VALUES ('a', 'b')] PASSED [ 23%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[DROP VIEW leadership] PASSED [ 25%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[CREATE TABLE t (x)] PASSED [ 27%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[BEGIN] PASSED [ 29%]
+tests/test_sqlguard.py::test_only_one_statement_per_call PASSED          [ 31%]
+tests/test_sqlguard.py::test_a_slow_query_is_stopped PASSED              [ 33%]
+tests/test_sqlguard.py::test_the_connection_itself_cannot_write PASSED   [ 35%]
+tests/test_sqlguard.py::test_errors_are_short_and_say_what_is_allowed PASSED [ 37%]
+tests/test_sqlguard.py::test_a_snapshot_can_hold_one_company_only PASSED [ 39%]
+tests/test_chat.py::test_the_prompt_tells_the_model_when_data_is_incomplete PASSED [ 41%]
+tests/test_chat.py::test_names_are_matched_by_surname_without_accents PASSED [ 43%]
+tests/test_chat.py::test_a_correct_cited_answer_passes PASSED            [ 45%]
+tests/test_chat.py::test_missing_names_uncited_names_and_foreign_urls_fail PASSED [ 47%]
+tests/test_chat.py::test_not_found_caveat_count_and_write_checks PASSED  [ 49%]
+tests/test_chat.py::test_the_special_test_copies_change_only_what_they_should PASSED [ 50%]
+tests/test_chat.py::test_every_reference_query_runs_through_the_guard PASSED [ 52%]
+tests/test_chat.py::test_missing_source_urls_are_added_from_the_queried_rows_only PASSED [ 54%]
+tests/test_chat.py::test_curly_apostrophes_and_markdown_do_not_break_the_grading PASSED [ 56%]
+tests/test_chat.py::test_a_person_cited_by_the_source_that_ended_the_role_gets_no_unrelated_source PASSED [ 58%]
+tests/test_chat.py::test_a_shared_surname_alone_does_not_add_the_other_persons_source PASSED [ 60%]
+tests/test_chat.py::test_the_agent_reads_only_the_selected_companys_data[robinhood.com-John Glasgow] PASSED [ 62%]
+tests/test_chat.py::test_the_agent_reads_only_the_selected_companys_data[meetcampfire.com-Vladimir Tenev] PASSED [ 64%]
+tests/test_chat.py::test_the_command_line_chat_stops_on_exit_or_quit[exit] PASSED [ 66%]
+tests/test_chat.py::test_the_command_line_chat_stops_on_exit_or_quit[Quit] PASSED [ 68%]
+tests/test_chat.py::test_the_command_line_chat_stops_on_exit_or_quit[q] PASSED [ 70%]
+tests/test_chat.py::test_the_command_line_chat_stops_on_exit_or_quit[quit.] PASSED [ 72%]
+tests/test_chat.py::test_the_command_line_chat_stops_on_exit_or_quit[] PASSED [ 74%]
+tests/test_chat.py::test_a_count_says_what_it_can_miss_when_sources_could_not_be_read PASSED [ 76%]
+tests/test_grounding.py::test_the_logged_rows_are_the_three_former_finance_roles PASSED [ 78%]
+tests/test_grounding.py::test_the_logged_answer_fails_on_all_four_grounds PASSED [ 80%]
+tests/test_grounding.py::test_the_corrected_answer_passes PASSED         [ 82%]
+tests/test_grounding.py::test_a_report_date_given_as_the_end_date_fails PASSED [ 84%]
+tests/test_grounding.py::test_a_source_given_the_wrong_date_fails PASSED [ 86%]
+tests/test_grounding.py::test_no_end_source_is_required_without_an_end_claim PASSED [ 88%]
+tests/test_grounding.py::test_valid_dates_from_other_supporting_rows_and_the_collection_date_pass PASSED [ 90%]
+tests/test_grounding.py::test_answers_without_people_are_not_checked PASSED [ 92%]
+tests/test_grounding.py::test_a_still_employed_claim_needs_a_current_source PASSED [ 94%]
+tests/test_grounding.py::test_a_source_of_another_person_fails PASSED    [ 96%]
+tests/test_grounding.py::test_pinner_end_cited_to_the_proxy_fails_and_the_corrected_answer_passes PASSED [ 98%]
+tests/test_grounding.py::test_the_evaluation_grader_runs_the_source_check PASSED [100%]
 
-====================== 39 passed, 2 deselected in 5.87s =======================
+====================== 51 passed, 3 deselected in 4.55s =======================
 
 ==============================================================================
 [2] Whole fast suite (no network, no keys)
 command:  uv run pytest -q
-exit code 0 (expected 0)  ->  PASS    32.7s
+exit code 0 (expected 0)  ->  PASS    29.5s
 ------------------------------------------------------------------------------
-........................................................................ [ 19%]
-........................................................................ [ 39%]
-........................................................................ [ 58%]
-........................................................................ [ 78%]
-........................................................................ [ 97%]
-........                                                                 [100%]
-368 passed, 15 deselected in 30.82s
+........................................................................ [ 18%]
+........................................................................ [ 37%]
+........................................................................ [ 56%]
+........................................................................ [ 75%]
+........................................................................ [ 94%]
+....................                                                     [100%]
+380 passed, 16 deselected in 27.62s
 
 ==============================================================================
-[3] Real model: a cited answer with a full chat log; a provider failure gives an error, not an answer
-command:  uv run pytest -v -m llm tests/test_chat.py
-exit code 0 (expected 0)  ->  PASS    5.3s
+[3] Real model: a cited answer with a full chat log; a provider failure gives an error, not an answer; the finance-roles question answered with each claim cited to its own source
+command:  uv run pytest -v -m llm tests/test_chat.py tests/test_grounding.py
+exit code 0 (expected 0)  ->  PASS    60.8s
 ------------------------------------------------------------------------------
 ============================= test session starts =============================
 platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0 -- C:\dev\ExecTrace\.venv\Scripts\python.exe
@@ -83,17 +95,18 @@ cachedir: .pytest_cache
 rootdir: C:\dev\ExecTrace
 configfile: pyproject.toml
 plugins: anyio-4.16.0
-collecting ... collected 21 items / 19 deselected / 2 selected
+collecting ... collected 34 items / 31 deselected / 3 selected
 
-tests/test_chat.py::test_real_agent_answers_from_data_with_a_citation_and_logs_every_step PASSED [ 50%]
-tests/test_chat.py::test_real_provider_failure_gives_an_error_and_no_answer PASSED [100%]
+tests/test_chat.py::test_real_agent_answers_from_data_with_a_citation_and_logs_every_step PASSED [ 33%]
+tests/test_chat.py::test_real_provider_failure_gives_an_error_and_no_answer PASSED [ 66%]
+tests/test_grounding.py::test_real_answer_to_the_logged_question_is_grounded PASSED [100%]
 
-====================== 2 passed, 19 deselected in 3.55s =======================
+====================== 3 passed, 31 deselected in 58.95s ======================
 
 ==============================================================================
 [4] Chat evaluation: correctness, sample questions, hallucination, injection, incomplete data, citations
 command:  uv run leadership eval --chat
-exit code 0 (expected 0)  ->  PASS    2.6s
+exit code 0 (expected 0)  ->  PASS    4.2s
 ------------------------------------------------------------------------------
 Chat evaluation (real model; cached answers are reused)
 
@@ -139,7 +152,8 @@ Special cases
 Answer correctness: 31 of 31
 Sample questions: 8 of 8 (4 per company)
 Special cases (hallucination, injection, incomplete data): 3 of 3
-Citations: 28 URLs cited, 0 not a source of anyone the answer names
+Citations: 32 URLs cited, 0 not a source of anyone the answer names
+Claim-level source check: 34 of 34 answers pass (2 needed one correction turn)
 Answers from the cache: 34 of 34
 
 Answers written to fixtures\chat_eval_results.json
@@ -147,7 +161,7 @@ Answers written to fixtures\chat_eval_results.json
 ==============================================================================
 [5] Command-line chat: one question with the SQL shown
 command:  uv run leadership chat robinhood.com -q Who is the CEO? --show-sql
-exit code 0 (expected 0)  ->  PASS    2.3s
+exit code 0 (expected 0)  ->  PASS    2.4s
 ------------------------------------------------------------------------------
 Robinhood (robinhood.com). Answers come only from the collected data.
 
@@ -161,13 +175,13 @@ Vladimir Tenev is the Chair and Chief Executive Officer of Robinhood, accordin
 command:  uv run python tools/scan_secrets.py
 exit code 0 (expected 0)  ->  PASS    0.9s
 ------------------------------------------------------------------------------
-262 files scanned (91 that git would track, 171 run logs), 4 values from .env checked: 0 problems
+284 files scanned (93 that git would track, 191 run logs), 4 values from .env checked: 0 problems
 
 ==============================================================================
 SUMMARY
-  [1] PASS  M5 tests: SQL guard, chat grading, test copies, reference queries
+  [1] PASS  M5 tests: SQL guard, chat grading, test copies, reference queries, claim-level source check
   [2] PASS  Whole fast suite (no network, no keys)
-  [3] PASS  Real model: a cited answer with a full chat log; a provider failure gives an error, not an answer
+  [3] PASS  Real model: a cited answer with a full chat log; a provider failure gives an error, not an answer; the finance-roles question answered with each claim cited to its own source
   [4] PASS  Chat evaluation: correctness, sample questions, hallucination, injection, incomplete data, citations
   [5] PASS  Command-line chat: one question with the SQL shown
   [6] PASS  No key or contact address in any file that could be committed, or in the run logs
