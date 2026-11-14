@@ -8,6 +8,7 @@ dependencies = [
     "openai>=1.50",
     "pydantic>=2.7",
     "python-dotenv>=1.0",
+    "streamlit>=1.40",
     "trafilatura>=1.12",
 ]
 

@@ -150,6 +150,17 @@ STAGES: dict[str, list[tuple[str, list[str], dict[str, str], int]]] = {
         ("No key or contact address in any file that could be committed, or in the run logs",
          ["uv", "run", "python", "tools/scan_secrets.py"], {}, 0),
     ],
+    # M6: the page is run headless by Streamlit's own test runner; its one question is
+    # answered from the M5 cache.
+    "M6": [
+        ("M6 tests: companies listed from the fixtures; no key gives instructions and no chat box",
+         PYTEST + ["tests/test_app.py"], {}, 0),
+        ("Whole fast suite (no network, no keys)", ["uv", "run", "pytest", "-q"], {}, 0),
+        ("Real model: a question shows the answer, its sources, and a panel with the SQL and rows",
+         PYTEST + ["-m", "llm", "tests/test_app.py"], {}, 0),
+        ("No key or contact address in any file that could be committed, or in the run logs",
+         ["uv", "run", "python", "tools/scan_secrets.py"], {}, 0),
+    ],
 }
 
 
