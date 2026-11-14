@@ -80,13 +80,12 @@
         "check": "names",
         "sql": "SELECT DISTINCT person FROM leadership WHERE person = 'Jason Warnick' AND employment_status = 'former'",
         "include_any": [
-          "left the company",
-          "no longer with",
-          "no longer at",
-          "no longer employed",
-          "has left",
-          "left Robinhood"
-        ]
+          "planned",
+          "scheduled",
+          "not confirmed",
+          "no later source"
+        ],
+        "about": "Changed 2026-11-14 at the owner's request: his end of employment on 2026-09-01 comes only from a February 2026 filing that announced it in advance ('will remain employed ... until September 1, 2026'). No later source confirms he left, so the answer must call it planned; the claim-level source check fails an answer that says he has left."
       },
       {
         "id": "rh10",

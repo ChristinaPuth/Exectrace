@@ -44,6 +44,17 @@ ENDED = re.compile(r"\b(left|leaves|leaving|ended|ceased|stepped down|departed|r
                    r"end date)\b", re.I)
 TRANSITION = re.compile(r"\b(became|transitioned|appointed|promoted|succeeded|moved to)\b", re.I)
 STILL_HERE = re.compile(r"\b(still|remains|remained|continues|currently)\b", re.I)
+LEFT_COMPANY = re.compile(r"\b(no longer (?:at|with|employed)|(?:has )?left (?:the company|the firm)|"
+                          r"departed (?:from )?the company|is former at the company)\b", re.I)
+# Words that present an end as announced in advance rather than as having happened.
+PLANNED = re.compile(r"\b(planned|scheduled|expected|was to|set to|due to|in advance|not confirmed|unconfirmed|"
+                     r"no later source)\b", re.I)
+
+
+def _planned(row: dict) -> bool:
+    """A role end known only from a source dated before the end itself: announced, not confirmed."""
+    return bool(row.get("ended_on") and row.get("ended_by_source_date")
+                and row["ended_by_source_date"] < row["ended_on"])
 # Words just before a date that present it as when a role ended, and words that say it is a report's date.
 _END_CUE = re.compile(r"\b(left|ended|ceased|stepped down|departed|resigned|until|effective|end date)\b[^.;]*$", re.I)
 _REPORT_CUE = re.compile(r"\b(report\w*|dated|filing|filed|published|release|according|source|announced)\b", re.I)
@@ -146,6 +157,21 @@ def problems(text: str, steps, conn: sqlite3.Connection, collected_on: str | Non
                 if cited and not cited & ended_by and one:
                     add(f"{p}: the end of the role is cited to {', '.join(sorted(cited))}, which is not a source "
                         f"showing it ended; cite ended_by_source_url ({', '.join(sorted(ended_by))})")
+            # Planned ends: an end date announced in advance, with no later source, must not read as a fact.
+            planned = [r for r in rows if r["status"] == "former" and _planned(r)]
+            if planned and one:
+                last = max(rows, key=lambda r: r["ended_on"] or "")
+                r_said = next((r for r in planned if r["ended_on"] in unit), None)
+                if r_said and not PLANNED.search(unit):
+                    add(f"{p}: {r_said['ended_on']} is an end date announced in advance by "
+                        f"{r_said['ended_by_source_url']} ({r_said['ended_by_source_date']}), and no later source "
+                        f"confirms it; say it was planned and not confirmed")
+                # Sentence by sentence: "X is no longer at the company" must itself say the end was planned.
+                bare = [s for s in re.split(r"(?<=[.!?])\s+", unit) if LEFT_COMPANY.search(s) and not PLANNED.search(s)]
+                if bare and last in planned and any(r["employment_status"] == "former" for r in rows):
+                    add(f"{p}: the answer says {p} left the company, but the only source for it "
+                        f"({last['ended_by_source_url']}, {last['ended_by_source_date']}) gave the end date "
+                        f"{last['ended_on']} in advance; say it was planned and that no later source confirms it")
             if TRANSITION.search(unit) and cited and not cited & (ended_by | current_src | successor) and one:
                 add(f"{p}: the role change is cited to {', '.join(sorted(cited))}, which shows neither the end of "
                     f"the old role nor the new role")
@@ -202,7 +228,13 @@ source that supports it:
   first reported as ended in <source>, <ended_by_source_date>";
 - a person still at the company (employment_status current): say so, and cite the source_url of their current
   role's row;
-- copy every date exactly as it appears in the rows."""
+- copy every date exactly as it appears in the rows.{extra}"""
+
+# Added to the correction only when a planned end was found, so other corrections keep their wording (and cache).
+PLANNED_RULE = """
+- an end announced in advance (ended_by_source_date is before ended_on): say the end was planned for
+  <ended_on> according to <source>, <ended_by_source_date>, and that no later source confirms it. Do not write
+  that the person "is no longer at" or "has left" the company, not even with a qualifier."""
 
 
 def grounded_ask(agent, question: str, first_problems: list[str] | None = None):
@@ -220,7 +252,8 @@ def grounded_ask(agent, question: str, first_problems: list[str] | None = None):
     if not found:
         return first
     agent.log.event("grounding", question=question, problems=found)
-    retry = agent.ask(CORRECTION.format(question=question, answer=first.text,
+    extra = PLANNED_RULE if any("in advance" in p for p in found) else ""
+    retry = agent.ask(CORRECTION.format(question=question, answer=first.text, extra=extra,
                                         problems="\n".join(f"- {p}" for p in found)))
     left = problems(retry.text, retry.steps, agent.conn, when) if retry.ok else found
     agent.log.event("grounding", question=question, problems=left, corrected=not left)

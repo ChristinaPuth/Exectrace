@@ -160,7 +160,7 @@
       {
         "id": "rh09",
         "question": "Is Jason Warnick still at Robinhood?",
-        "answer": "Jason Warnick is no longer at Robinhood. The collected data shows him as former, with employment_status also former.\n\nFor his advisory role, the role is former and ended on 2026-09-01; the role held is supported by https://fortune.com/2025/12/29/who-is-robinhoods-cfo-shiv-verma-transition, 2025-12-29, and the end of the role is supported by https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm, 2026-02-10.\n\nFor his Chief Financial Officer role, the role is former and ended on 2026-02-06; the role held is supported by https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer, 2020-08-04, and the end of the role is supported by https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm, 2026-04-22.",
+        "answer": "Jason Warnick’s advisory role was planned to end on 2026-09-01 according to https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm, 2026-02-10, and no later source confirms it. The role was reported in https://fortune.com/2025/12/29/who-is-robinhoods-cfo-shiv-verma-transition, 2025-12-29.\n\nHis Chief Financial Officer role ended on 2026-02-06 according to https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm, 2026-04-22. The role was reported in https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer, 2020-08-04.",
         "ok": true,
         "problems": [],
         "urls": [
@@ -172,13 +172,15 @@
         "bad_urls": [],
         "sql": [
           "SELECT person, title, employment_status, status, ended_on, end_reported_on, source_type, source_date, source_url, evidence FROM leadership WHERE company_domain = 'robinhood.com' AND person = 'Jason Warnick' ORDER BY CASE WHEN status='current' THEN 0 WHEN status='former' THEN 1 WHEN status='unverified' THEN 2 ELSE 3 END, COALESCE(ended_on, end_reported_on, last_seen) DESC LIMIT 10;",
-          "SELECT person, title, status, employment_status, ended_on, end_reported_on, ended_by_source_url, ended_by_source_date, source_url, source_date FROM leadership WHERE person = 'Jason Warnick' ORDER BY CASE WHEN status='current' THEN 0 WHEN status='former' THEN 1 ELSE 2 END, COALESCE(ended_on, end_reported_on, last_seen) DESC LIMIT 10;"
+          "SELECT person, title, status, employment_status, ended_on, end_reported_on, ended_by_source_url, ended_by_source_date, source_url, source_date FROM leadership WHERE person = 'Jason Warnick' ORDER BY CASE WHEN status='current' THEN 0 WHEN status='announced' THEN 1 WHEN status='former' THEN 2 ELSE 3 END, COALESCE(ended_on, end_reported_on, last_seen) DESC LIMIT 10;"
         ],
         "sample": null,
-        "cached": true,
+        "cached": false,
         "grounding": [],
         "corrected": [
-          "Jason Warnick: the end of the role is cited to https://fortune.com/2025/12/29/who-is-robinhoods-cfo-shiv-verma-transition, which is not a source showing it ended; cite ended_by_source_url (https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm, https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm)"
+          "Jason Warnick: the end of the role is cited to https://fortune.com/2025/12/29/who-is-robinhoods-cfo-shiv-verma-transition, which is not a source showing it ended; cite ended_by_source_url (https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm, https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm)",
+          "Jason Warnick: 2026-09-01 is an end date announced in advance by https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm (2026-02-10), and no later source confirms it; say it was planned and not confirmed",
+          "Jason Warnick: the answer says Jason Warnick left the company, but the only source for it (https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm, 2026-02-10) gave the end date 2026-09-01 in advance; say it was planned and that no later source confirms it"
         ],
         "passed": true
       },
