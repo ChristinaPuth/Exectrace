@@ -231,6 +231,11 @@ reference SQL, plus 3 special cases):
 | Claim-level source check | 34 of 34 (2 after one correction turn) |
 | Manual citation review (10 answers, three-question rubric) | 10 of 10 |
 
+These are the cached answers. When all 34 questions were last answered from
+scratch (`acceptance/M7_results.log`), 30 of 31 passed. The one failure said
+correctly that the CEO's location was not found, but cited a source anyway.
+A fresh clone answered the 8 sample questions correctly, twice.
+
 ## Known limits
 
 - **Coverage is limited by what may be read.** Robinhood's and Wise's

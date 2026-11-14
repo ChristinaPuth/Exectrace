@@ -12,7 +12,7 @@ Remaining open decisions are in [section 9](#9-open-decisions).
 | M4 Verify, enrich, export, gold set | Done; accepted 2026-11-13 with the C-level recall target not met for Robinhood (`acceptance/M4.md`); merged to `main` |
 | M5 Chat agent (CLI) | Done; accepted 2026-11-14 (`acceptance/M5.md`), including the claim-level source check; merged to `main` |
 | M6 Streamlit UI | Done; accepted 2026-11-14 (`acceptance/M6.md`); merged to `main` |
-| M7 | Not started |
+| M7 README + deliverables | Built on branch `m7-deliver`; automated acceptance passed; session export to be committed last; awaiting sign-off |
 
 Evidence for each finished milestone is in `acceptance/`.
 
@@ -1102,7 +1102,7 @@ The next milestone starts only after the author has run the manual tests.
 | M6 | Streamlit UI | Runs from committed fixtures with one LLM key; shows answer, SQL, and sources | 0.5 h |
 | M7 | README + deliverables | Fresh-clone test passes; README covers design decisions, measured results, and limits; key scan clean; fixtures, eval report, citation review, and session export committed | 0.75 h |
 
-Progress: M0 to M6 accepted. M4's C-level recall target is not met for Robinhood (45%), a documented access limit. M0 also
+Progress: M0 to M6 accepted; M7 built and awaiting sign-off. M4's C-level recall target is not met for Robinhood (45%), a documented access limit. M0 also
 delivered the Groq-first provider chain with pacing and fallback, which the
 original plan had placed in M3.
 
