@@ -1,0 +1,39 @@
+
+Company:  Example Domain
+Run:      43    Status: insufficient_data
+  - run 43 (new); company name from the site: Example Domain
+  - company site: 0 links found, 0 shortlisted, 0 chosen
+  - SEC EDGAR: no SEC registrant named 'Example Domain'
+  - Wikipedia: skipped: WIKIPEDIA_USER_AGENT is not set in .env
+  - web search: 20 results, 19 usable, 1 about this company and added
+  - search round 2: 15 results, 11 usable, 0 about this company and added
+  - search round 2 ran because no current CEO found: 0 pages, 0 more claims. No further round is ever run
+
+Usage against limits
+  pages              2 of 40
+  search_queries     7 of 25
+  llm_calls          3 of 120
+  pages failed       0
+  pages skipped      1   (refused, robots.txt, or not verified as this company)
+  network calls     10   (this process; 0 means all from cache)
+
+Reasons recorded
+  insufficient_data extract  no current CEO was found
+  insufficient_data extract  no current leader (C-level, VP or Head) was found
+  insufficient_data discover no company page other than the homepage could be read
+
+Extraction: 0 claims stored about 0 people; 0 rejected by the checks this run; 0 documents skipped
+Current leaders: 0. Unverified, not counted as current: 0
+
+Leadership found (C-level, VP, Head)
+  (none)
+
+Sources stored
+  tier 1  company_site  extracted   1
+  tier 3  wikipedia     skipped     1
+
+Pages that could not be read (nothing from them is used)
+  tier 3  wikipedia     https://en.wikipedia.org/wiki/Example.com
+          skipped: disallowed by robots.txt
+
+Run log: C:\dev\ExecTrace\logs\collect-example.com-20261113T123654.jsonl

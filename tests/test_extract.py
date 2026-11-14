@@ -292,19 +292,13 @@ ANSWER = {"about_target_company": True, "page_kind": "official", "claims": [
 
 def _seed(cache, text, answer, model="model-b", target=ACME, source_type="press_release", doc_date=None):
     """Put a recorded model answer where the cache would hold it for this exact request."""
-    user = ex.USER.format(company=target.name, domains=", ".join(sorted(target.domains)),
-                          description=target.description or "unknown", source_type=source_type,
-                          doc_date=doc_date or "not stated", departments=", ".join(ex.DEPARTMENTS),
-                          max_claims=ex.MAX_CLAIMS_PER_CHUNK, text=chunks(text, 3)[0])
+    user = ex.user_prompt(target, chunks(text, 3)[0], source_type, doc_date)
     digest = hashlib.sha256(user.encode()).hexdigest()
     cache.put(f"extract|{extraction_version(model)}|{digest}", answer)
 
 
 def _seed_piece(cache, piece, answer, model="model-b", target=ACME, source_type="press_release"):
-    user = ex.USER.format(company=target.name, domains=", ".join(sorted(target.domains)),
-                          description=target.description or "unknown", source_type=source_type,
-                          doc_date="not stated", departments=", ".join(ex.DEPARTMENTS),
-                          max_claims=ex.MAX_CLAIMS_PER_CHUNK, text=piece)
+    user = ex.user_prompt(target, piece, source_type, None)
     cache.put(f"extract|{extraction_version(model)}|{hashlib.sha256(user.encode()).hexdigest()}", answer)
 
 
@@ -541,3 +535,168 @@ def test_real_model_marks_a_third_party_directory_page(tmp_path):
                              cache=FileCache(tmp_path / "llm"), log=RunLog(tmp_path / "run.jsonl"))
     assert found.page_kind == "profile_or_directory"
     assert {"Ada Lovelace", "Grace Hopper"} <= {a.claim.person for a in found.accepted}
+
+
+# ------------------------------------------------------- carried from M3 into M4
+def test_a_first_party_page_is_never_refused_on_the_models_affiliation_judgment(tmp_path):
+    """R165. Real case: Robinhood's own newsroom page was judged 'about another organisation'."""
+    cache, log = FileCache(tmp_path / "llm"), RunLog(tmp_path / "run.jsonl")
+    page = "A message from our CEO. Ada Lovelace is the Chief Executive Officer of Acme Robotics."
+    wrong = {"about_target_company": False, "page_kind": "official", "claims": [
+        {"person": "Ada Lovelace", "organization": "Acme Robotics", "claim_type": "role",
+         "raw_title": "Chief Executive Officer",
+         "evidence": "Ada Lovelace is the Chief Executive Officer of Acme Robotics."},
+        {"person": "Jane Doe", "organization": "Acme Robotics", "claim_type": "role", "raw_title": "CEO",
+         "evidence": "Jane Doe is the chief executive"}]}
+    for kind in ("press_release", "company_site", "sec_filing"):
+        _seed(cache, page, wrong, source_type=kind)
+        found = extract_document(_Chain(), ACME, page, source_type=kind, doc_date=None, url="u",
+                                 max_chunks=3, cache=cache, log=log)
+        assert [a.claim.person for a in found.accepted] == ["Ada Lovelace"], kind
+        assert found.about_target is True
+        # The override skips only the affiliation judgment; every other check still runs.
+        assert [c.person for c, _ in found.rejected] == ["Jane Doe"]
+    events = [json.loads(line) for line in (tmp_path / "run.jsonl").read_text(encoding="utf-8").splitlines()]
+    assert sum(e["event"] == "affiliation_overridden" for e in events) == 3
+    # The same answer for a third-party page is still decisive: a namesake yields nothing.
+    _seed(cache, page, wrong, source_type="news")
+    third = extract_document(_Chain(), ACME, page, source_type="news", doc_date=None, url="u",
+                             max_chunks=3, cache=cache, log=log)
+    assert third.accepted == [] and third.about_target is False
+
+
+def test_the_request_tells_the_model_who_published_the_document():
+    own = ex.user_prompt(ACME, "text", "press_release", None)
+    other = ex.user_prompt(ACME, "text", "news", None)
+    assert "Published by: the target company itself" in own
+    assert "Published by: a third party." in other
+
+
+def test_a_misquoted_role_is_recovered_from_the_documents_own_sentence(tmp_path):
+    """R160. Real case: the model quoted 'Campground' where the page says 'Campfire'."""
+    cache, log = FileCache(tmp_path / "llm"), RunLog(tmp_path / "run.jsonl")
+    page = ("About the host\nAda Lovelace is the CEO and Founder of Acme Robotics, the modern robotics "
+            "company. Grace Hopper joined the company last year.")
+    _seed(cache, page, {"about_target_company": True, "page_kind": "official", "claims": [
+        {"person": "Ada Lovelace", "organization": "Acme Robotics", "claim_type": "role",
+         "raw_title": "CEO and Founder",
+         "evidence": "Ada Lovelace is the CEO and Founder of Acme Robotix, the modern robotics company."},
+        {"person": "Grace Hopper", "organization": "Acme Robotics", "claim_type": "appointment",
+         "raw_title": "CFO", "evidence": "Grace Hopper joined the company last year as CFO."},
+        {"person": "Alan Turing", "organization": "Acme Robotics", "claim_type": "role", "raw_title": "CTO",
+         "evidence": "Alan Turing is the CTO of Acme Robotics."}]})
+    found = extract_document(_Chain(), ACME, page, source_type="press_release", doc_date=None, url="u",
+                             max_chunks=3, cache=cache, log=log)
+    (a,) = found.accepted
+    assert a.claim.person == "Ada Lovelace" and a.canonical_role == "CEO"
+    # The stored evidence is the page's own sentence, not the model's version of it.
+    assert a.claim.evidence == "Ada Lovelace is the CEO and Founder of Acme Robotics, the modern robotics company."
+    assert check_claim(a.claim, page, ACME) is None
+    refused = {c.person: why for c, why in found.rejected}
+    # Not recovered: an appointment needs more than a sentence with a name and a title,
+    # and a person the page never names with that title has no sentence at all.
+    assert refused["Grace Hopper"] == "the evidence quote is not in the document"
+    assert refused["Alan Turing"] == "the evidence quote is not in the document"
+
+
+def test_a_real_quote_that_never_states_the_title_is_refused():
+    """Found in M4. Campfire's Series A post names its investor John Locke beside the founder's own
+    words; the model returned him as CEO with a genuine quote from the page."""
+    page = ("I am thrilled to announce a significant milestone for Acme Robotics: we have raised a Series A, "
+            "led by Accel, with support from prominent executives including Jack Zhang, Co-Founder & CEO at "
+            "AirWallex. This is a moment of celebration and renewed ambition for our team, and for me "
+            "personally it is a chance to once again partner with Accel and John Locke, after our shared "
+            "journey. - Ada Lovelace, Founder & CEO, Acme Robotics")
+    investor = _claim(person="John Locke", raw_title="CEO",
+                      evidence="I am thrilled to announce a significant milestone for Acme Robotics: we have "
+                               "raised a Series A, led by Accel")
+    reason = check_claim(investor, page, ACME)
+    assert reason == "the title is not tied to this person (not in the same sentence as their name)"
+    # Even when the quote contains a title, if that title belongs to someone else in it.
+    with_title = _claim(person="John Locke", raw_title="CEO",
+                        evidence="we have raised a Series A, led by Accel, with support from prominent "
+                                 "executives including Jack Zhang, Co-Founder & CEO at AirWallex")
+    assert check_claim(with_title, page, ACME) == reason
+    # Another person's title in the same paragraph does not help him either.
+    wider = _claim(person="John Locke", raw_title="CEO",
+                   evidence="it is a chance to once again partner with Accel and John Locke")
+    assert check_claim(wider, page, ACME) is not None
+    # The real CEO signs with the title beside her name: accepted on the same page.
+    author = _claim(person="Ada Lovelace", raw_title="CEO",
+                    evidence="I am thrilled to announce a significant milestone for Acme Robotics")
+    far = check_claim(author, page, ACME)
+    signed = _claim(person="Ada Lovelace", raw_title="Founder & CEO",
+                    evidence="Ada Lovelace, Founder & CEO, Acme Robotics")
+    assert check_claim(signed, page, ACME) is None and far is not None
+
+
+def test_title_wording_is_matched_across_short_and_long_forms():
+    from leadership.extract import states_title
+    assert states_title("CEO", "Jane Doe is the Chief Executive Officer")
+    assert states_title("Chief Financial Officer", "our CFO")
+    assert states_title("VP of Sales", "Vice President, Sales")
+    assert states_title("Co-Founder and Co-CEO", "Co-Founders and Co-CEOs Vlad Tenev and Baiju Bhatt")
+    assert states_title("Chief Legal, Compliance, and Corporate Affairs Officer",
+                        "Chief Legal, Compliance and Corporate Affairs Officer")
+    assert not states_title("CEO", "raised a Series A led by Accel")
+    assert not states_title("CTO", "Chief Financial Officer")
+    assert not states_title("Head of Product", "Head of Sales")
+
+
+def test_a_quote_without_the_name_needs_a_pronoun_and_the_title():
+    page = ("Ada Lovelace joined Acme Robotics in 2019. She is our Chief Executive Officer. "
+            "We are proud of our Chief Executive Officer and the whole team.")
+    by_pronoun = _claim(evidence="She is our Chief Executive Officer.")
+    assert check_claim(by_pronoun, page, ACME) is None
+    no_link = _claim(evidence="We are proud of our Chief Executive Officer and the whole team.")
+    assert check_claim(no_link, page, ACME) is not None     # no name in its sentence, no pronoun
+
+
+def test_abbreviations_do_not_end_the_sentence_that_ties_a_title_to_a_name():
+    page = "We are excited to announce Dr. Naomi Boyd has joined Acme Robotics, Inc. as our Chief Economic Advisor."
+    boyd = _claim(person="Naomi Boyd", claim_type="appointment", raw_title="Chief Economic Advisor", evidence=page)
+    assert check_claim(boyd, page, ACME) is None
+
+
+def test_a_given_name_alone_can_tie_a_title_but_not_someone_elses_given_name():
+    page = ("Gretchen Howard has been elevated to COO of Acme Robotics. Since joining in January as Vice President "
+            "of Operations, Gretchen's leadership has expanded to more areas.")
+    earlier = _claim(person="Gretchen Howard", raw_title="Vice President of Operations",
+                     evidence="Since joining in January as Vice President of Operations, Gretchen's leadership "
+                              "has expanded to more areas.")
+    assert check_claim(earlier, page, ACME) is None
+    two_johns = ("John Glasgow is the CEO of Acme Robotics. It is a chance to partner again with Accel and "
+                 "John Locke, after our shared journey.")
+    locke = _claim(person="John Locke", raw_title="CEO", evidence="John Glasgow is the CEO of Acme Robotics.")
+    assert check_claim(locke, two_johns, ACME) is not None      # "John Glasgow" is not John Locke
+
+
+# ------------------------------------------------- plan step 4: officer sections
+def test_an_officer_section_with_few_ranking_words_still_gets_a_reading_slot():
+    from leadership.extract import _heading
+    busy = "\n\n".join(f"The CEO and CFO approved plan {i}; the chief officer reviewed it and the president agreed. " * 8
+                       for i in range(12))                       # many ranking words, no officers named
+    section = ("Executive Officers\n\nAda Lovelace, age 44, Chair. Grace Hopper, age 51, Treasurer and "
+               "Secretary. Alan Turing, age 39, General Counsel. " + "Biography text. " * 120)
+    filler = "\n\n".join("Revenue and risk factors paragraph. " * 20 for _ in range(10))
+    doc = busy + "\n\n" + filler + "\n\n" + section + "\n\n" + filler
+    picked = chunks(doc, 3, size=1500)
+    assert len(picked) == 3 and any("Ada Lovelace, age 44" in p for p in picked)
+    # Without the heading, keyword ranking alone would have skipped it.
+    plain = chunks(doc.replace("Executive Officers\n", "Notes\n"), 3, size=1500)
+    assert not any("Ada Lovelace, age 44" in p for p in plain)
+    assert _heading("INFORMATION ABOUT OUR EXECUTIVE OFFICERS") and _heading("| Executive Officers |  | 71 |")
+    assert _heading("Leadership Team") and _heading("Item 10. Executive Officers")
+    assert not _heading("Executive officers are elected by and serve at the discretion of our Board.")
+    assert not _heading("ITEM 10. DIRECTORS, EXECUTIVE OFFICERS, AND CORPORATE GOVERNANCE")
+
+
+def test_a_document_whose_officer_section_is_already_read_is_unchanged():
+    from leadership.extract import _signal, pieces_of
+    section = "Executive Officers\n\nThe Chief Executive Officer and the Chief Financial Officer are named here. " * 20
+    filler = "\n\n".join("Revenue and risk factors paragraph. " * 20 for _ in range(10))
+    doc = section + "\n\n" + filler
+    pieces = pieces_of(doc, 1500)
+    ranked = sorted(range(len(pieces)), key=lambda i: (-_signal(pieces[i]), i))
+    by_ranking_alone = [pieces[i] for i in sorted(ranked[:3])]
+    assert len(pieces) > 3 and chunks(doc, 3, size=1500) == by_ranking_alone

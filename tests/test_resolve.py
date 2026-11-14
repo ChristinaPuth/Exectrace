@@ -334,3 +334,16 @@ def test_no_role_ever_gets_an_end_date_that_no_claim_states():
         for r in resolve(case["claims"], TODAY).roles:
             assert r.ended_on is None or r.ended_on in stated, case["name"]
             assert not (r.ended_on and r.end_reported_on), case["name"]
+
+
+def test_a_company_wide_departure_does_not_lend_its_office_to_the_persons_other_roles():
+    """Found in M4: 'leaving Robinhood' named the CLO office, which then showed on an unrelated role."""
+    roles = _by_key(resolve([
+        _c(1, X, "role", "member of our executive leadership team", tier=2, src="press_release",
+           on=date(2019, 11, 21), level="other"),
+        _c(2, X, "role", "Chief Legal Officer", tier=2, src="press_release", on=date(2019, 11, 21), canonical="CLO"),
+        departure(3, X, "company", tier=2, src="press_release", on=date(2026, 5, 5), eff=date(2026, 5, 20),
+                  title="Chief Legal Officer", canonical="CLO")], TODAY))
+    other = next(r for k, r in roles.items() if k[1] != "CLO")
+    assert other.canonical_role is None and other.status == "former"       # ended, but not renamed
+    assert roles[(X, "CLO")].canonical_role == "CLO" and roles[(X, "CLO")].status == "former"

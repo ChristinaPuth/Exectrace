@@ -18,7 +18,9 @@ sys.path.insert(0, str(ROOT))
 from leadership.cache import FileCache  # noqa: E402
 from leadership.db import connect  # noqa: E402
 from leadership.extract import ExtractedClaim, Target, check_claim  # noqa: E402
+from leadership.normalize import normalize_name  # noqa: E402
 from leadership.sources.web import clean_text  # noqa: E402
+from leadership.verify import check_bio, check_location  # noqa: E402
 
 
 def main() -> int:
@@ -41,8 +43,21 @@ def main() -> int:
                                    organization=company["name"],
                                    claim_type=r["claim_type"], raw_title=r["raw_title"],
                                    value=r["value"], evidence=r["evidence"])
-            reason = "the page is not in the cache" if not texts[r["url"]] else \
-                check_claim(claim, texts[r["url"]], target)
+            surname = normalize_name(r["full_name"]).split()[-1]
+            if not texts[r["url"]]:
+                reason = "the page is not in the cache"
+            elif r["claim_type"] == "bio":              # found by enrichment: its own checks apply
+                reason = check_bio(r["evidence"], texts[r["url"]], surname)
+            elif r["claim_type"] == "location":
+                reason = check_location(r["value"], r["evidence"], texts[r["url"]], surname)
+            else:
+                reason = check_claim(claim, texts[r["url"]], target)
+                # Extraction checks the title as the model gave it, then appends the business
+                # unit ("..., Wise Platform"). The re-check accepts the title without that suffix.
+                if reason and reason.startswith("the title is not tied") and ", " in (r["raw_title"] or ""):
+                    plain_title = r["raw_title"].rsplit(", ", 1)[0]
+                    reason = check_claim(claim.model_copy(update={"raw_title": plain_title}),
+                                         texts[r["url"]], target)
             if reason:
                 bad += 1
                 print(f"  FAIL claim {r['id']} ({r['person_as_written']} / {r['raw_title']}): {reason}\n"

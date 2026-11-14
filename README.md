@@ -7,7 +7,9 @@ through an LLM chat.
 Status: **M0** (project setup) and **M1** (database schema, role resolution
 rules) and **M2** (finding and fetching sources) are done and accepted.
 **M3** (extracting people and roles from the sources) is done and accepted.
-Verification of uncertain roles, the export and the chat are not built yet. See [SPEC.md](SPEC.md) for
+**M4** (verification, location and biography, export, measurement) is done and accepted;
+its recall limits are listed below.
+The chat is not built yet. See [SPEC.md](SPEC.md) for
 the design, `SPEC_checklist.xlsx` for the requirement checklist, and
 `acceptance/` for each milestone's test results.
 
@@ -137,6 +139,50 @@ Known limits of extraction:
 - **A company whose name is inside another name** ("Camp Fire" for Campfire)
   passes the organisation check by name; the model is also asked whether the
   page is about a different organisation.
+
+## Verify, enrich, export, measure
+
+`leadership collect` goes on after extraction: it looks for dates the held
+documents state, makes one targeted web search per uncertain leader role,
+and looks up location and a short biography for current leaders. Add
+`--no-verify` to stop before that. Then:
+
+```bash
+uv run leadership export meetcampfire.com robinhood.com
+```
+
+```bash
+uv run leadership eval
+```
+
+`export` writes `fixtures/<domain>.json` and `fixtures/leadership.db`. `eval`
+measures extraction on the labelled pages, and the fixtures against the
+hand-verified gold sets in `fixtures/gold/` (`--gold-only` needs no key).
+To see every targeted check and its outcome:
+
+```bash
+uv run python tools/show_people.py robinhood.com --checks
+```
+
+What the measurement shows, and its limits:
+
+- **What is reported is right; much is missing.** Every role marked current
+  that the gold sets cover is correct. But for Robinhood the pipeline found
+  5 of 11 C-level leaders and none of 14 vice presidents. Recall is shown
+  twice: against the whole gold set, and against the people whose sources
+  the tool was allowed to read. For Robinhood the second is 5 of 5: every
+  miss is named only on the official leadership page, which refuses the
+  tool's fetcher.
+- **The gold sets are not fully blind.** They were written after earlier
+  pipeline runs, from primary sources, and approved by the project owner.
+- **Verification rarely settles old roles.** They stay `unverified`.
+- **No personal location was found**; "not found" is stored.
+- **More searching did not help Robinhood.** A search limited to the
+  company's own domains found a page for each missing leader, all on the site
+  that refuses the tool. PDFs (such as Wise's annual report) are found but
+  not read.
+- **One automatic search pass per company.** After it, `collect` makes no
+  automatic search; add `--refresh` to allow another pass.
 
 ## Tests
 

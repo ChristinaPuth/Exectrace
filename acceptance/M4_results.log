@@ -1,0 +1,1306 @@
+Acceptance run for M4
+Date:    2026-11-13T13:37:15-08:00
+Branch:  m4-verify
+Commit:  3c20f6b
+Python:  3.12.10
+
+==============================================================================
+[1] M4 tests: stated dates, verification, enrichment, gold-set measurement, export
+command:  uv run pytest -v tests/test_verify.py tests/test_gold.py
+exit code 0 (expected 0)  ->  PASS    5.6s
+------------------------------------------------------------------------------
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0 -- C:\dev\ExecTrace\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\dev\ExecTrace
+configfile: pyproject.toml
+plugins: anyio-4.16.0
+collecting ... collected 25 items
+
+tests/test_verify.py::test_a_stated_departure_date_is_found_in_one_strict_sentence PASSED [  4%]
+tests/test_verify.py::test_two_dates_in_one_sentence_or_two_sentences_that_disagree_give_no_date PASSED [  8%]
+tests/test_verify.py::test_an_earlier_title_is_recognised_only_from_the_companys_own_wording PASSED [ 12%]
+tests/test_verify.py::test_a_date_the_model_missed_is_recovered_from_a_held_source PASSED [ 16%]
+tests/test_verify.py::test_a_role_with_no_stated_date_is_reported_not_guessed PASSED [ 20%]
+tests/test_verify.py::test_an_earlier_title_named_by_the_company_is_no_longer_current PASSED [ 24%]
+tests/test_verify.py::test_each_uncertain_role_gets_one_check_and_the_rules_decide PASSED [ 28%]
+tests/test_verify.py::test_new_evidence_found_by_a_check_changes_the_status_through_the_rules PASSED [ 32%]
+tests/test_verify.py::test_verification_stops_at_its_cap_and_says_so PASSED [ 36%]
+tests/test_verify.py::test_location_checks_refuse_a_company_address_and_a_place_not_in_the_quote PASSED [ 40%]
+tests/test_verify.py::test_biography_must_be_a_real_sentence_that_names_the_person PASSED [ 44%]
+tests/test_verify.py::test_enrichment_stores_checked_location_and_biography_and_records_not_found PASSED [ 48%]
+tests/test_verify.py::test_a_biography_must_be_about_the_person_and_say_what_they_are_or_did PASSED [ 52%]
+tests/test_verify.py::test_a_stored_biography_that_fails_the_rules_is_withdrawn_and_replaced PASSED [ 56%]
+tests/test_verify.py::test_no_automatic_search_after_one_full_pass PASSED [ 60%]
+tests/test_gold.py::test_recall_is_counted_per_group_and_a_vp_chief_counts_in_both PASSED [ 64%]
+tests/test_gold.py::test_a_gold_former_leader_stored_as_current_is_reported_and_counted_wrong PASSED [ 68%]
+tests/test_gold.py::test_hand_verdicts_settle_roles_the_gold_set_does_not_cover PASSED [ 72%]
+tests/test_gold.py::test_a_unit_office_stored_as_the_company_wide_office_is_a_scope_error PASSED [ 76%]
+tests/test_gold.py::test_a_gold_file_with_unverified_rows_cannot_be_used PASSED [ 80%]
+tests/test_gold.py::test_the_committed_gold_sets_are_verified_and_well_formed PASSED [ 84%]
+tests/test_gold.py::test_export_document_carries_every_role_with_its_claims_and_sources PASSED [ 88%]
+tests/test_gold.py::test_export_writes_json_and_a_database_with_only_the_chosen_companies PASSED [ 92%]
+tests/test_gold.py::test_reachable_recall_leaves_out_only_people_whose_every_cited_source_was_refused PASSED [ 96%]
+tests/test_gold.py::test_without_cited_sources_nobody_is_unreachable PASSED [100%]
+
+============================= 25 passed in 4.00s ==============================
+
+==============================================================================
+[2] Whole fast suite (no network, no keys)
+command:  uv run pytest -q
+exit code 0 (expected 0)  ->  PASS    22.1s
+------------------------------------------------------------------------------
+........................................................................ [ 21%]
+........................................................................ [ 43%]
+........................................................................ [ 65%]
+........................................................................ [ 87%]
+........................................                                 [100%]
+328 passed, 13 deselected in 20.51s
+
+==============================================================================
+[3] Real model: extraction, planted instructions, directory page, resume, outage, invalid output
+command:  uv run pytest -v -m llm tests/test_extract.py tests/test_pipeline.py
+exit code 0 (expected 0)  ->  PASS    22.6s
+------------------------------------------------------------------------------
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0 -- C:\dev\ExecTrace\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\dev\ExecTrace
+configfile: pyproject.toml
+plugins: anyio-4.16.0
+collecting ... collected 56 items / 50 deselected / 6 selected
+
+tests/test_extract.py::test_real_model_extracts_roles_dates_and_pending_changes PASSED [ 16%]
+tests/test_extract.py::test_real_model_does_not_follow_instructions_planted_in_a_page PASSED [ 33%]
+tests/test_extract.py::test_real_model_marks_a_third_party_directory_page PASSED [ 50%]
+tests/test_pipeline.py::test_real_run_stopped_by_its_limit_resumes_without_repeating_work PASSED [ 66%]
+tests/test_pipeline.py::test_real_provider_outage_stops_the_run_cleanly_and_keeps_the_data PASSED [ 83%]
+tests/test_pipeline.py::test_real_output_that_fails_validation_is_retried_once_then_the_document_is_skipped PASSED [100%]
+
+====================== 6 passed, 50 deselected in 20.96s ======================
+
+==============================================================================
+[4] Campfire: full run with verification and enrichment
+command:  uv run leadership collect https://meetcampfire.com/
+exit code 0 (expected 0)  ->  PASS    7.1s
+------------------------------------------------------------------------------
+
+Company:  Campfire
+Run:      62    Status: complete
+  - run 62 (new); company name from the site: Campfire
+  - company site: 270 links found, 82 shortlisted, 5 chosen
+  - SEC EDGAR: no SEC registrant named 'Campfire'
+  - Wikipedia: skipped: WIKIPEDIA_USER_AGENT is not set in .env
+  - web search: 20 results, 12 usable, 7 about this company and added
+  - search round 2: not needed (a current CEO and 3 current leaders found; 1 more people are unverified and not counted)
+  - targeted searches: none, one full pass was made on 2026-11-13 (run with --refresh to search again)
+  - enrichment: 3 of 3 current leaders looked up; 0 locations and 0 biographies found this run
+
+Usage against limits
+  pages              0 of 40
+  search_queries     0 of 25
+  llm_calls          0 of 120
+  pages failed       0
+  pages skipped      0   (refused, robots.txt, or not verified as this company)
+  network calls      0   (this process; 0 means all from cache)
+
+Extraction: 17 claims stored about 5 people; 0 rejected by the checks this run; 0 documents skipped
+Current leaders: 3. Unverified, not counted as current: 1
+
+Leadership found (C-level, VP, Head)
+  current    John Glasgow            CEO                                           company_site  2026-11-13 
+  current    Erik Leavell            Head of Finance & Applied AI                  company_site  2026-11-13 
+  current    Chris McDonough         VP of Sales                                   news          2026-09-10 
+  unverified Paul Nichols            CTO                                           press_release 2025-02-06 
+
+Targeted checks on record (all runs)
+  bio       found                 2
+  bio       not_found             1
+  location  not_found             3
+  verify    still_unverified      1
+
+Sources stored
+  tier 1  company_site  extracted   3
+  tier 2  press_release extracted  13
+  tier 3  news          extracted   3
+  tier 3  news          failed      1
+  tier 3  news          skipped     4
+  tier 4  news          extracted   1
+
+Pages that could not be read (nothing from them is used)
+  tier 3  news          https://paulcnichols.com
+          skipped: disallowed by robots.txt
+  tier 3  news          https://rocketreach.co/chris-mcdonough-email_10282099
+          skipped: the site refused automated access (HTTP 403)
+  tier 3  news          https://rocketreach.co/paul-nichols-email_3288437
+          skipped: the site refused automated access (HTTP 403)
+  tier 3  news          https://www.frontlines.io/podcasts/john-glasgow
+          failed: HTTP 429
+  tier 3  news          https://www.thecampfire.ai/about
+          skipped: not verified: this site has a name like the company's but the page never mentions campfire.ai or meetcampfire.com
+
+Run log: C:\dev\ExecTrace\logs\collect-meetcampfire.com-20261113T133808.jsonl
+
+==============================================================================
+[5] Robinhood: full run with verification and enrichment
+command:  uv run leadership collect https://robinhood.com/
+exit code 0 (expected 0)  ->  PASS    71.7s
+------------------------------------------------------------------------------
+
+Company:  Robinhood
+Run:      63    Status: complete
+  - run 63 (new); company name from the site: Robinhood
+  - company site: 523 links found, 120 shortlisted, 12 chosen
+  - SEC EDGAR: matched SEC registrant Robinhood Markets, Inc. (CIK 1783879); 5 filings selected
+  - Wikipedia: skipped: WIKIPEDIA_USER_AGENT is not set in .env
+  - web search: 20 results, 14 usable, 8 about this company and added
+  - search round 2: not needed (a current CEO and 5 current leaders found; 7 more people are unverified and not counted)
+  - targeted searches: none, one full pass was made on 2026-11-13 (run with --refresh to search again)
+  - stated dates: 2 former leader roles had no end date; 0 recovered from held sources
+  - stated dates: 2 former leader roles had no end date; 0 recovered from held sources
+  - enrichment: 5 of 5 current leaders looked up; 0 locations and 0 biographies found this run
+
+Usage against limits
+  pages              0 of 40
+  search_queries     0 of 25
+  llm_calls          0 of 120
+  pages failed       0
+  pages skipped      0   (refused, robots.txt, or not verified as this company)
+  network calls      0   (this process; 0 means all from cache)
+
+Extraction: 148 claims stored about 27 people; 0 rejected by the checks this run; 0 documents skipped
+Current leaders: 5. Unverified, not counted as current: 7
+
+Leadership found (C-level, VP, Head)
+  current    Daniel Gallagher        Chief Legal Officer                           sec_filing    2026-04-22 
+  current    Daniel Gallagher        Chief Legal, Compliance, and Corporate Affai  sec_filing    2026-04-22 
+  current    Dara Bazzano            Chief Accounting Officer                      sec_filing    2026-06-26 
+  current    Shiv Verma              Chief Financial Officer                       sec_filing    2026-06-26 
+  current    Steven Quirk            Chief Brokerage Officer                       sec_filing    2026-04-22 
+  current    Vladimir Tenev          Chair and Chief Executive Officer             sec_filing    2026-04-22 
+  current    Vladimir Tenev          President                                     sec_filing    2026-02-18 
+  unverified Aparna Chennapragada    Chief Product Officer                         press_release 2021-03-17 
+  unverified Baiju Bhatt             Co-CEO                                        press_release 2020-05-05   CONFLICT
+  unverified Baiju Bhatt             Chief Creative Officer                        news          2024-03-25   CONFLICT
+  unverified Christina Smedley       Chief Marketing Officer                       press_release 2020-08-04   CONFLICT
+  unverified Christina Smedley       Chief Marketing and Communications Officer    news          2021-07-29   CONFLICT
+  unverified Christine Brown         Crypto COO                                    press_release 2021-10-28   CONFLICT
+  unverified Christine Brown         Chief Operating Officer, Robinhood Crypto     press_release 2021-04-22   CONFLICT
+  unverified Christine Brown         Crypto COO                                    news          2022-03-30   CONFLICT
+  unverified Gretchen Howard         Chief Operating Officer                       press_release 2020-08-04 
+  unverified Kelly Zigaitis          Chief Compliance Officer                      news          2020-08-31 
+  unverified Kelly Zigaitis          Chief Compliance Officer, Robinhood Securiti  press_release 2020-08-27 
+  unverified Norm Ashkenas           Chief Compliance Officer                      news          2026-11-13   CONFLICT
+  unverified Norm Ashkenas           Chief Compliance Officer, Robinhood Financia  press_release 2020-08-27 
+  unverified Christine Brown         VP of Product Operations                      press_release 2021-10-28   CONFLICT
+  unverified Gretchen Howard         Vice President of Operations                  press_release 2019-06-24 
+  former     Anne Hoge               Chief Legal Officer                           press_release 2019-11-21 
+  former     Jason Warnick           Chief Financial Officer                       press_release 2020-08-04 
+  former     Jeffrey Pinner          Chief Technology Officer                      sec_filing    2026-04-22 
+  former     Shiv Verma              Senior Vice President of Finance and Strateg  sec_filing    2026-02-10 
+
+Targeted checks on record (all runs)
+  bio       found                 5
+  date      not_stated            2
+  location  not_found             5
+  verify    conflict_remains      5
+  verify    role_gone             1
+  verify    still_unverified      8
+
+Sources stored
+  tier 1  company_site  extracted   2
+  tier 1  company_site  skipped    15
+  tier 1  sec_filing    extracted   5
+  tier 2  press_release extracted  18
+  tier 3  news          extracted  19
+  tier 3  news          skipped    11
+  tier 3  wikipedia     skipped     3
+
+Pages that could not be read (nothing from them is used)
+  tier 1  company_site  https://investors.robinhood.com/board-member/baiju-bhatt  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/governance/board-of-directors  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/governance/leadership  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/abhishek-fatehpuria  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/chris-koegel  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/dan-gallagher  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/deepak-rao  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/johann-kerbrat  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/jordan-sinclair  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/matt-billings  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/robb-baldwin  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/shiv-verma  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/steve-quirk  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/vlad-tenev  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://investors.robinhood.com/management/walter-koller  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 3  news          https://blockworks.com/news/robinhood-crypto-exec-steps-down-less-than-a-year-on-the-job
+          skipped: the site refused automated access (HTTP 403)
+  tier 3  wikipedia     https://en.wikipedia.org/wiki/Baiju_Bhatt
+          skipped: disallowed by robots.txt
+  tier 3  wikipedia     https://en.wikipedia.org/wiki/Robinhood_(company)
+          skipped: disallowed by robots.txt
+  tier 3  wikipedia     https://en.wikipedia.org/wiki/Vlad_Tenev
+          skipped: disallowed by robots.txt
+  tier 3  news          https://files.brokercheck.finra.org/individual/individual_5276344.pdf
+          skipped: disallowed by robots.txt
+  tier 3  news          https://fintechmagazine.com/venture-capital/fintech-trailblazer-vlad-tenev-the-man-behind-robinhood
+          skipped: the site refused automated access (HTTP 403)
+  tier 3  news          https://fxnewsgroup.com/forex-news/executives/gretchen-howard-set-to-leave-robinhood-at-end-2023
+          skipped: the site refused automated access (HTTP 403)
+  tier 3  news          https://fxnewsgroup.com/forex-news/executives/robinhood-adds-compliance-officers-from-fidelity-and-wells-fargo
+          skipped: the site refused automated access (HTTP 403)
+  tier 3  news          https://investors.lulus.com/board-member/dara-bazzano
+          skipped: disallowed by robots.txt
+  tier 3  news          https://ir.flywire.com/board-member/gretchen-howard
+          skipped: disallowed by robots.txt
+  tier 3  news          https://law.stanford.edu/dan-gallagher
+          skipped: the site refused automated access (HTTP 403)
+  tier 3  news          https://news.bloomberglaw.com/business-and-practice/robinhood-taps-two-compliance-chiefs-as-consumer-complaints-rise
+          skipped: disallowed by robots.txt
+  tier 3  news          https://www.crosscountry-consulting.com/about-us/leadership/dara-bazzano
+          skipped: the site refused automated access (HTTP 403)
+  tier 3  news          https://www.marketwatch.com/lists-rankings/marketwatch-25/vlad-tenev
+          skipped: disallowed by robots.txt
+
+Run log: C:\dev\ExecTrace\logs\collect-robinhood.com-20261113T133815.jsonl
+
+==============================================================================
+[6] Export the fixtures for both companies
+command:  uv run leadership export meetcampfire.com robinhood.com
+exit code 0 (expected 0)  ->  PASS    2.3s
+------------------------------------------------------------------------------
+wrote fixtures\meetcampfire.com.json
+wrote fixtures\robinhood.com.json
+wrote fixtures\leadership.db
+
+==============================================================================
+[7] Extraction accuracy on the labelled pages, and the fixtures against the gold sets
+command:  uv run leadership eval
+exit code 0 (expected 0)  ->  PASS    2.4s
+------------------------------------------------------------------------------
+Extraction accuracy on 5 hand-labelled pages (labelled 2026-11-13)
+Models: openai/gpt-oss-120b, gpt-5.4-mini-2026-03-17
+
+campfire-customer-cfo.txt
+    expected 1, found 1, matched 1; 0 refused by the checks; 0 model call(s)
+campfire-series-b.txt
+    expected 1, found 1, matched 1; 0 refused by the checks; 0 model call(s)
+robinhood-pinner-cto.txt
+    expected 2, found 2, matched 2; 0 refused by the checks; 0 model call(s)
+robinhood-howard-coo.txt
+    expected 3, found 3, matched 3; 0 refused by the checks; 0 model call(s)
+robinhood-8k-accounting-officer.txt
+    expected 4, found 4, matched 4; 2 refused by the checks; 0 model call(s)
+
+Pairs: 11 expected, 11 found, 11 matched
+Precision 100%   Recall 100%
+People from another organisation stored as leaders: 0
+Labelled claim types and effective dates that came out wrong: 0
+
+This measures five pages, not the whole pipeline. Recall is against the labels only.
+
+Gold-set measurement, from fixtures\leadership.db
+
+Campfire
+  Coverage of the gold set (people the gold set lists as current)
+    Both figures are always shown. 'Reachable' leaves out only people whose every cited source the
+    pipeline asked for and was refused; the full figure is the one the target applies to.
+    group     in gold  found current  full recall  reachable  reachable recall  found, other status  not found
+    c_level         1              1         100%          1              100%                    0          0
+    vp              0              0          n/a          0               n/a                    0          0
+    head            2              1          50%          2               50%                    0          1
+    head: NOT FOUND: Brendan Doyle
+  Roles the pipeline marks current (C-level, VP, Head)
+    not counted Chris McDonough       VP of Sales                                           a secondary-source candidate, kept apart from the gold set
+    correct     Erik Leavell          Head of Finance & Applied AI                          the gold set lists this office as current
+    correct     John Glasgow          CEO                                                   the gold set lists this office as current
+  Precision of current roles: 100%  (2 correct, 0 wrong, 1 not judged or not counted)
+  Gold-set former leaders reported as current: 0
+  Target precision >= 90%: met  (provisional: some roles are not judged)
+  Target C-level recall = 100%: met
+  Target no former leader as current: met
+
+Robinhood
+  Coverage of the gold set (people the gold set lists as current)
+    Both figures are always shown. 'Reachable' leaves out only people whose every cited source the
+    pipeline asked for and was refused; the full figure is the one the target applies to.
+    group     in gold  found current  full recall  reachable  reachable recall  found, other status  not found
+    c_level        11              5          45%          5              100%                    0          6
+    vp             14              0           0%          0               n/a                    0         14
+    head            0              0          n/a          0               n/a                    0          0
+    c_level: NOT FOUND: Connie Schan, Evan McHenry, Jordan Sinclair, Ravi Mehta, Stephanie Guild, Walter Koller
+    c_level: unreachable: Connie Schan: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    c_level: unreachable: Evan McHenry: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    c_level: unreachable: Jordan Sinclair: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    c_level: unreachable: Ravi Mehta: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    c_level: unreachable: Stephanie Guild: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    c_level: unreachable: Walter Koller: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: NOT FOUND: Abhishek Fatehpuria, Chris Koegel, Deepak Rao, Evan McHenry, JB Mackenzie, Johann Kerbrat, Lucas Moskowitz, Matt Billings, Nicola White, Pooja Anand, Ravi Mehta, Robb Baldwin, Seok Lee, Walter Koller
+    GAP: none of the 14 vp people in the gold set was found as current
+    vp: unreachable: Abhishek Fatehpuria: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Chris Koegel: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Deepak Rao: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Evan McHenry: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: JB Mackenzie: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Johann Kerbrat: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Lucas Moskowitz: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Matt Billings: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Nicola White: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Pooja Anand: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Ravi Mehta: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Robb Baldwin: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Seok Lee: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Walter Koller: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+  Roles the pipeline marks current (C-level, VP, Head)
+    correct     Daniel Gallagher      Chief Legal Officer                                   judged by hand
+    correct     Daniel Gallagher      Chief Legal, Compliance, and Corporate Affairs Offic  the gold set lists this office as current
+    correct     Dara Bazzano          Chief Accounting Officer                              the gold set lists this office as current
+    correct     Shiv Verma            Chief Financial Officer                               the gold set lists this office as current
+    correct     Steven Quirk          Chief Brokerage Officer                               the gold set lists this office as current
+    correct     Vladimir Tenev        Chair and Chief Executive Officer                     the gold set lists this office as current
+    correct     Vladimir Tenev        President                                             the gold set lists this office as current
+  Precision of current roles: 100%  (7 correct, 0 wrong, 0 not judged or not counted)
+  Gold-set former leaders reported as current: 0
+  Target precision >= 90%: met
+  Target C-level recall = 100%: NOT MET
+  Target no former leader as current: met
+
+Recall is measured against the gold sets only, not against everyone who may exist.
+A target that is not met is reported as it is; the gold sets are not changed to pass.
+
+==============================================================================
+[8] Every stored claim re-checked against its saved page; every current role has support
+command:  uv run python tools/check_evidence.py
+exit code 0 (expected 0)  ->  PASS    18.3s
+------------------------------------------------------------------------------
+Campfire      17 claims re-checked, 0 failed; 5 current roles, 0 without a supporting claim; 3 extraction version(s) in use
+Robinhood    148 claims re-checked, 0 failed; 22 current roles, 0 without a supporting claim; 4 extraction version(s) in use
+Microsoft      0 claims re-checked, 0 failed; 0 current roles, 0 without a supporting claim; 0 extraction version(s) in use
+Adobe          0 claims re-checked, 0 failed; 0 current roles, 0 without a supporting claim; 0 extraction version(s) in use
+Wise          11 claims re-checked, 0 failed; 5 current roles, 0 without a supporting claim; 2 extraction version(s) in use
+Example Domain   0 claims re-checked, 0 failed; 0 current roles, 0 without a supporting claim; 0 extraction version(s) in use
+
+176 claims checked: 0 problems
+
+==============================================================================
+[9] Campfire: leaders with claims, evidence, location and biography
+command:  uv run python tools/show_people.py meetcampfire.com
+exit code 0 (expected 0)  ->  PASS    2.2s
+------------------------------------------------------------------------------
+Company: Campfire (meetcampfire.com)    leaders: C-level, VP, Head: 4
+
+CURRENT    John Glasgow  |  CEO
+    level c_level, department other, single-holder role CEO, employment current
+    decided by rule4_listed_on_company_page; first seen 2025-02-06, last seen 2026-11-13, 7 source(s)
+    location: not found (looked for, no source states it)
+    bio: "John Glasgow is the CEO and Founder of Campfire, the modern accounting software for tech companies. Backed by YC and Foundation Capital, Campfire offers powerful, intuitive software that saves account"
+        https://campfire.ai/blog/from-cpa-to-cfo-ron-wangerin-cfo-trust-and-will
+      - role: "CEO"  tier 1 company_site [official], as of 2026-11-13 (retrieved), no effective date
+        "John Glasgow CEO & Founder, Campfire"
+        https://campfire.ai/basecamp
+      - role: "Founder & CEO"  tier 2 press_release [official], as of 2025-10-15 (published), no effective date
+        "— John Glasgow Founder & CEO, Campfire"
+        https://campfire.ai/blog/campfire-65-million-series-b-co-led-by-accel-and-ribbit
+      - role: "Founder & CEO"  tier 2 press_release [official], as of 2025-08-27 (published), no effective date
+        "— John Glasgow Founder & CEO, Campfire"
+        https://campfire.ai/blog/campfire-raises-35m-series-a-from-accel
+      - role: "CEO and Founder"  tier 2 press_release [official], as of 2025-02-21 (published), no effective date
+        "John Glasgow is the CEO and Founder of Campfire, the modern accounting software for tech companies."
+        https://campfire.ai/blog/from-cpa-to-cfo-ron-wangerin-cfo-trust-and-will
+      - role: "CEO and Founder"  tier 2 press_release [official], as of 2025-02-06 (published), no effective date
+        ""Our engineering team found a lot of value in Anthropic's ‘cookbook’ to build AI into our product," said John Glasgow, CEO and Founder of Campfire."
+        https://campfire.ai/blog/campfire-accelerates-accounting-with-claude
+      - role: "CEO and Founder"  tier 2 press_release [official], as of 2025-02-06 (published), no effective date
+        "John Glasgow is the CEO and Founder of Campfire, the modern accounting software for tech companies."
+        https://campfire.ai/blog/webinar-or-building-better-usage-based-billing-systems
+      - role: "founder and CEO (and still CFO)"  tier 3 news [article], as of 2026-11-13 (retrieved), no effective date
+        "John Glasgow, founder and CEO (and still CFO) of Campfire, shares what it's really like to raise over $100M while simultaneously running sales, managing product, and closing your own books."
+        https://aircfo.com/resources/funded-how-campfire-raised-100m-while-doubling-revenue-for-6-straight-quarters-jo
+
+CURRENT    Erik Leavell  |  Head of Finance & Applied AI
+    level head, department finance, single-holder role None, employment current
+    decided by rule4_listed_on_company_page; first seen 2026-11-13, last seen 2026-11-13, 1 source(s)
+    location: not found (looked for, no source states it)
+    bio: not found (looked for, no source states it)
+      - role: "Head of Finance & Applied AI"  tier 1 company_site [official], as of 2026-11-13 (retrieved), no effective date
+        "Erik Leavell Head of Finance & Applied AI, Campfire"
+        https://campfire.ai/basecamp
+
+CURRENT    Chris McDonough  |  VP of Sales
+    level vp, department sales, single-holder role None, employment current
+    decided by rule5_recent_reliable_source; first seen 2026-09-10, last seen 2026-09-10, 1 source(s)
+    location: not found (looked for, no source states it)
+    bio: "Chris McDonough has joined 4 companies right before they exploded."
+        https://thegtmnewsletter.substack.com/p/gtm-205-ai-native-sales-organization-chris-mcdonough-campfire
+      - role: "VP of Sales"  tier 3 news [article], as of 2026-09-10 (published), no effective date
+        "The VP of Sales at Campfire joins Sophie Buonassisi on GTMnow to break down what he learned riding hypergrowth over and over"
+        https://thegtmnewsletter.substack.com/p/gtm-205-ai-native-sales-organization-chris-mcdonough-campfire
+
+UNVERIFIED Paul Nichols  |  CTO
+    level c_level, department engineering, single-holder role CTO, employment unknown
+    decided by rule6_stale_or_weak_evidence; first seen 2025-02-06, last seen 2026-11-13, 2 source(s)
+    targeted check made at 2026-11-13T20:18:18+00:00
+      - role: "CTO"  tier 2 press_release [official], as of 2025-02-06 (published), no effective date
+        "The engineering team at Campfire, led by CTO Paul Nichols, leveraged Claude's financial "recipes" API framework for rapid deployment."
+        https://campfire.ai/blog/campfire-accelerates-accounting-with-claude
+      - role: "CTO"  tier 3 news [article], as of 2026-11-13 (retrieved), no effective date
+        "CTO Paul Nichols joined later to scale the engineering organization."
+        https://zanovoy.com/blog/campfire-large-accounting-model-explained
+
+Totals for Campfire: 5 people, 17 claims; roles by status: 5 current, 3 unverified
+
+==============================================================================
+[10] Robinhood: leaders with claims, evidence, location and biography
+command:  uv run python tools/show_people.py robinhood.com
+exit code 0 (expected 0)  ->  PASS    2.2s
+------------------------------------------------------------------------------
+Company: Robinhood (robinhood.com)    leaders: C-level, VP, Head: 26
+
+CURRENT    Daniel Gallagher  |  Chief Legal Officer
+    level c_level, department legal, single-holder role CLO, employment current
+    decided by rule5_recent_reliable_source; first seen 2020-08-04, last seen 2026-11-13, 6 source(s)
+    location: not found (looked for, no source states it)
+    bio: "Gallagher has been a board member since October 2019 and was promoted to the C-suite in May."
+        https://theorg.com/iterate/the-leadership-team-behind-robinhoods-ipo
+      - role: "Chief Legal Officer"  tier 1 sec_filing [official], as of 2026-04-22 (published), no effective date
+        "and our Chief Legal Officer since May 2020"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+      - role: "Chief Legal Officer"  tier 2 press_release [official], as of 2020-08-04 (published), no effective date
+        "Christina will work alongside our Co-Founders and Co-CEOs Baiju Bhatt and Vlad Tenev, Chief Financial Officer Jason Warnick, Chief Operating Officer Gretchen Howard, Chief Legal Officer Dan Gallagher, and many teams acro"
+        https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer
+      - role: "Chief Legal Officer"  tier 2 press_release [official], as of 2020-08-04 (published), no effective date
+        "Christina will work alongside our Co-Founders and Co-CEOs Baiju Bhatt and Vlad Tenev, Chief Financial Officer Jason Warnick, Chief Operating Officer Gretchen Howard, Chief Legal Officer Dan Gallagher, and many teams acro"
+        https://www.robinhood.com/us/en/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer
+      - appointment: "Chief Legal Officer"  tier 2 press_release [official], as of 2020-05-05 (published), future, no date
+        "Today, we’re thrilled to announce that Dan Gallagher will be joining Robinhood as Chief Legal Officer."
+        https://robinhood.com/newsroom/dan-gallagher-robinhood-board-member-and-former-sec-commissioner-joins-robinhoo
+      - role: "Chief Legal Officer"  tier 3 news [article], as of 2026-11-13 (retrieved), no effective date
+        "Dan Gallagher is Chief Legal Officer of Robinhood, a fast-growing brokerage giving millions of people access to our financial system."
+        https://capital-markets.law.columbia.edu/people/dan-gallagher
+      - role: "Chief Legal Officer"  tier 3 news [article], as of 2021-07-29 (published), no effective date
+        "Navigating the complex legal challenges that Robinhood has faced in the past couple of months is Chief Legal Officer Dan Gallagher."
+        https://theorg.com/iterate/the-leadership-team-behind-robinhoods-ipo
+
+CURRENT    Daniel Gallagher  |  Chief Legal, Compliance, and Corporate Affairs Officer
+    level c_level, department legal, single-holder role Chief Legal Compliance and Corporate Affairs Officer, employment current
+    decided by rule5_recent_reliable_source; first seen 2026-02-19, last seen 2026-04-22, 2 source(s)
+    location: not found (looked for, no source states it)
+    bio: "Gallagher has been a board member since October 2019 and was promoted to the C-suite in May."
+        https://theorg.com/iterate/the-leadership-team-behind-robinhoods-ipo
+      - role: "Chief Legal, Compliance, and Corporate Affairs Officer"  tier 1 sec_filing [official], as of 2026-04-22 (published), no effective date
+        "Daniel Gallagher | | 53 | | | Chief Legal, Compliance, and Corporate Affairs Officer | |"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+      - role: "Chief Legal, Compliance and Corporate Affairs Officer"  tier 2 press_release [official], as of 2026-02-19 (published), no effective date
+        ""One of our values at Robinhood is first-principles thinking—using data, empirical evidence, and experimentation to guide decisions and deliver products aligned with our mission," said Dan Gallagher, Chief Legal, Complia"
+        https://robinhood.com/newsroom/robinhood-welcomes-dr-naomi-boyd-as-chief-economic-advisor
+
+CURRENT    Dara Bazzano  |  Chief Accounting Officer
+    level c_level, department finance, single-holder role Chief Accounting Officer, employment current
+    decided by rule5_recent_reliable_source; first seen 2026-06-26, last seen 2026-06-29, 2 source(s)
+    location: not found (looked for, no source states it)
+    bio: "Ms. Bazzano, age 58, has been the Company's Chief Accounting Officer since April 2026 and has responsibilities for the Company's accounting, tax, financial operations, financial reporting, and interna"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm
+      - role: "Chief Accounting Officer"  tier 1 sec_filing [official], as of 2026-06-26 (published), no effective date
+        "Ms. Bazzano, age 58, has been the Company’s Chief Accounting Officer since April 2026 and has responsibilities for the Company’s accounting, tax, financial operations, financial reporting, and internal control functions."
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm
+      - appointment: "Chief Accounting Officer"  tier 3 news [article], as of 2026-06-29 (published), no effective date
+        "Robinhood CFO Shiv Verma has delegated the principal accounting officer role he previously held to the company’s newly appointed Chief Accounting Officer Dara Bazzano, effective June 25, according to a Friday securities "
+        https://www.cfodive.com/news/robinhood-cfo-hands-pao-role-compensation/824018
+      - role: "Chief Accounting Officer"  tier 3 news [article], as of 2026-06-29 (published), no effective date
+        ""We're excited to welcome Dara Bazzano as Chief Accounting Officer, leading our accounting and tax team, and serving as Principal Accounting Officer,” the spokesperson said in an emailed statement."
+        https://www.cfodive.com/news/robinhood-cfo-hands-pao-role-compensation/824018
+
+CURRENT    Shiv Verma  |  Chief Financial Officer
+    level c_level, department finance, single-holder role CFO, employment current
+    decided by rule5_recent_reliable_source; first seen 2026-02-06, last seen 2026-09-18, 7 source(s)
+    location: not found (looked for, no source states it)
+    bio: "Shiv Verma has been our Chief Financial Officer since February 2026."
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+      - role: "Chief Financial Officer"  tier 1 sec_filing [official], as of 2026-06-26 (published), no effective date
+        "Mr. Verma continues to serve as the Company’s CFO and principal financial officer."
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm
+      - role: "Chief Financial Officer"  tier 1 sec_filing [official], as of 2026-05-08 (published), no effective date
+        "Title: Chief Financial Officer"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000065/hood-20260507.htm
+      - role: "Chief Financial Officer"  tier 1 sec_filing [official], as of 2026-04-22 (published), no effective date
+        "Shiv Verma | | 41 | | | Chief Financial Officer | |"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+      - role: "Chief Financial Officer"  tier 1 sec_filing [official], as of 2026-02-18 (published), no effective date
+        "Title: Chief Financial Officer (Principal Financial Officer and Principal Accounting Officer)"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000023/hood-20251231.htm
+      - appointment: "Chief Financial Officer"  tier 1 sec_filing [official], as of 2026-02-10 (published), effective 2026-02-06
+        "On February 6, 2026, the Company's Board of Directors (the “Board”) appointed Shiv Verma to be its Chief Financial Officer (“CFO”), effective as of the close of business on February 6, 2026"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm
+      - role: "Chief Financial Officer"  tier 1 sec_filing [official], as of 2026-02-10 (published), no effective date
+        "Title: Chief Financial Officer"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm
+      - role: "Chief Financial Officer"  tier 3 news [article], as of 2026-09-18 (published), no effective date
+        "Shiv Verma, Chief Financial Officer of Robinhood Markets (NASDAQ:HOOD), disclosed a sale of 11,472 shares of Class A common stock on Sept. 15, 2026, according to a recent SEC Form 4 filing."
+        https://finance.yahoo.com/markets/stocks/articles/robinhood-cfo-shiv-verma-sells-220501855.html
+      - role: "CFO"  tier 3 news [article], as of 2026-06-29 (published), no effective date
+        "Robinhood CFO Shiv Verma has delegated the principal accounting officer role he previously held to the company’s newly appointed Chief Accounting Officer Dara Bazzano, effective June 25, according to a Friday securities "
+        https://www.cfodive.com/news/robinhood-cfo-hands-pao-role-compensation/824018
+
+CURRENT    Steven Quirk  |  Chief Brokerage Officer
+    level c_level, department other, single-holder role Chief Brokerage Officer, employment current
+    decided by rule5_recent_reliable_source; first seen 2026-04-22, last seen 2026-04-22, 1 source(s)
+    location: not found (looked for, no source states it)
+    bio: "Steven Quirk has been our Chief Brokerage Officer since January 2022. Prior to joining Robinhood, Mr. Quirk oversaw the strategy and deployment of initiatives for Trading at TD Ameritrade."
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+      - role: "Chief Brokerage Officer"  tier 1 sec_filing [official], as of 2026-04-22 (published), no effective date
+        "Steven Quirk | | 61 | | | Chief Brokerage Officer | |"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+
+CURRENT    Vladimir Tenev  |  Chair and Chief Executive Officer
+    level c_level, department other, single-holder role CEO, employment current
+    decided by rule5_recent_reliable_source; first seen 2018-11-26, last seen 2026-10-29, 17 source(s)
+    location: not found (looked for, no source states it)
+    bio: "Mr. Tenev co-founded Robinhood with Mr. Bhatt in 2013 with a mission to democratize finance for all. He has over a decade of experience in financial services as a co-founder with Mr. Bhatt."
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+      - role: "Chair and Chief Executive Officer"  tier 1 sec_filing [official], as of 2026-04-22 (published), no effective date
+        "Vladimir Tenev | | 39 | | | Chair and Chief Executive Officer | |"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+      - role: "Chief Executive Officer"  tier 1 sec_filing [official], as of 2026-02-18 (published), no effective date
+        "Title: Chief Executive Officer and President"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000023/hood-20251231.htm
+      - role: "CEO and Co-Founder"  tier 2 press_release [official], as of 2024-08-12 (published), no effective date
+        "“Great engineering is critical to our ability to build cutting-edge financial products at Robinhood, which is why we’re excited to welcome Jeff as CTO,” said Vlad Tenev, CEO and Co-Founder of Robinhood."
+        https://robinhood.com/newsroom/robinhood-welcomes-jeff-pinner-as-chief-technology-officer
+      - role: "CEO"  tier 2 press_release [official], as of 2022-04-26 (published), no effective date
+        "Robinhood CEO Vlad Tenev shared the below to Robinhood employees following a company-wide meeting to discuss the changes."
+        https://robinhood.com/newsroom/a-message-from-our-ceo-and-co-founder-vlad-tenev
+      - role: "CEO and Co-Founder"  tier 2 press_release [official], as of 2021-04-22 (published), no effective date
+        "“Robinhood Crypto customers are reshaping the investing landscape and Christine is going to do great things leading this team at a time of tremendous growth across the industry,” said Vlad Tenev, CEO and Co-Founder of Ro"
+        https://www.robinhood.com/us/en/newsroom/christine-brown-to-lead-robinhood-crypto-as-coo
+      - role: "CEO and Co-Founder"  tier 2 press_release [official], as of 2021-03-17 (published), no effective date
+        "“When I met Aparna, I was immediately struck by her passion for our product and delivering exceptional value to our customers,” said Vlad Tenev, CEO and Co-Founder of Robinhood."
+        https://robinhood.com/newsroom/robinhood-welcomes-aparna-chennapragada-as-first-chief-product-officer
+      - role: "CEO and Co-Founder"  tier 2 press_release [official], as of 2021-03-17 (published), no effective date
+        "“When I met Aparna, I was immediately struck by her passion for our product and delivering exceptional value to our customers,” said Vlad Tenev, CEO and Co-Founder of Robinhood."
+        https://www.robinhood.com/us/en/newsroom/robinhood-welcomes-aparna-chennapragada-as-first-chief-product-office
+      - role: "Co-CEO"  tier 2 press_release [official], as of 2020-05-05 (published), no effective date
+        "which includes Co-Founders and Co-CEOs Vlad Tenev and Baiju Bhatt, Chief Operating Officer Gretchen Howard, and Chief Financial Officer Jason Warnick."
+        https://robinhood.com/newsroom/dan-gallagher-robinhood-board-member-and-former-sec-commissioner-joins-robinhoo
+      - role: "Co-Founder and Co-CEO"  tier 2 press_release [official], as of 2019-11-21 (published), no effective date
+        "“We are thrilled to have Anne join our leadership team as we continue working to expand the financial services we offer our customers,” said Vlad Tenev, Co-Founder and Co-CEO at Robinhood."
+        https://robinhood.com/newsroom/robinhood-welcomes-anne-hoge-as-chief-legal-officer
+      - role: "Co-Founder & Co-CEO"  tier 2 press_release [official], as of 2019-06-24 (published), no effective date
+        "– Vlad Tenev, Co-Founder & Co-CEO at Robinhood"
+        https://robinhood.com/newsroom/gretchen-howard-elevated-to-chief-operating-officer
+      - role: "Co-Founder & Co-CEO"  tier 2 press_release [official], as of 2019-06-24 (published), no effective date
+        "– Vlad Tenev, Co-Founder & Co-CEO at Robinhood"
+        https://www.robinhood.com/us/en/newsroom/gretchen-howard-elevated-to-chief-operating-officer
+      - role: "Co-Founder & Co-CEO"  tier 2 press_release [official], as of 2018-11-29 (published), no effective date
+        "– Vlad Tenev, Co-Founder & Co-CEO at Robinhood"
+        https://www.robinhood.com/us/en/newsroom/gretchen-howard-joins-robinhood-as-vice-president-of-operations
+      - role: "Co-Founder & Co-CEO"  tier 2 press_release [official], as of 2018-11-26 (published), no effective date
+        "“We’re incredibly lucky to have Jason join our leadership team."
+        https://robinhood.com/newsroom/jason-warnick-joins-robinhood-as-chief-financial-officer
+      - role: "Chair of the Board and Chief Executive Officer"  tier 3 news [article], as of 2026-10-29 (published), no effective date
+        "The 2026 proxy statement lists Tenev as Chair of the Board and Chief Executive Officer, and says he has been chair since March 2021."
+        https://eco.com/support/en/articles/17659384-who-owns-robinhood-vlad-tenev-baiju-bhatt-and-class-b-votes
+      - role: "CEO"  tier 3 news [article], as of 2025-12-29 (published), no effective date
+        "led by Robinhood CEO Vlad Tenev"
+        https://fortune.com/2025/12/29/who-is-robinhoods-cfo-shiv-verma-transition
+      - role: "CEO"  tier 3 news [article], as of 2024-03-25 (published), no effective date
+        "“[Bhatt’s] passion for entrepreneurship and commitment to our mission to democratize finance for all helped build Robinhood from a seed of an idea to the global public company it is today,” said CEO Vlad Tenev, who co-fo"
+        https://www.bankingdive.com/news/robinhood-co-founder-steps-down-baiju-bhatt/711235
+      - role: "co-CEO and co-founder"  tier 3 news [article], as of 2019-10-26 (published), no effective date
+        "Howard started working with Robinhood co-founders and co-CEOs Vlad Tenev and Baiju Bhatt after CapitalG participated in their Series D funding round."
+        https://www.cnbc.com/2019/10/26/meet-the-former-vc-leading-robinhood-in-effort-to-disrupt-wall-street.html
+
+CURRENT    Vladimir Tenev  |  President
+    level c_level, department other, single-holder role None, employment current
+    decided by rule5_recent_reliable_source; first seen 2026-02-18, last seen 2026-02-18, 1 source(s)
+    location: not found (looked for, no source states it)
+    bio: "Mr. Tenev co-founded Robinhood with Mr. Bhatt in 2013 with a mission to democratize finance for all. He has over a decade of experience in financial services as a co-founder with Mr. Bhatt."
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+      - role: "President"  tier 1 sec_filing [official], as of 2026-02-18 (published), no effective date
+        "Title: Chief Executive Officer and President"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000023/hood-20251231.htm
+
+UNVERIFIED Aparna Chennapragada  |  Chief Product Officer
+    level c_level, department product, single-holder role CPO, employment unknown
+    decided by rule6_stale_or_weak_evidence; first seen 2021-03-17, last seen 2021-03-17, 2 source(s)
+    targeted check made at 2026-11-13T20:20:35+00:00
+      - appointment: "Chief Product Officer"  tier 2 press_release [official], as of 2021-03-17 (published), no effective date
+        "Aparna Chennapragada is joining Robinhood as our first Chief Product Officer overseeing all of product, design and research."
+        https://robinhood.com/newsroom/robinhood-welcomes-aparna-chennapragada-as-first-chief-product-officer
+      - role: "Chief Product Officer"  tier 2 press_release [official], as of 2021-03-17 (published), no effective date
+        "Aparna Chennapragada is joining Robinhood as our first Chief Product Officer overseeing all of product, design and research."
+        https://robinhood.com/newsroom/robinhood-welcomes-aparna-chennapragada-as-first-chief-product-officer
+      - appointment: "Chief Product Officer"  tier 2 press_release [official], as of 2021-03-17 (published), no effective date
+        "Aparna Chennapragada is joining Robinhood as our first Chief Product Officer overseeing all of product, design and research."
+        https://www.robinhood.com/us/en/newsroom/robinhood-welcomes-aparna-chennapragada-as-first-chief-product-office
+      - role: "Chief Product Officer"  tier 2 press_release [official], as of 2021-03-17 (published), no effective date
+        "Aparna Chennapragada is joining Robinhood as our first Chief Product Officer overseeing all of product, design and research."
+        https://www.robinhood.com/us/en/newsroom/robinhood-welcomes-aparna-chennapragada-as-first-chief-product-office
+
+UNVERIFIED Baiju Bhatt  |  Co-CEO
+    level c_level, department other, single-holder role CEO, employment unknown
+    decided by rule2_departure_reported_by_news_only; first seen 2019-10-26, last seen 2020-05-05, 2 source(s)
+    CONFLICT: departure reported by news only; no company source confirms it
+    targeted check made at 2026-11-13T20:20:45+00:00
+      - role: "Co-CEO"  tier 2 press_release [official], as of 2020-05-05 (published), no effective date
+        "which includes Co-Founders and Co-CEOs Vlad Tenev and Baiju Bhatt, Chief Operating Officer Gretchen Howard, and Chief Financial Officer Jason Warnick."
+        https://robinhood.com/newsroom/dan-gallagher-robinhood-board-member-and-former-sec-commissioner-joins-robinhoo
+      - role: "co-CEO and co-founder"  tier 3 news [article], as of 2019-10-26 (published), no effective date
+        "Howard started working with Robinhood co-founders and co-CEOs Vlad Tenev and Baiju Bhatt after CapitalG participated in their Series D funding round."
+        https://www.cnbc.com/2019/10/26/meet-the-former-vc-leading-robinhood-in-effort-to-disrupt-wall-street.html
+
+UNVERIFIED Baiju Bhatt  |  Chief Creative Officer
+    level c_level, department other, single-holder role Chief Creative Officer, employment unknown
+    decided by rule2_departure_reported_by_news_only; first seen 2024-03-25, last seen 2024-03-25, 1 source(s)
+    CONFLICT: departure reported by news only; no company source confirms it
+    targeted check made at 2026-11-13T20:31:57+00:00
+      - departure (role): "Chief Creative Officer"  tier 3 news [article], as of 2026-10-29 (published), no effective date
+        "The same filing lists Bhatt's prior role as Robinhood's Chief Creative Officer from March 2021 to March 2024,"
+        https://eco.com/support/en/articles/17659384-who-owns-robinhood-vlad-tenev-baiju-bhatt-and-class-b-votes
+      - departure (role): "chief creative officer"  tier 3 news [article], as of 2024-03-25 (published), no effective date
+        "Robinhood Co-founder and Chief Creative Officer Baiju Bhatt Steps Down; Will Remain Member of the Board"
+        https://americankahani.com/business/robinhood-co-founder-and-chief-creative-officer-baiju-bhatt-steps-down-wil
+      - departure (company): "Chief Creative Officer"  tier 3 news [article], as of 2024-03-25 (published), future, no date
+        "Robinhood co-founder and Chief Creative Officer Baiju Bhatt is leaving the firm to focus on his “next enterprise.”"
+        https://www.bankingdive.com/news/robinhood-co-founder-steps-down-baiju-bhatt/711235
+      - role: "Chief Creative Officer"  tier 3 news [article], as of 2024-03-25 (published), no effective date
+        "During my tenure as Chief Creative Officer, I worked with teams of incredible builders to bring products like Robinhood Retirement to life,” he wrote."
+        https://www.bankingdive.com/news/robinhood-co-founder-steps-down-baiju-bhatt/711235
+
+UNVERIFIED Christina Smedley  |  Chief Marketing Officer
+    level c_level, department marketing, single-holder role CMO, employment unknown
+    decided by rule2_departure_reported_by_news_only; first seen 2020-08-04, last seen 2020-08-04, 2 source(s)
+    CONFLICT: departure reported by news only; no company source confirms it
+    targeted check made at 2026-11-13T20:20:59+00:00
+      - appointment: "Chief Marketing Officer"  tier 2 press_release [official], as of 2020-08-04 (published), future, no date
+        "Christina Smedley will join Robinhood as Chief Marketing Officer!"
+        https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer
+      - role: "Chief Marketing Officer"  tier 2 press_release [official], as of 2020-08-04 (published), no effective date
+        "said Christina Smedley, Chief Marketing Officer at Robinhood."
+        https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer
+      - appointment: "Chief Marketing Officer"  tier 2 press_release [official], as of 2020-08-04 (published), future, no date
+        "Christina Smedley will join Robinhood as Chief Marketing Officer!"
+        https://www.robinhood.com/us/en/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer
+      - role: "Chief Marketing Officer"  tier 2 press_release [official], as of 2020-08-04 (published), no effective date
+        "said Christina Smedley, Chief Marketing Officer at Robinhood."
+        https://www.robinhood.com/us/en/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer
+
+UNVERIFIED Christina Smedley  |  Chief Marketing and Communications Officer
+    level c_level, department marketing, single-holder role Chief Marketing and Communications Officer, employment unknown
+    decided by rule2_departure_reported_by_news_only; first seen 2021-07-29, last seen 2021-07-29, 1 source(s)
+    CONFLICT: departure reported by news only; no company source confirms it
+    targeted check made at 2026-11-13T20:32:01+00:00
+      - departure (company): "chief marketing and communications officer"  tier 3 news [article], as of 2021-09-15 (published), no effective date
+        "Robinhood chief marketing and communications officer Christina Smedley is leaving the company, a year after joining the newly public retail-investing app."
+        https://www.businessinsider.com/robinhood-chief-marketing-officer-leaving-after-a-year-2021-9
+      - role: "Chief Marketing and Communications Officer"  tier 3 news [article], as of 2021-07-29 (published), no effective date
+        "Christina Smedley, Chief Marketing and Communications Officer."
+        https://theorg.com/iterate/the-leadership-team-behind-robinhoods-ipo
+
+UNVERIFIED Christine Brown  |  Crypto COO
+    level c_level, department operations, single-holder role COO, employment unknown
+    decided by rule2_departure_reported_by_news_only; first seen 2021-09-29, last seen 2022-03-30, 3 source(s)
+    CONFLICT: departure reported by news only; no company source confirms it
+    targeted check made at 2026-11-13T21:07:37+00:00
+      - role: "Crypto COO"  tier 2 press_release [official], as of 2021-10-28 (published), no effective date
+        "Christine Brown (she/her) is Robinhood’s Crypto COO and VP of Product Operations."
+        https://www.robinhood.com/us/en/newsroom/meet-a-robinhoodie-christine-brown
+      - departure (company): "Crypto COO"  tier 3 news [article], as of 2022-03-30 (published), no effective date
+        "Robinhood Crypto COO Christine Brown—the top executive within the Stock trading app's crypto subsidiary—is leaving the company."
+        https://decrypt.co/96408/robinhood-crypto-lead-christine-brown-leaving
+      - appointment: "Crypto COO"  tier 3 news [article], as of 2022-03-30 (published), no effective date
+        "Brown has been with Robinhood since 2017 and in April 2021 transitioned from VP of Product Operations into Robinhood Crypto COO—the company's first."
+        https://decrypt.co/96408/robinhood-crypto-lead-christine-brown-leaving
+      - role: "VP of product operations and crypto chief operating officer"  tier 3 news [article], as of 2021-09-29 (published), no effective date
+        "Today, the company has grown to more than 22 million users, and Brown serves as the VP of product operations and crypto chief operating officer."
+        https://finance.yahoo.com/news/robinhood-christine-brown-company-making-163227667.html
+
+UNVERIFIED Christine Brown  |  Chief Operating Officer, Robinhood Crypto
+    level c_level, department operations, single-holder role None, employment unknown
+    decided by rule2_departure_reported_by_news_only; first seen 2021-04-22, last seen 2021-07-29, 2 source(s)
+    CONFLICT: departure reported by news only; no company source confirms it
+    targeted check made at 2026-11-13T20:32:16+00:00
+      - appointment: "Chief Operating Officer, Robinhood Crypto"  tier 2 press_release [official], as of 2021-04-22 (published), no effective date
+        "Christine Brown will lead Robinhood Crypto as Chief Operating Officer, where she’ll oversee all of our crypto operations and compliance."
+        https://www.robinhood.com/us/en/newsroom/christine-brown-to-lead-robinhood-crypto-as-coo
+      - role: "COO of Robinhood Crypto and VP of product operations"  tier 3 news [article], as of 2021-07-29 (published), no effective date
+        "A standout on Howard’s team is Christine Brown, COO of Robinhood Crypto and VP of product operations."
+        https://theorg.com/iterate/the-leadership-team-behind-robinhoods-ipo
+
+UNVERIFIED Christine Brown  |  Crypto COO
+    level c_level, department operations, single-holder role None, employment unknown
+    decided by rule2_departure_reported_by_news_only; first seen 2022-03-30, last seen 2022-03-30, 0 source(s)
+    CONFLICT: departure reported by news only; no company source confirms it
+    targeted check made at 2026-11-13T20:32:16+00:00
+      - appointment: "Chief Operating Officer, Robinhood Crypto"  tier 2 press_release [official], as of 2021-04-22 (published), no effective date
+        "Christine Brown will lead Robinhood Crypto as Chief Operating Officer, where she’ll oversee all of our crypto operations and compliance."
+        https://www.robinhood.com/us/en/newsroom/christine-brown-to-lead-robinhood-crypto-as-coo
+      - role: "COO of Robinhood Crypto and VP of product operations"  tier 3 news [article], as of 2021-07-29 (published), no effective date
+        "A standout on Howard’s team is Christine Brown, COO of Robinhood Crypto and VP of product operations."
+        https://theorg.com/iterate/the-leadership-team-behind-robinhoods-ipo
+
+UNVERIFIED Gretchen Howard  |  Chief Operating Officer
+    level c_level, department operations, single-holder role COO, employment unknown
+    decided by rule6_stale_or_weak_evidence; first seen 2019-06-24, last seen 2022-03-30, 11 source(s)
+    targeted check made at 2026-11-13T20:21:41+00:00
+      - role: "Chief Operating Officer"  tier 2 press_release [official], as of 2020-08-04 (published), no effective date
+        "Christina will work alongside our Co-Founders and Co-CEOs Baiju Bhatt and Vlad Tenev, Chief Financial Officer Jason Warnick, Chief Operating Officer Gretchen Howard, Chief Legal Officer Dan Gallagher, and many teams acro"
+        https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer
+      - role: "Chief Operating Officer"  tier 2 press_release [official], as of 2020-08-04 (published), no effective date
+        "Christina will work alongside our Co-Founders and Co-CEOs Baiju Bhatt and Vlad Tenev, Chief Financial Officer Jason Warnick, Chief Operating Officer Gretchen Howard, Chief Legal Officer Dan Gallagher, and many teams acro"
+        https://www.robinhood.com/us/en/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer
+      - role: "Chief Operating Officer"  tier 2 press_release [official], as of 2020-05-05 (published), no effective date
+        "which includes Co-Founders and Co-CEOs Vlad Tenev and Baiju Bhatt, Chief Operating Officer Gretchen Howard, and Chief Financial Officer Jason Warnick."
+        https://robinhood.com/newsroom/dan-gallagher-robinhood-board-member-and-former-sec-commissioner-joins-robinhoo
+      - role: "Chief Operating Officer"  tier 2 press_release [official], as of 2019-11-21 (published), no effective date
+        "Anne will serve on our executive leadership team, which includes Co-Founders and Co-CEOs Vlad Tenev and Baiju Bhatt, Chief Financial Officer Jason Warnick, and Chief Operating Officer Gretchen Howard."
+        https://robinhood.com/newsroom/robinhood-welcomes-anne-hoge-as-chief-legal-officer
+      - appointment: "Chief Operating Officer"  tier 2 press_release [official], as of 2019-06-24 (published), no effective date
+        "Gretchen Howard has been elevated to Chief Operating Officer at Robinhood."
+        https://robinhood.com/newsroom/gretchen-howard-elevated-to-chief-operating-officer
+      - appointment: "Chief Operating Officer"  tier 2 press_release [official], as of 2019-06-24 (published), no effective date
+        "Gretchen Howard has been elevated to Chief Operating Officer at Robinhood."
+        https://www.robinhood.com/us/en/newsroom/gretchen-howard-elevated-to-chief-operating-officer
+      - role: "COO"  tier 3 news [article], as of 2022-03-30 (published), no effective date
+        "Robinhood COO Gretchen Howard said in a statement, “We’re so grateful to Christine for her contributions to Robinhood over the past five years - from leading our self-clearing initiative to scaling the Robinhood Crypto t"
+        https://decrypt.co/96408/robinhood-crypto-lead-christine-brown-leaving
+      - role: "Chief Operating Officer"  tier 3 news [article], as of 2021-07-29 (published), no effective date
+        "Rounding out the team is Chief Financial Officer Jason Warnick and Chief Operating Officer Gretchen Howard."
+        https://theorg.com/iterate/the-leadership-team-behind-robinhoods-ipo
+      - role: "Chief Operating Officer"  tier 3 news [article], as of 2021-03-15 (published), no effective date
+        "I’m joined by the very interesting Gretchen Howard, Chief Operating Officer at Robinhood, one of the most defining fintech companies of 2021, best known for aiming to democratize investing for everyone and popularizing c"
+        https://fintechleaders.substack.com/p/robinhoods-coo-gretchen-howard-democratizing
+      - role: "Chief Operating Officer"  tier 3 news [article], as of 2021-03-15 (published), no effective date
+        "Robinhood’s COO, Gretchen Howard – Democratizing Finance, Navigating a Crisis, & Embracing Change"
+        https://podcasts.apple.com/us/podcast/robinhoods-coo-gretchen-howard-democratizing-finance/id1042827113?i=1000
+      - appointment: "chief operating officer"  tier 3 news [article], as of 2019-10-26 (published), no effective date
+        "She was quickly promoted to chief operating officer, helping grow the $7.6 billion startup in the high-stakes world of financial services."
+        https://www.cnbc.com/2019/10/26/meet-the-former-vc-leading-robinhood-in-effort-to-disrupt-wall-street.html
+
+UNVERIFIED Kelly Zigaitis  |  Chief Compliance Officer
+    level c_level, department other, single-holder role Chief Compliance Officer, employment unknown
+    decided by rule0_announcement_never_confirmed; first seen 2020-08-31, last seen 2020-08-31, 1 source(s)
+    targeted check made at 2026-11-13T20:32:20+00:00
+      - appointment: "Chief Compliance Officer"  tier 3 news [article], as of 2020-08-31 (published), future, no date
+        "Kelly Zigaitis will serve as Chief Compliance Officer for Robinhood Securities."
+        https://globalfintechseries.com/fintech/robinhood-appoints-norm-ashkenas-and-kelly-zigaitis-as-chief-complianc
+
+UNVERIFIED Kelly Zigaitis  |  Chief Compliance Officer, Robinhood Securities
+    level c_level, department legal, single-holder role None, employment unknown
+    decided by rule6_stale_or_weak_evidence; first seen 2020-08-27, last seen 2020-08-27, 2 source(s)
+    targeted check made at 2026-11-13T20:21:54+00:00
+      - appointment: "Chief Compliance Officer, Robinhood Securities"  tier 2 press_release [official], as of 2020-08-27 (published), no effective date
+        "Kelly Zigaitis will serve as Chief Compliance Officer for Robinhood Securities."
+        https://robinhood.com/newsroom/robinhood-appoints-norm-ashkenas-and-kelly-zigaitis-as-chief-compliance-officer
+      - role: "Chief Compliance Officer, Robinhood Securities"  tier 2 press_release [official], as of 2020-08-27 (published), no effective date
+        "said Kelly Zigaitis, Chief Compliance Officer for Robinhood Securities."
+        https://robinhood.com/newsroom/robinhood-appoints-norm-ashkenas-and-kelly-zigaitis-as-chief-compliance-officer
+      - appointment: "Chief Compliance Officer, Robinhood Securities"  tier 2 press_release [official], as of 2020-08-27 (published), no effective date
+        "Kelly Zigaitis will serve as Chief Compliance Officer for Robinhood Securities."
+        https://www.robinhood.com/us/en/newsroom/robinhood-appoints-norm-ashkenas-and-kelly-zigaitis-as-chief-complian
+      - role: "Chief Compliance Officer, Robinhood Securities"  tier 2 press_release [official], as of 2020-08-27 (published), no effective date
+        "said Kelly Zigaitis, Chief Compliance Officer for Robinhood Securities."
+        https://www.robinhood.com/us/en/newsroom/robinhood-appoints-norm-ashkenas-and-kelly-zigaitis-as-chief-complian
+
+UNVERIFIED Norm Ashkenas  |  Chief Compliance Officer
+    level c_level, department legal, single-holder role Chief Compliance Officer, employment unknown
+    decided by rule2_departure_reported_by_news_only; first seen 2026-07-02, last seen 2026-11-13, 0 source(s)
+    CONFLICT: departure reported by news only; no company source confirms it
+    targeted check made at 2026-11-13T20:32:07+00:00
+      - departure (role): "Chief Compliance Officer"  tier 3 news [article], as of 2026-11-13 (retrieved), no effective date
+        "Norm Ashkenas is the former Chief Compliance Officer for Robinhood Markets, where he oversaw compliance and ethics for all Robinhood’s global businesses."
+        https://www.sifma.org/people/norman-ashkenas
+      - departure (role): "chief compliance officer"  tier 3 news [article], as of 2026-07-02 (published), no effective date
+        "Norm Ashkenas has stepped down as chief compliance officer at online trading firm Robinhood, where he had been CCO since 2022."
+        https://www.radicalcompliance.com/2026/07/02/compliance-jobs-report-july-2-3
+
+UNVERIFIED Norm Ashkenas  |  Chief Compliance Officer, Robinhood Financial
+    level c_level, department legal, single-holder role None, employment unknown
+    decided by rule6_stale_or_weak_evidence; first seen 2020-08-27, last seen 2020-08-27, 2 source(s)
+    targeted check made at 2026-11-13T20:23:50+00:00
+      - appointment: "Chief Compliance Officer, Robinhood Financial"  tier 2 press_release [official], as of 2020-08-27 (published), future, no date
+        "Norm Ashkenas will be joining as Chief Compliance Officer for Robinhood Financial"
+        https://robinhood.com/newsroom/robinhood-appoints-norm-ashkenas-and-kelly-zigaitis-as-chief-compliance-officer
+      - role: "Chief Compliance Officer, Robinhood Financial"  tier 2 press_release [official], as of 2020-08-27 (published), no effective date
+        "said Norm Ashkenas, Chief Compliance Officer for Robinhood Financial."
+        https://robinhood.com/newsroom/robinhood-appoints-norm-ashkenas-and-kelly-zigaitis-as-chief-compliance-officer
+      - appointment: "Chief Compliance Officer, Robinhood Financial"  tier 2 press_release [official], as of 2020-08-27 (published), future, no date
+        "Norm Ashkenas will be joining as Chief Compliance Officer for Robinhood Financial"
+        https://www.robinhood.com/us/en/newsroom/robinhood-appoints-norm-ashkenas-and-kelly-zigaitis-as-chief-complian
+      - role: "Chief Compliance Officer, Robinhood Financial"  tier 2 press_release [official], as of 2020-08-27 (published), no effective date
+        "said Norm Ashkenas, Chief Compliance Officer for Robinhood Financial."
+        https://www.robinhood.com/us/en/newsroom/robinhood-appoints-norm-ashkenas-and-kelly-zigaitis-as-chief-complian
+
+UNVERIFIED Christine Brown  |  VP of Product Operations
+    level vp, department operations, single-holder role None, employment unknown
+    decided by rule2_departure_reported_by_news_only; first seen 2021-04-22, last seen 2021-10-28, 3 source(s)
+    CONFLICT: departure reported by news only; no company source confirms it
+    targeted check made at 2026-11-13T20:43:18+00:00
+      - role: "VP of Product Operations"  tier 2 press_release [official], as of 2021-10-28 (published), no effective date
+        "Christine Brown (she/her) is Robinhood’s Crypto COO and VP of Product Operations."
+        https://www.robinhood.com/us/en/newsroom/meet-a-robinhoodie-christine-brown
+      - role: "VP of Product Operations"  tier 2 press_release [official], as of 2021-04-22 (published), no effective date
+        "She’ll also keep her current role of Robinhood Markets’ VP of Product Operations."
+        https://www.robinhood.com/us/en/newsroom/christine-brown-to-lead-robinhood-crypto-as-coo
+      - role: "vice president of Robinhood's Product Operations"  tier 3 news [article], as of 2021-04-23 (published), no effective date
+        "Brown's decade-long experience in product management led her to serve as vice president of Robinhood's Product Operations."
+        https://markets.businessinsider.com/currencies/news/robinhood-crypto-names-christine-brown-coo-oversee-trading
+
+UNVERIFIED Gretchen Howard  |  Vice President of Operations
+    level vp, department operations, single-holder role None, employment unknown
+    decided by rule6_stale_or_weak_evidence; first seen 2018-11-29, last seen 2019-06-24, 3 source(s)
+    targeted check made at 2026-11-13T20:24:03+00:00
+      - appointment: "Vice President of Operations"  tier 2 press_release [official], as of 2019-06-24 (published), no effective date
+        "Since joining Robinhood in January as Vice President of Operations, Gretchen’s leadership has expanded to more key areas of the business, including brokerage operations, product operations, communications, HR and recruit"
+        https://robinhood.com/newsroom/gretchen-howard-elevated-to-chief-operating-officer
+      - appointment: "Vice President of Operations"  tier 2 press_release [official], as of 2019-06-24 (published), no effective date
+        "Since joining Robinhood in January as Vice President of Operations, Gretchen’s leadership has expanded to more key areas of the business, including brokerage operations, product operations, communications, HR and recruit"
+        https://www.robinhood.com/us/en/newsroom/gretchen-howard-elevated-to-chief-operating-officer
+      - appointment: "Vice President of Operations"  tier 2 press_release [official], as of 2018-11-29 (published), no effective date
+        "We’re excited to announce that Gretchen Howard is joining us as Vice President of Operations."
+        https://www.robinhood.com/us/en/newsroom/gretchen-howard-joins-robinhood-as-vice-president-of-operations
+
+FORMER     Anne Hoge  |  Chief Legal Officer
+    level c_level, department legal, single-holder role CLO, employment unknown
+    decided by rule3_successor_appointed; first seen 2019-11-21, last seen 2019-11-21, 1 source(s), end date not stated (reported by a source dated 2020-08-04)
+      - departure (company): "Chief Legal Officer"  tier 2 press_release [official], as of 2020-05-05 (published), future, no date
+        "Dan is replacing Anne Hoge, our current Chief Legal Officer, who is leaving Robinhood later this month to attend to an illness in the family which is requiring more of her energy."
+        https://robinhood.com/newsroom/dan-gallagher-robinhood-board-member-and-former-sec-commissioner-joins-robinhoo
+      - appointment: "Chief Legal Officer"  tier 2 press_release [official], as of 2019-11-21 (published), no effective date
+        "Anne Hoge has joined Robinhood as Chief Legal Officer, overseeing our entire legal team which includes all global legal functions."
+        https://robinhood.com/newsroom/robinhood-welcomes-anne-hoge-as-chief-legal-officer
+      - role: "Chief Legal Officer"  tier 2 press_release [official], as of 2019-11-21 (published), no effective date
+        "Anne Hoge has joined Robinhood as Chief Legal Officer, overseeing our entire legal team which includes all global legal functions."
+        https://robinhood.com/newsroom/robinhood-welcomes-anne-hoge-as-chief-legal-officer
+
+FORMER     Jason Warnick  |  Chief Financial Officer
+    level c_level, department finance, single-holder role CFO, employment current
+    decided by rule1_explicit_end; first seen 2018-11-26, last seen 2021-07-29, 7 source(s), ended on 2026-02-06
+      - departure (role): "Chief Financial Officer"  tier 1 sec_filing [official], as of 2026-04-22 (published), effective 2026-02-06
+        "Mr. Warnick ceased to serve as Chief Financial Officer effective February 6, 2026, and transitioned to an advisory role."
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+      - departure (role): "CFO"  tier 1 sec_filing [official], as of 2026-02-10 (published), no effective date
+        "Robinhood’s then-current CFO Jason Warnick has transitioned to an advisory role and will remain employed with the Company until September 1, 2026."
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm
+      - role: "Chief Financial Officer"  tier 2 press_release [official], as of 2020-08-04 (published), no effective date
+        "Christina will work alongside our Co-Founders and Co-CEOs Baiju Bhatt and Vlad Tenev, Chief Financial Officer Jason Warnick, Chief Operating Officer Gretchen Howard, Chief Legal Officer Dan Gallagher, and many teams acro"
+        https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer
+      - role: "Chief Financial Officer"  tier 2 press_release [official], as of 2020-08-04 (published), no effective date
+        "Christina will work alongside our Co-Founders and Co-CEOs Baiju Bhatt and Vlad Tenev, Chief Financial Officer Jason Warnick, Chief Operating Officer Gretchen Howard, Chief Legal Officer Dan Gallagher, and many teams acro"
+        https://www.robinhood.com/us/en/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer
+      - role: "Chief Financial Officer"  tier 2 press_release [official], as of 2020-05-05 (published), no effective date
+        "which includes Co-Founders and Co-CEOs Vlad Tenev and Baiju Bhatt, Chief Operating Officer Gretchen Howard, and Chief Financial Officer Jason Warnick."
+        https://robinhood.com/newsroom/dan-gallagher-robinhood-board-member-and-former-sec-commissioner-joins-robinhoo
+      - role: "Chief Financial Officer"  tier 2 press_release [official], as of 2019-11-21 (published), no effective date
+        "Anne will serve on our executive leadership team, which includes Co-Founders and Co-CEOs Vlad Tenev and Baiju Bhatt, Chief Financial Officer Jason Warnick, and Chief Operating Officer Gretchen Howard."
+        https://robinhood.com/newsroom/robinhood-welcomes-anne-hoge-as-chief-legal-officer
+      - appointment: "Chief Financial Officer"  tier 2 press_release [official], as of 2018-11-26 (published), no effective date
+        "We’re thrilled to welcome Jason Warnick as our Chief Financial Officer and member of the leadership team."
+        https://robinhood.com/newsroom/jason-warnick-joins-robinhood-as-chief-financial-officer
+      - role: "CFO"  tier 2 press_release [official], as of 2018-11-26 (published), no effective date
+        "“I’m thrilled to join the amazing team at Robinhood and look forward to advancing our mission to democratize America’s financial system."
+        https://robinhood.com/newsroom/jason-warnick-joins-robinhood-as-chief-financial-officer
+      - departure (role): "CFO"  tier 3 news [article], as of 2025-12-29 (published), no effective date
+        "announced in November that CFO Jason Warnick is retiring."
+        https://fortune.com/2025/12/29/who-is-robinhoods-cfo-shiv-verma-transition
+      - role: "Chief Financial Officer"  tier 3 news [article], as of 2021-07-29 (published), no effective date
+        "Rounding out the team is Chief Financial Officer Jason Warnick and Chief Operating Officer Gretchen Howard."
+        https://theorg.com/iterate/the-leadership-team-behind-robinhoods-ipo
+      - appointment: "first-ever CFO"  tier 3 news [article], as of 2019-10-26 (published), no effective date
+        "Howard helped bring in Amazon veteran Jason Warnick as its first-ever CFO."
+        https://www.cnbc.com/2019/10/26/meet-the-former-vc-leading-robinhood-in-effort-to-disrupt-wall-street.html
+
+FORMER     Jeffrey Pinner  |  Chief Technology Officer
+    level c_level, department engineering, single-holder role CTO, employment unknown
+    decided by rule1_explicit_end; first seen 2024-08-12, last seen 2026-04-22, 2 source(s), ended on 2026-05-07
+      - departure (role): "Chief Technology Officer"  tier 1 sec_filing [official], as of 2026-05-08 (published), effective 2026-05-07
+        "On May 7, 2026, Robinhood Markets, Inc. (the "Company") determined that Jeffrey Pinner, Chief Technology Officer, would be separating from his position, effective the same day."
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000065/hood-20260507.htm
+      - role: "Chief Technology Officer"  tier 1 sec_filing [official], as of 2026-04-22 (published), no effective date
+        "Jeffrey Pinner | | 41 | | | Chief Technology Officer | |"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+      - appointment: "Chief Technology Officer (CTO)"  tier 2 press_release [official], as of 2024-08-12 (published), no effective date
+        "We are thrilled to announce that Jeff Pinner has joined Robinhood as Chief Technology Officer (CTO)."
+        https://robinhood.com/newsroom/robinhood-welcomes-jeff-pinner-as-chief-technology-officer
+
+FORMER     Shiv Verma  |  Senior Vice President of Finance and Strategy, and Treasurer
+    level vp, department finance, single-holder role None, employment current
+    decided by rule1_explicit_end; first seen 2025-12-29, last seen 2026-02-10, 2 source(s), end date not stated (reported by a source dated 2026-04-22)
+      - departure (role): "Senior Vice President of Finance and Strategy, and Treasurer"  tier 1 sec_filing [official], as of 2026-04-22 (published), no effective date
+        "Prior to his current position, Mr. Verma had been our Senior Vice President of Finance and Strategy, and Treasurer since 2018 and had responsibilities for the Company's Finance, Treasury, Corporate Strategy, and Corporat"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+      - role: "Senior Vice President of Finance and Strategy, and Treasurer"  tier 1 sec_filing [official], as of 2026-02-10 (published), no effective date
+        "Mr. Verma, age 40, has been the Company's Senior Vice President of Finance and Strategy, and Treasurer since 2018"
+        https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm
+      - role: "SVP of finance and strategy and treasurer"  tier 3 news [article], as of 2025-12-29 (published), no effective date
+        "as Shiv Verma, SVP of finance and strategy and treasurer, steps into the top finance job."
+        https://fortune.com/2025/12/29/who-is-robinhoods-cfo-shiv-verma-transition
+
+Totals for Robinhood: 27 people, 148 claims; roles by status: 22 current, 5 former, 28 unverified
+
+==============================================================================
+[11] Campfire: every targeted check and its outcome
+command:  uv run python tools/show_people.py meetcampfire.com --checks
+exit code 0 (expected 0)  ->  PASS    2.2s
+------------------------------------------------------------------------------
+Company: Campfire    targeted checks on record: 7
+
+BIO      Chris McDonough  |    ->  found
+    stored as a claim with its source
+
+BIO      Erik Leavell  |    ->  not_found
+    no source that was read states it about this person
+
+BIO      John Glasgow  |    ->  found
+    stored as a claim with its source
+
+LOCATION Chris McDonough  |    ->  not_found
+    no source that was read states it about this person
+    query: "Chris McDonough" Campfire "based in" OR "lives in" OR "resides in"
+
+LOCATION Erik Leavell  |    ->  not_found
+    no source that was read states it about this person
+    query: "Erik Leavell" Campfire "based in" OR "lives in" OR "resides in"
+
+LOCATION John Glasgow  |    ->  not_found
+    no source that was read states it about this person
+    query: "John Glasgow" Campfire "based in" OR "lives in" OR "resides in"
+
+VERIFY   Paul Nichols  |  CTO  ->  still_unverified
+    3 new sources, 1 new claims about this person; status unverified -> unverified (rule6_stale_or_weak_evidence)
+    query: Paul Nichols CTO Campfire.ai
+    query: Paul Nichols Campfire.ai CTO departure
+
+==============================================================================
+[12] Robinhood: every targeted check and its outcome
+command:  uv run python tools/show_people.py robinhood.com --checks
+exit code 0 (expected 0)  ->  PASS    2.2s
+------------------------------------------------------------------------------
+Company: Robinhood    targeted checks on record: 26
+
+BIO      Daniel Gallagher  |    ->  found
+    stored as a claim with its source
+
+BIO      Dara Bazzano  |    ->  found
+    stored as a claim with its source
+
+BIO      Shiv Verma  |    ->  found
+    stored as a claim with its source
+
+BIO      Steven Quirk  |    ->  found
+    stored as a claim with its source
+
+BIO      Vladimir Tenev  |    ->  found
+    stored as a claim with its source
+
+DATE     Anne Hoge  |  CLO  ->  not_stated
+    no held source states the day this role ended
+
+DATE     Shiv Verma  |  vp:finance  ->  not_stated
+    no held source states the day this role ended
+
+LOCATION Daniel Gallagher  |    ->  not_found
+    no source that was read states it about this person
+    query: "Daniel Gallagher" Robinhood "based in" OR "lives in" OR "resides in"
+
+LOCATION Dara Bazzano  |    ->  not_found
+    no source that was read states it about this person
+    query: "Dara Bazzano" Robinhood "based in" OR "lives in" OR "resides in"
+
+LOCATION Shiv Verma  |    ->  not_found
+    no source that was read states it about this person
+    query: "Shiv Verma" Robinhood "based in" OR "lives in" OR "resides in"
+
+LOCATION Steven Quirk  |    ->  not_found
+    no source that was read states it about this person
+    query: "Steven Quirk" Robinhood "based in" OR "lives in" OR "resides in"
+
+LOCATION Vladimir Tenev  |    ->  not_found
+    no source that was read states it about this person
+    query: "Vladimir Tenev" Robinhood "based in" OR "lives in" OR "resides in"
+
+VERIFY   Aparna Chennapragada  |  CPO  ->  still_unverified
+    1 new sources, 2 new claims about this person; status unverified -> unverified (rule6_stale_or_weak_evidence)
+    query: Aparna Chennapragada Robinhood Chief Product Officer 2023
+
+VERIFY   Baiju Bhatt  |  CEO  ->  still_unverified
+    3 new sources, 3 new claims about this person; status unverified -> unverified (rule6_stale_or_weak_evidence)
+    query: Baiju Bhatt Robinhood co-CEO 2024
+    query: Baiju Bhatt Robinhood executive title latest news
+
+VERIFY   Baiju Bhatt  |  Chief Creative Officer  ->  conflict_remains
+    3 new sources, 6 new claims about this person; status unverified -> unverified (rule2_departure_reported_by_news_only)
+    query: Baiju Bhatt Robinhood Chief Creative Officer
+    query: Baiju Bhatt Robinhood departure title
+
+VERIFY   Christina Smedley  |  CMO  ->  conflict_remains
+    3 new sources, 5 new claims about this person; status unverified -> unverified (rule2_departure_reported_by_news_only)
+    query: Christina Smedley Robinhood Chief Marketing Officer 2023
+    query: Christina Smedley Robinhood departure news
+
+VERIFY   Christina Smedley  |  Chief Marketing and Communications Officer  ->  conflict_remains
+    2 new sources, 0 new claims about this person; status unverified -> unverified (rule2_departure_reported_by_news_only)
+    query: Christina Smedley Robinhood "Chief Marketing and Communications Officer"
+    query: Christina Smedley departure Robinhood
+
+VERIFY   Christine Brown  |  c_level:operations  ->  role_gone
+    2 new sources, 3 new claims about this person; status unverified -> none
+    query: Christine Brown Robinhood COO Crypto
+    query: Christine Brown Robinhood crypto chief operating officer
+
+VERIFY   Christine Brown  |  vp:operations  ->  still_unverified
+    3 new sources, 4 new claims about this person; status unverified -> unverified (rule6_stale_or_weak_evidence)
+    query: Christine Brown Robinhood "VP of Product Operations"
+    query: Christine Brown Robinhood left OR replaced OR appointed "VP of Product Operations"
+
+VERIFY   Christine Brown  |  COO  ->  conflict_remains
+    3 new sources, 3 new claims about this person; status unverified -> unverified (rule2_departure_reported_by_news_only)
+    query: Christine Brown Robinhood Crypto COO 2023
+    query: Christine Brown Robinhood crypto chief operating officer departure
+
+VERIFY   Gretchen Howard  |  COO  ->  still_unverified
+    3 new sources, 4 new claims about this person; status unverified -> unverified (rule6_stale_or_weak_evidence)
+    query: Gretchen Howard Robinhood COO 2023
+    query: Gretchen Howard Robinhood chief operating officer departure
+
+VERIFY   Gretchen Howard  |  vp:operations  ->  still_unverified
+    3 new sources, 1 new claims about this person; status unverified -> unverified (rule6_stale_or_weak_evidence)
+    query: Gretchen Howard Robinhood Vice President of Operations 2023
+    query: Gretchen Howard Robinhood operations leadership departure
+
+VERIFY   Kelly Zigaitis  |  c_level:legal  ->  still_unverified
+    3 new sources, 2 new claims about this person; status unverified -> unverified (rule6_stale_or_weak_evidence)
+    query: Kelly Zigaitis Robinhood Chief Compliance Officer
+    query: Kelly Zigaitis Robinhood Securities compliance officer 2023
+
+VERIFY   Kelly Zigaitis  |  Chief Compliance Officer  ->  still_unverified
+    1 new sources, 0 new claims about this person; status unverified -> unverified (rule0_announcement_never_confirmed)
+    query: Kelly Zigaitis Robinhood "Chief Compliance Officer"
+    query: Kelly Zigaitis Robinhood compliance officer replaced OR left OR appointed
+
+VERIFY   Norm Ashkenas  |  c_level:legal  ->  still_unverified
+    3 new sources, 2 new claims about this person; status unverified -> unverified (rule6_stale_or_weak_evidence)
+    query: Norm Ashkenas Robinhood Chief Compliance Officer 2023
+    query: Norm Ashkenas Robinhood compliance officer resignation
+
+VERIFY   Norm Ashkenas  |  Chief Compliance Officer  ->  conflict_remains
+    3 new sources, 0 new claims about this person; status unverified -> unverified (rule2_departure_reported_by_news_only)
+    query: Norm Ashkenas Robinhood "Chief Compliance Officer"
+    query: Ashkenas Robinhood compliance officer left OR replaced OR appointed
+
+==============================================================================
+[13] Held-out company (Wise): sources and run as stored
+command:  uv run python tools/show_run.py wise.com
+exit code 0 (expected 0)  ->  PASS    2.2s
+------------------------------------------------------------------------------
+Company: Wise  (wise.com)   collected at 2026-11-13T21:37:06+00:00
+
+Runs
+  run 42: complete          started 2026-11-13T20:35:41+00:00  finished 2026-11-13T20:36:51+00:00
+      pages 24, failed 0, skipped 8, search queries 8, LLM calls 28, network calls 38
+      reason: access_refused / fetch: disallowed by robots.txt  [https://owners.wise.com/governance/leadership-team]
+      reason: access_refused / fetch: disallowed by robots.txt  [https://owners.wise.com/governance/board-of-directors]
+      reason: access_refused / fetch: disallowed by robots.txt  [https://owners.wise.com/news-releases/news-release-details/board-appointment]
+  run 44: complete          started 2026-11-13T20:39:08+00:00  finished 2026-11-13T20:39:13+00:00
+      pages 0, failed 0, skipped 0, search queries 0, LLM calls 0, network calls 0
+  run 50: complete          started 2026-11-13T21:08:03+00:00  finished 2026-11-13T21:08:04+00:00
+      pages 0, failed 0, skipped 0, search queries 0, LLM calls 0, network calls 0
+  run 56: complete          started 2026-11-13T21:29:24+00:00  finished 2026-11-13T21:30:12+00:00
+      pages 6, failed 0, skipped 0, search queries 3, LLM calls 13, network calls 10
+  run 57: complete          started 2026-11-13T21:32:20+00:00  finished 2026-11-13T21:32:28+00:00
+      pages 0, failed 0, skipped 0, search queries 0, LLM calls 0, network calls 0
+  run 61: complete          started 2026-11-13T21:37:03+00:00  finished 2026-11-13T21:37:06+00:00
+      pages 0, failed 0, skipped 0, search queries 0, LLM calls 0, network calls 0
+
+Sources (tier, type, stage, published, URL)
+  1  company_site  extracted-          https://wise.com/
+  1  company_site  extracted-          https://wise.com/gb/about/our-story
+  1  company_site  extracted-          https://wise.com/gb/about/wise-reviews
+  1  company_site  extracted-          https://wise.com/platform/spend-management/
+  1  company_site  extracted-          https://wise.com/gb/business/manage-team
+  1  company_site  skipped  -          https://owners.wise.com/governance/leadership-team   <- disallowed by robots.txt
+  1  company_site  skipped  -          https://owners.wise.com/governance/board-of-directors   <- disallowed by robots.txt
+  1  company_site  skipped  -          https://wise.com/imaginary-v2/images/ad736416f90791dbb49c7e59f1f45d8d-WiseFY2025AnnualReportAccounts   <- not read: application/pdf files are not read (only web pages are)
+  1  company_site  skipped  -          https://wise.com/imaginary-v2/images/15c3575f774bd7ad32b08df7dcfb5722-WiseGroupplc-UKProspectus(13Ap   <- not read: application/pdf files are not read (only web pages are)
+  1  company_site  extracted-          https://newsroom.wise.com/en-UKI/245737-wise-platform-appoints-lauren-langbridge-and-manuel-sandhofe
+  1  company_site  skipped  -          https://wise.com/imaginary-v2/images/6b836dfe62f4b6cfcedacf745c69ed7f-WiseGroupplc-USForm20-FDraftRe   <- not read: application/pdf files are not read (only web pages are)
+  2  press_release extracted-          https://wise.com/gb/press
+  2  press_release extracted-          https://wise.com/gb/blog/
+  2  press_release extracted2021-02-22 https://wise.com/gr/blog/sas-parousiazoume-ti-wise
+  2  press_release extracted2023-03-01 https://wise.com/gr/blog/mia-marka-gia-pantou-i-wise-apokalyptei-mia-nea-emfanisi
+  2  press_release extracted2023-02-27 https://wise.com/gr/blog/nea-emfanisi-i-idia-wise-min-afinete-tous-apateones-na-sas-xegelasoun
+  2  press_release extracted-          https://wise.com/gb/blog/author/kristo-kaarmann
+  2  press_release skipped  -          https://owners.wise.com/news-releases/news-release-details/board-appointment   <- disallowed by robots.txt
+  2  press_release extracted-          https://wise.com/za/blog/author/kristo-kaarmann
+  2  press_release extracted-          https://wise.com/gb/blog/author/nilan-peiris
+  2  press_release extracted-          https://wise.com/gb/blog/author/lauren-langbridge
+  3  news          extracted-          https://blogs.worldbank.org/en/team/k/kristo-kaarmann
+  3  news          skipped  -          https://craft.co/wise-uk/executives   <- the site refused automated access (HTTP 403)
+  3  news          skipped  -          https://fintechmagazine.com/digital-payments/kristo-kaarmann-ceo-of-wise-on-leading-cross-border-fin   <- the site refused automated access (HTTP 403)
+  3  news          skipped  -          https://fxnewsgroup.com/forex-news/executives/wise-appoints-barak-eilam-to-its-bod-as-non-exec-direc   <- the site refused automated access (HTTP 403)
+  3  news          extracted2026-03-19 https://thefintechtimes.com/wise-appoints-former-ice-cfo-scott-hill-to-board-of-directors-as-cross-b
+  3  news          extracted2022-03-31 https://www.cnbc.com/video/2022/03/31/wise-ceo-on-disrupting-the-traditional-banking-model.html
+  3  news          extracted2026-05-25 https://estonianworld.com/business/wise-co-founder-kristo-kaarmann-joins-the-uks-100-wealthiest-peop
+  3  news          skipped  -          https://fintechmagazine.com/articles/lifetime-of-achievement-kristo-kaarmann   <- the site refused automated access (HTTP 403)
+  3  wikipedia     skipped  -          https://en.wikipedia.org/wiki/Wise_(company)   <- disallowed by robots.txt
+
+30 sources; 19 extracted, 11 skipped
+0 fetched articles have no publication date (left empty, never guessed)
+
+Newest run log: collect-wise.com-20261113T133702.jsonl
+  events: discover 2, extract 3, fetch 8, llm_call 3, run_end 1, run_start 1, search 7, search_round 1   (cache hits: 18)
+
+==============================================================================
+[14] Held-out company (Wise): leaders with evidence
+command:  uv run python tools/show_people.py wise.com
+exit code 0 (expected 0)  ->  PASS    2.2s
+------------------------------------------------------------------------------
+Company: Wise (wise.com)    leaders: C-level, VP, Head: 2
+
+CURRENT    Kristo Käärmann  |  co-founder and CEO
+    level c_level, department other, single-holder role CEO, employment current
+    decided by rule5_recent_reliable_source; first seen 2022-03-31, last seen 2026-11-13, 4 source(s)
+    location: not found (looked for, no source states it)
+    bio: "Kristo Käärmann is the co-founder and CEO of Wise."
+        https://blogs.worldbank.org/en/team/k/kristo-kaarmann
+      - role: "co-founder and CEO"  tier 3 news [other], as of 2026-11-13 (retrieved), no effective date
+        "Kristo Käärmann is the co-founder and CEO of Wise."
+        https://blogs.worldbank.org/en/team/k/kristo-kaarmann
+      - role: "co-founder and chief executive"  tier 3 news [article], as of 2026-05-25 (published), no effective date
+        "The Estonian entrepreneur Kristo Käärmann, the co-founder and chief executive of Wise, has been named among the 100 wealthiest people in the United Kingdom, according to the latest Sunday Times Rich List."
+        https://estonianworld.com/business/wise-co-founder-kristo-kaarmann-joins-the-uks-100-wealthiest-people
+      - role: "co-founder and chief executive officer"  tier 3 news [article], as of 2026-03-19 (published), no effective date
+        "Kristo Käärmann, co-founder and chief executive officer of Wise, emphasized that Hill brings significant public company, finance, and U.S. markets expertise to the table."
+        https://thefintechtimes.com/wise-appoints-former-ice-cfo-scott-hill-to-board-of-directors-as-cross-border-ambi
+      - role: "co-founder and CEO"  tier 3 news [article], as of 2022-03-31 (published), no effective date
+        "Kristo Käärmann, co-founder and CEO of Wise, says the firm is currently only servicing about 3% of the money that is moved through banks for people and small businesses."
+        https://www.cnbc.com/video/2022/03/31/wise-ceo-on-disrupting-the-traditional-banking-model.html
+
+CURRENT    Abid Mumtaz  |  Global Head of Commercial, Wise Platform
+    level head, department sales, single-holder role None, employment current
+    decided by rule4_listed_on_company_page; first seen 2026-11-13, last seen 2026-11-13, 1 source(s)
+    location: not found (looked for, no source states it)
+    bio: not found (looked for, no source states it)
+      - role: "Global Head of Commercial, Wise Platform"  tier 1 company_site [official], as of 2026-11-13 (retrieved), no effective date
+        "Abid Mumtaz, Global Head of Commercial at Wise Platform said:"
+        https://newsroom.wise.com/en-UKI/245737-wise-platform-appoints-lauren-langbridge-and-manuel-sandhofer-to-accel
+
+Totals for Wise: 7 people, 11 claims; roles by status: 5 current, 2 unverified
+
+==============================================================================
+[15] An input with no leadership information: must end insufficient_data without an error
+command:  uv run leadership collect https://example.com/ --no-verify
+exit code 3 (expected 3)  ->  PASS    3.7s
+------------------------------------------------------------------------------
+
+Company:  Example Domain
+Run:      64    Status: insufficient_data
+  - run 64 (new); company name from the site: Example Domain
+  - company site: 0 links found, 0 shortlisted, 0 chosen
+  - SEC EDGAR: no SEC registrant named 'Example Domain'
+  - Wikipedia: skipped: WIKIPEDIA_USER_AGENT is not set in .env
+  - web search: 20 results, 19 usable, 1 about this company and added
+  - search round 2: 15 results, 11 usable, 0 about this company and added
+  - search round 2 ran because no current CEO found: 0 pages, 0 more claims. No further round is ever run
+
+Usage against limits
+  pages              0 of 40
+  search_queries     0 of 25
+  llm_calls          0 of 120
+  pages failed       0
+  pages skipped      0   (refused, robots.txt, or not verified as this company)
+  network calls      0   (this process; 0 means all from cache)
+
+Reasons recorded
+  insufficient_data extract  no current CEO was found
+  insufficient_data extract  no current leader (C-level, VP or Head) was found
+  insufficient_data discover no company page other than the homepage could be read
+
+Extraction: 0 claims stored about 0 people; 0 rejected by the checks this run; 0 documents skipped
+Current leaders: 0. Unverified, not counted as current: 0
+
+Leadership found (C-level, VP, Head)
+  (none)
+
+Sources stored
+  tier 1  company_site  extracted   1
+  tier 3  wikipedia     skipped     1
+
+Pages that could not be read (nothing from them is used)
+  tier 3  wikipedia     https://en.wikipedia.org/wiki/Example.com
+          skipped: disallowed by robots.txt
+
+Run log: C:\dev\ExecTrace\logs\collect-example.com-20261113T134002.jsonl
+
+==============================================================================
+[16] M1 rules still hold: mutation check
+command:  uv run python tools/mutation_check.py
+exit code 0 (expected 0)  ->  PASS    0.9s
+------------------------------------------------------------------------------
+Unmodified rules: 0 of 45 cases fail (must be 0)
+  caught    A news-only departure ends the role (rule 2 removed)  ->  2 case(s) fail
+  caught    Old documents count as fresh (freshness window removed)  ->  4 case(s) fail
+  caught    Undated articles count as dated  ->  1 case(s) fail
+  caught    Leaving the company no longer ends the person's roles  ->  2 case(s) fail
+  caught    Single-holder conflicts are not detected (rule 7 removed)  ->  6 case(s) fail
+  caught    Co-CEOs shown on the company page are flagged as a conflict  ->  3 case(s) fail
+  caught    One 'Co-CEO' title is enough to clear the conflict for everyone  ->  3 case(s) fail
+  caught    A shared title in any source, not only the company page, clears the conflict  ->  1 case(s) fail
+  caught    Any title starting with 'co-' counts as a shared role  ->  1 case(s) fail
+  caught    An appointment ends a co-holder shown on the same page  ->  1 case(s) fail
+  caught    Succession is never detected (rule 3 removed)  ->  6 case(s) fail
+  caught    A live page listing no longer makes a role current (rule 4 removed)  ->  17 case(s) fail
+  caught    A future departure date is treated as already past  ->  2 case(s) fail
+  caught    A future appointment ends the current holder's role on the day it is announced  ->  1 case(s) fail
+  caught    An undated 'will become' appointment takes effect on the day it is published  ->  2 case(s) fail
+  caught    An undated appointment is never confirmed by later evidence  ->  2 case(s) fail
+  caught    An announced appointment is counted as a current role  ->  2 case(s) fail
+  caught    A stale, never-confirmed announcement still shows as announced  ->  1 case(s) fail
+  caught    An undated 'will step down' ends the role on the day it is published  ->  4 case(s) fail
+  caught    An undated departure keeps the role current for ever, however old it is  ->  2 case(s) fail
+  caught    An undated 'will leave the company' counts as having left  ->  1 case(s) fail
+  caught    A search snippet can report a departure  ->  1 case(s) fail
+  caught    A later re-appointment no longer cancels an earlier departure  ->  1 case(s) fail
+
+23 of 23 broken rules were caught by the worked cases
+
+==============================================================================
+[17] No key or contact address in any file that could be committed, or in the run logs
+command:  uv run python tools/scan_secrets.py
+exit code 0 (expected 0)  ->  PASS    0.8s
+------------------------------------------------------------------------------
+205 files scanned (78 that git would track, 127 run logs), 4 values from .env checked: 0 problems
+
+==============================================================================
+SUMMARY
+  [1] PASS  M4 tests: stated dates, verification, enrichment, gold-set measurement, export
+  [2] PASS  Whole fast suite (no network, no keys)
+  [3] PASS  Real model: extraction, planted instructions, directory page, resume, outage, invalid output
+  [4] PASS  Campfire: full run with verification and enrichment
+  [5] PASS  Robinhood: full run with verification and enrichment
+  [6] PASS  Export the fixtures for both companies
+  [7] PASS  Extraction accuracy on the labelled pages, and the fixtures against the gold sets
+  [8] PASS  Every stored claim re-checked against its saved page; every current role has support
+  [9] PASS  Campfire: leaders with claims, evidence, location and biography
+  [10] PASS  Robinhood: leaders with claims, evidence, location and biography
+  [11] PASS  Campfire: every targeted check and its outcome
+  [12] PASS  Robinhood: every targeted check and its outcome
+  [13] PASS  Held-out company (Wise): sources and run as stored
+  [14] PASS  Held-out company (Wise): leaders with evidence
+  [15] PASS  An input with no leadership information: must end insufficient_data without an error
+  [16] PASS  M1 rules still hold: mutation check
+  [17] PASS  No key or contact address in any file that could be committed, or in the run logs
+  17 of 17 steps as expected

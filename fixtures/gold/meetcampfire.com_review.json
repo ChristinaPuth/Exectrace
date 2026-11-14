@@ -1,0 +1,33 @@
+{
+  "about": "One row per role the pipeline marks current (C-level, VP, Head). 'verdict' is decided from the gold set where it can be. For rows marked 'to review', a person sets 'hand_verdict' to 'correct' or 'wrong' and runs `leadership eval` again.",
+  "company": "Campfire",
+  "roles": [
+    {
+      "person": "Chris McDonough",
+      "title": "VP of Sales",
+      "level": "vp",
+      "decided_by": "rule5_recent_reliable_source",
+      "verdict": "not counted",
+      "basis": "a secondary-source candidate, kept apart from the gold set",
+      "hand_verdict": null
+    },
+    {
+      "person": "Erik Leavell",
+      "title": "Head of Finance & Applied AI",
+      "level": "head",
+      "decided_by": "rule4_listed_on_company_page",
+      "verdict": "correct",
+      "basis": "the gold set lists this office as current",
+      "hand_verdict": null
+    },
+    {
+      "person": "John Glasgow",
+      "title": "CEO",
+      "level": "c_level",
+      "decided_by": "rule4_listed_on_company_page",
+      "verdict": "correct",
+      "basis": "the gold set lists this office as current",
+      "hand_verdict": null
+    }
+  ]
+}

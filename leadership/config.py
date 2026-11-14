@@ -50,6 +50,7 @@ class Limits(_Strict):
     max_llm_calls: int = Field(gt=0)
     max_verification_checks: int = Field(ge=0)
     max_queries_per_verification: int = Field(ge=0)
+    max_enrichment_people: int = Field(ge=0)
     max_retries: int = Field(ge=0)
     max_throttle_wait_seconds: float = Field(ge=0)
     max_source_attempts: int = Field(gt=0)

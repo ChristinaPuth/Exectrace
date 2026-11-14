@@ -1,0 +1,110 @@
+{
+  "company": "Campfire",
+  "domain": "meetcampfire.com",
+  "as_of": "2026-11-13",
+  "drafted_by": "Claude, 2026-11-13; revised 2026-11-13 on the project owner's corrections",
+  "verified_by": "the project owner, 2026-11-13",
+  "disclosure": "Not fully blind to earlier pipeline results. The spec asks for a gold set written before any pipeline output is seen. These annotations were drafted on 2026-11-13, after the M2 and M3 runs, by someone who had seen their output, and revised the same day on the project owner's corrections. Every row is taken from the text of a primary source, not from the database, and each row carries the source and the words it rests on.",
+  "level_convention": "Levels follow the project's rule (SPEC 3.4): any 'Chief ... Officer' or its abbreviation is c_level, as is a President who is not a Vice President; otherwise a title with 'Vice President' is vp; 'Head of' is head; everything else is other and outside the scope. 'unit' names the subsidiary or business unit when the title is scoped to one.",
+  "sources": {
+    "basecamp": {
+      "url": "https://campfire.ai/basecamp",
+      "accessed": "2026-11-13",
+      "how": "The company's own conference page, as fetched by the pipeline and read from its cache."
+    },
+    "blog_forecast": {
+      "url": "https://campfire.ai/blog/campfire-announces-forecast-an-end-to-the-mid-month-guessing-game",
+      "accessed": "2026-11-13",
+      "published": "2026-09-18"
+    },
+    "blog_claude": {
+      "url": "https://campfire.ai/blog/campfire-accelerates-accounting-with-claude",
+      "accessed": "2026-11-13",
+      "published": "2025-02-06"
+    },
+    "gtmnow": {
+      "url": "https://thegtmnewsletter.substack.com/p/gtm-205-ai-native-sales-organization-chris-mcdonough-campfire",
+      "accessed": "2026-11-13",
+      "published": "2026-09-10",
+      "how": "Third party, not a primary source."
+    }
+  },
+  "leaders": [
+    {
+      "name": "John Glasgow",
+      "title": "CEO & Founder",
+      "level": "c_level",
+      "role": "CEO",
+      "unit": null,
+      "status": "current",
+      "source": "basecamp",
+      "quote": "John Glasgow CEO & Founder, Campfire",
+      "verified": true,
+      "counts_toward": [
+        "c_level"
+      ],
+      "scope": "company"
+    },
+    {
+      "name": "Erik Leavell",
+      "title": "Head of Finance & Applied AI",
+      "level": "head",
+      "role": null,
+      "unit": null,
+      "status": "current",
+      "source": "basecamp",
+      "quote": "Erik Leavell Head of Finance & Applied AI, Campfire",
+      "verified": true,
+      "counts_toward": [
+        "head"
+      ],
+      "scope": "company"
+    },
+    {
+      "name": "Brendan Doyle",
+      "title": "Head of Product",
+      "level": "head",
+      "role": null,
+      "unit": null,
+      "status": "current",
+      "source": "blog_forecast",
+      "quote": "Brendan Doyle - Head of Product - September 18, 2026 (the post's author line)",
+      "verified": true,
+      "counts_toward": [
+        "head"
+      ],
+      "scope": "company"
+    }
+  ],
+  "secondary_candidates": [
+    {
+      "name": "Chris McDonough",
+      "title": "VP of Sales",
+      "level": "vp",
+      "source": "gtmnow",
+      "quote": "The VP of Sales at Campfire joins Sophie Buonassisi on GTMnow",
+      "why": "Named only by a third-party interview. Kept apart from the strict primary-source gold set: he does not count for recall, and a pipeline role for him is not counted as wrong."
+    }
+  ],
+  "unknown": [
+    {
+      "item": "Paul Nichols, CTO",
+      "why": "Named by a company post of 2025-02-06 ('led by CTO Paul Nichols'). No later source confirms or ends it. His current status is kept unknown.",
+      "source": "blog_claude"
+    },
+    {
+      "item": "John Glasgow as CFO",
+      "why": "One third-party page says 'founder and CEO (and still CFO)'. Not included as a verified current CFO without stronger evidence."
+    }
+  ],
+  "approval": "The project owner reviewed the rows and their source evidence in chat on 2026-11-13 and approved them. The rows were read from Campfire's own pages listed under 'sources'.",
+  "decisions": [
+    "Titles are kept exactly as the source writes them, and levels follow the project's existing rule.",
+    "A person whose title has both 'Vice President' and 'Chief ... Officer' is c_level by that rule and also counts toward VP coverage ('counts_toward').",
+    "Company-level and subsidiary- or unit-level roles are kept separate ('scope', 'unit'). A unit-level office is never the company-wide single-holder role.",
+    "If recall falls below the target, the actual result is reported. The gold set is not changed to pass.",
+    "Chris McDonough is a secondary-source candidate, kept apart from the strict primary-source gold set.",
+    "Paul Nichols's current CTO status stays unknown.",
+    "John Glasgow is not included as a verified current CFO without stronger evidence."
+  ]
+}

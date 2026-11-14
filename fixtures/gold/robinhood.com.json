@@ -1,0 +1,519 @@
+{
+  "company": "Robinhood",
+  "domain": "robinhood.com",
+  "as_of": "2026-11-13",
+  "drafted_by": "Claude, 2026-11-13; revised 2026-11-13 on the project owner's corrections",
+  "verified_by": "the project owner, 2026-11-13",
+  "disclosure": "Not fully blind to earlier pipeline results. The spec asks for a gold set written before any pipeline output is seen. These annotations were drafted on 2026-11-13, after the M2 and M3 runs, by someone who had seen their output, and revised the same day on the project owner's corrections. Every row is taken from the text of a primary source, not from the database, and each row carries the source and the words it rests on.",
+  "level_convention": "Levels follow the project's rule (SPEC 3.4): any 'Chief ... Officer' or its abbreviation is c_level, as is a President who is not a Vice President; otherwise a title with 'Vice President' is vp; 'Head of' is head; everything else is other and outside the scope. 'unit' names the subsidiary or business unit when the title is scoped to one.",
+  "sources": {
+    "leadership_page": {
+      "url": "https://investors.robinhood.com/governance/leadership",
+      "accessed": "2026-11-13",
+      "how": "Opened in a web browser at the project owner's direction. The pipeline's own fetcher is refused by this site and has never read this page; the pipeline's output cannot depend on it."
+    },
+    "proxy": {
+      "url": "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm",
+      "accessed": "2026-11-13",
+      "published": "2026-04-22"
+    },
+    "8k_feb": {
+      "url": "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000013/hood-20260206.htm",
+      "accessed": "2026-11-13",
+      "published": "2026-02-10"
+    },
+    "8k_may": {
+      "url": "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000065/hood-20260507.htm",
+      "accessed": "2026-11-13",
+      "published": "2026-05-08"
+    },
+    "8k_jun": {
+      "url": "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000083/hood-20260625.htm",
+      "accessed": "2026-11-13",
+      "published": "2026-06-26"
+    },
+    "10k": {
+      "url": "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000023/hood-20251231.htm",
+      "accessed": "2026-11-13",
+      "published": "2026-02-18"
+    }
+  },
+  "leaders": [
+    {
+      "name": "Vlad Tenev",
+      "title": "Chairman & Chief Executive Officer",
+      "level": "c_level",
+      "role": "CEO",
+      "unit": null,
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Vlad Tenev / Chairman & Chief Executive Officer",
+      "verified": true,
+      "also_written": [
+        "Vladimir Tenev"
+      ],
+      "also_supported_by": {
+        "source": "proxy",
+        "quote": "Vladimir Tenev, Chairman and CEO;"
+      },
+      "counts_toward": [
+        "c_level"
+      ],
+      "scope": "company"
+    },
+    {
+      "name": "Pooja Anand",
+      "title": "Vice President, Enterprise Risk Management and Internal Audit",
+      "level": "vp",
+      "role": null,
+      "unit": null,
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Pooja Anand / Vice President, Enterprise Risk Management and Internal Audit",
+      "verified": true,
+      "counts_toward": [
+        "vp"
+      ],
+      "scope": "company"
+    },
+    {
+      "name": "Robb Baldwin",
+      "title": "Vice President and General Manager, TradePMR",
+      "level": "vp",
+      "role": null,
+      "unit": "TradePMR",
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Robb Baldwin / Vice President and General Manager, TradePMR",
+      "verified": true,
+      "counts_toward": [
+        "vp"
+      ],
+      "scope": "subsidiary_or_unit"
+    },
+    {
+      "name": "Matt Billings",
+      "title": "Vice President, Brokerage and President, Robinhood Financial and Robinhood Securities",
+      "level": "vp",
+      "role": null,
+      "unit": "Robinhood Financial and Robinhood Securities",
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Matt Billings / Vice President, Brokerage and President, Robinhood Financial and Robinhood Securities",
+      "verified": true,
+      "counts_toward": [
+        "vp"
+      ],
+      "scope": "subsidiary_or_unit"
+    },
+    {
+      "name": "Taylor Brown",
+      "title": "Chief of Staff",
+      "level": "other",
+      "role": null,
+      "unit": null,
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Taylor Brown / Chief of Staff",
+      "verified": true,
+      "counts_toward": [],
+      "scope": "company"
+    },
+    {
+      "name": "Nora Chan",
+      "title": "Senior Director, Communications",
+      "level": "other",
+      "role": null,
+      "unit": null,
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Nora Chan / Senior Director, Communications",
+      "verified": true,
+      "counts_toward": [],
+      "scope": "company"
+    },
+    {
+      "name": "Abhishek Fatehpuria",
+      "title": "Vice President, Product Management",
+      "level": "vp",
+      "role": null,
+      "unit": null,
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Abhishek Fatehpuria / Vice President, Product Management",
+      "verified": true,
+      "counts_toward": [
+        "vp"
+      ],
+      "scope": "company"
+    },
+    {
+      "name": "Dan Gallagher",
+      "title": "Chief Legal, Compliance and Corporate Affairs Officer",
+      "level": "c_level",
+      "role": "Chief Legal Compliance and Corporate Affairs Officer",
+      "unit": null,
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Dan Gallagher / Chief Legal, Compliance and Corporate Affairs Officer",
+      "verified": true,
+      "also_written": [
+        "Daniel Gallagher"
+      ],
+      "also_supported_by": {
+        "source": "proxy",
+        "quote": "Daniel Gallagher has been our Chief Legal, Compliance, and Corporate Affairs Officer since January 2022"
+      },
+      "counts_toward": [
+        "c_level"
+      ],
+      "scope": "company"
+    },
+    {
+      "name": "Stephanie Guild",
+      "title": "Chief Investment Officer",
+      "level": "c_level",
+      "role": "Chief Investment Officer",
+      "unit": null,
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Stephanie Guild / Chief Investment Officer",
+      "verified": true,
+      "also_written": [
+        "Stephanie Guild, CFA"
+      ],
+      "counts_toward": [
+        "c_level"
+      ],
+      "scope": "company"
+    },
+    {
+      "name": "Johann Kerbrat",
+      "title": "Senior Vice President and General Manager, Crypto and International",
+      "level": "vp",
+      "role": null,
+      "unit": "Crypto and International",
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Johann Kerbrat / Senior Vice President and General Manager, Crypto and International",
+      "verified": true,
+      "counts_toward": [
+        "vp"
+      ],
+      "scope": "subsidiary_or_unit"
+    },
+    {
+      "name": "Chris Koegel",
+      "title": "Vice President, Corporate Finance & Investor Relations",
+      "level": "vp",
+      "role": null,
+      "unit": null,
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Chris Koegel / Vice President, Corporate Finance & Investor Relations",
+      "verified": true,
+      "counts_toward": [
+        "vp"
+      ],
+      "scope": "company"
+    },
+    {
+      "name": "Walter Koller",
+      "title": "Vice President and Chief Operating Officer, Robinhood Financial",
+      "level": "c_level",
+      "role": null,
+      "unit": "Robinhood Financial",
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Walter Koller / Vice President and Chief Operating Officer, Robinhood Financial",
+      "verified": true,
+      "counts_toward": [
+        "c_level",
+        "vp"
+      ],
+      "scope": "subsidiary_or_unit"
+    },
+    {
+      "name": "Seok Lee",
+      "title": "Vice President, Total Rewards",
+      "level": "vp",
+      "role": null,
+      "unit": null,
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Seok Lee / Vice President, Total Rewards",
+      "verified": true,
+      "counts_toward": [
+        "vp"
+      ],
+      "scope": "company"
+    },
+    {
+      "name": "JB Mackenzie",
+      "title": "Vice President and General Manager, Futures and Prediction Markets",
+      "level": "vp",
+      "role": null,
+      "unit": "Futures and Prediction Markets",
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "JB Mackenzie / Vice President and General Manager, Futures and Prediction Markets",
+      "verified": true,
+      "counts_toward": [
+        "vp"
+      ],
+      "scope": "subsidiary_or_unit"
+    },
+    {
+      "name": "Evan McHenry",
+      "title": "Vice President and Chief Information Security Officer",
+      "level": "c_level",
+      "role": "CISO",
+      "unit": null,
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Evan McHenry / Vice President and Chief Information Security Officer",
+      "verified": true,
+      "counts_toward": [
+        "c_level",
+        "vp"
+      ],
+      "scope": "company"
+    },
+    {
+      "name": "Ravi Mehta",
+      "title": "Vice President, Credit Cards and Chief Credit Officer",
+      "level": "c_level",
+      "role": null,
+      "unit": "Credit Cards",
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Ravi Mehta / Vice President, Credit Cards and Chief Credit Officer",
+      "verified": true,
+      "counts_toward": [
+        "c_level",
+        "vp"
+      ],
+      "scope": "subsidiary_or_unit"
+    },
+    {
+      "name": "Lucas Moskowitz",
+      "title": "Senior Vice President, General Counsel and Corporate Secretary",
+      "level": "vp",
+      "role": null,
+      "unit": null,
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Lucas Moskowitz / Senior Vice President, General Counsel and Corporate Secretary",
+      "verified": true,
+      "counts_toward": [
+        "vp"
+      ],
+      "scope": "company"
+    },
+    {
+      "name": "Carley Olivas",
+      "title": "Senior Director, Brand Marketing and Marketing Operations",
+      "level": "other",
+      "role": null,
+      "unit": null,
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Carley Olivas / Senior Director, Brand Marketing and Marketing Operations",
+      "verified": true,
+      "counts_toward": [],
+      "scope": "company"
+    },
+    {
+      "name": "Steve Quirk",
+      "title": "Chief Brokerage Officer",
+      "level": "c_level",
+      "role": "Chief Brokerage Officer",
+      "unit": null,
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Steve Quirk / Chief Brokerage Officer",
+      "verified": true,
+      "also_written": [
+        "Steven Quirk"
+      ],
+      "also_supported_by": {
+        "source": "proxy",
+        "quote": "Steven Quirk has been our Chief Brokerage Officer since January 2022."
+      },
+      "counts_toward": [
+        "c_level"
+      ],
+      "scope": "company"
+    },
+    {
+      "name": "Deepak Rao",
+      "title": "Senior Vice President and General Manager, Robinhood Money, Robinhood Gold, Growth, and Marketing",
+      "level": "vp",
+      "role": null,
+      "unit": "Robinhood Money, Robinhood Gold, Growth, and Marketing",
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Deepak Rao / Senior Vice President and General Manager, Robinhood Money, Robinhood Gold, Growth, and Marketing",
+      "verified": true,
+      "counts_toward": [
+        "vp"
+      ],
+      "scope": "subsidiary_or_unit"
+    },
+    {
+      "name": "Connie Schan",
+      "title": "Chief People Officer",
+      "level": "c_level",
+      "role": "Chief People Officer",
+      "unit": null,
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Connie Schan / Chief People Officer",
+      "verified": true,
+      "counts_toward": [
+        "c_level"
+      ],
+      "scope": "company"
+    },
+    {
+      "name": "Jordan Sinclair",
+      "title": "President of Robinhood UK and General Manager of Bitstamp UK",
+      "level": "c_level",
+      "role": null,
+      "unit": "Robinhood UK; Bitstamp UK",
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Jordan Sinclair / President of Robinhood UK and General Manager of Bitstamp UK",
+      "verified": true,
+      "counts_toward": [
+        "c_level"
+      ],
+      "scope": "subsidiary_or_unit"
+    },
+    {
+      "name": "Shiv Verma",
+      "title": "Chief Financial Officer",
+      "level": "c_level",
+      "role": "CFO",
+      "unit": null,
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Shiv Verma / Chief Financial Officer",
+      "verified": true,
+      "also_supported_by": {
+        "source": "8k_jun",
+        "quote": "Mr. Verma continues to serve as the Company's CFO and principal financial officer."
+      },
+      "counts_toward": [
+        "c_level"
+      ],
+      "scope": "company"
+    },
+    {
+      "name": "Nicola White",
+      "title": "Vice President, Institutional Crypto, General Manager, Bitstamp",
+      "level": "vp",
+      "role": null,
+      "unit": "Institutional Crypto; Bitstamp",
+      "status": "current",
+      "source": "leadership_page",
+      "quote": "Nicola White / Vice President, Institutional Crypto, General Manager, Bitstamp",
+      "verified": true,
+      "counts_toward": [
+        "vp"
+      ],
+      "scope": "subsidiary_or_unit"
+    },
+    {
+      "name": "Vlad Tenev",
+      "title": "President",
+      "level": "c_level",
+      "role": null,
+      "unit": null,
+      "status": "current",
+      "source": "10k",
+      "quote": "Chief Executive Officer, President, and Director",
+      "verified": true,
+      "also_written": [
+        "Vladimir Tenev"
+      ],
+      "note": "A second office of the same person. Not on the leadership page; from the annual report's signature page.",
+      "counts_toward": [
+        "c_level"
+      ],
+      "scope": "company"
+    },
+    {
+      "name": "Dara Bazzano",
+      "title": "Chief Accounting Officer",
+      "level": "c_level",
+      "role": "Chief Accounting Officer",
+      "unit": null,
+      "status": "current",
+      "source": "8k_jun",
+      "quote": "Ms. Bazzano, age 58, has been the Company's Chief Accounting Officer since April 2026",
+      "verified": true,
+      "note": "Not listed on the leadership page as accessed on 2026-11-13. Kept on the strength of the SEC filing; please confirm.",
+      "counts_toward": [
+        "c_level"
+      ],
+      "scope": "company"
+    },
+    {
+      "name": "Jason Warnick",
+      "title": "Chief Financial Officer",
+      "level": "c_level",
+      "role": "CFO",
+      "unit": null,
+      "status": "former",
+      "source": "proxy",
+      "quote": "Mr. Warnick ceased to serve as Chief Financial Officer effective February 6, 2026",
+      "verified": true,
+      "ended": "2026-02-06",
+      "counts_toward": [
+        "c_level"
+      ],
+      "scope": "company"
+    },
+    {
+      "name": "Jeffrey Pinner",
+      "title": "Chief Technology Officer",
+      "level": "c_level",
+      "role": "CTO",
+      "unit": null,
+      "status": "former",
+      "source": "8k_may",
+      "quote": "Jeffrey Pinner, Chief Technology Officer, would be separating from his position, effective the same day",
+      "verified": true,
+      "ended": "2026-05-07",
+      "also_written": [
+        "Jeff Pinner"
+      ],
+      "counts_toward": [
+        "c_level"
+      ],
+      "scope": "company"
+    }
+  ],
+  "unknown": [
+    {
+      "item": "Chief Technology Officer",
+      "why": "No source names a successor to Jeffrey Pinner; the leadership page lists no CTO. Kept unknown until verified."
+    },
+    {
+      "item": "Gretchen Howard (COO), Christina Smedley (CMO), Aparna Chennapragada (CPO), Baiju Bhatt (Co-CEO), Norm Ashkenas and Kelly Zigaitis (unit Chief Compliance Officers)",
+      "why": "Known only from company press releases of 2019 to 2021. None is on the leadership page as accessed on 2026-11-13, but absence from a page is not a statement that someone left. Their status is not guessed and they are in neither the current nor the former list."
+    }
+  ],
+  "approval": "The project owner reviewed the rows and their source evidence in chat on 2026-11-13 and approved them. The owner supplied the list of names on Robinhood's leadership page; the titles were read from the page.",
+  "decisions": [
+    "Titles are kept exactly as the source writes them, and levels follow the project's existing rule.",
+    "A person whose title has both 'Vice President' and 'Chief ... Officer' is c_level by that rule and also counts toward VP coverage ('counts_toward').",
+    "Company-level and subsidiary- or unit-level roles are kept separate ('scope', 'unit'). A unit-level office is never the company-wide single-holder role.",
+    "If recall falls below the target, the actual result is reported. The gold set is not changed to pass.",
+    "Dara Bazzano is kept as current on the SEC filing of June 2026, although she is not on the leadership page.",
+    "Vlad Tenev is also President.",
+    "The current CTO and the six officers known only from 2019 to 2021 press releases stay unknown unless stronger evidence is found."
+  ],
+  "access_note": "Robinhood's leadership page was accessible manually in a web browser on 2026-11-13, but it is blocked to this project's fetcher: the site answers 403 to it, including for robots.txt. The pipeline therefore cannot use the page that most of this gold set comes from, and low recall for Robinhood is expected for that reason."
+}

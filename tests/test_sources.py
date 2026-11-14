@@ -468,3 +468,28 @@ def test_real_model_may_choose_none_and_that_is_not_a_failure(tmp_path):
     picked, calls = pick_links(LLM(load_config(), "extract"), "Acme", offered, 12,
                                FileCache(tmp_path / "llm"), RunLog(tmp_path / "run.jsonl"), problems)
     assert picked == [] and problems == [] and 1 <= calls <= 2
+
+
+def test_a_search_limited_to_domains_sends_the_filter_and_is_cached_apart(tmp_path):
+    from leadership.config import load_config
+    from leadership.sources.search import Search, role_word_queries
+    sent = []
+
+    def handler(request):
+        sent.append(json.loads(request.content))
+        return httpx.Response(200, json={"results": [{"url": "https://acme.com/press/vp", "title": "t",
+                                                      "content": "c"}]})
+
+    import os
+    os.environ["TAVILY_API_KEY"] = "tvly-TESTSECRETVALUE0123456789"
+    try:
+        s = Search(load_config().limits, tmp_path, transport=httpx.MockTransport(handler), sleep=lambda x: None)
+        q = role_word_queries("Acme")[0]
+        assert '"vice president"' in q and "acme.com" not in q
+        s.query(q, include_domains=["acme.com", "acme.io"])
+        s.query(q)                                       # the same words without the filter: a different search
+        s.query(q, include_domains=["acme.io", "acme.com"])  # same filter in another order: from the cache
+    finally:
+        del os.environ["TAVILY_API_KEY"]
+    assert len(sent) == 2
+    assert sent[0]["include_domains"] == ["acme.com", "acme.io"] and "include_domains" not in sent[1]

@@ -39,6 +39,13 @@ def round_two_queries(company: str, domain: str) -> list[str]:
             f'"{company}" {domain} appoints OR joins OR hires executive']
 
 
+def role_word_queries(company: str) -> list[str]:
+    """Plan step 1. Run with the search limited to the company's own domains, so no domain in the query."""
+    return [f'"{company}" "vice president"',
+            f'"{company}" "general manager" OR "head of"',
+            f'"{company}" "chief" "officer" appointed OR joins OR named']
+
+
 class Search:
     def __init__(self, limits: Limits, cache_dir: Path, log: RunLog | None = None, *,
                  refresh: bool = False, transport: httpx.BaseTransport | None = None,
@@ -58,9 +65,14 @@ class Search:
     def close(self) -> None:
         self._client.close()
 
-    def query(self, q: str) -> tuple[list[dict], bool]:
-        """Results as [{title, url, content, published_date}], and whether the cache was used."""
+    def query(self, q: str, include_domains: list[str] | None = None) -> tuple[list[dict], bool]:
+        """Results as [{title, url, content, published_date}], and whether the cache was used.
+
+        `include_domains` asks the provider for results on those domains only.
+        """
         cache_key = f"{PROVIDER}|{self.max_results}|{q}"
+        if include_domains:
+            cache_key += "|domains=" + ",".join(sorted(include_domains))
         if not self.refresh and (hit := self.cache.get(cache_key)):
             self.log.event("search", query=q, cache="hit", results=len(hit["results"]))
             return hit["results"], True
@@ -72,7 +84,8 @@ class Search:
                 r = self._client.post(
                     ENDPOINT, headers={"Authorization": f"Bearer {self.key}"},
                     json={"query": q, "max_results": self.max_results, "search_depth": "basic",
-                          "include_published_date": True})
+                          "include_published_date": True,
+                          **({"include_domains": sorted(include_domains)} if include_domains else {})})
                 status = r.status_code
             except httpx.HTTPError as e:
                 r, status = None, 0

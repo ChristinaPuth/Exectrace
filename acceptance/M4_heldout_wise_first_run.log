@@ -1,0 +1,64 @@
+
+Company:  Wise
+Run:      42    Status: complete
+  - run 42 (new); company name from the site: Wise
+  - company site: 187 links found, 74 shortlisted, 9 chosen
+  - SEC EDGAR: matched SEC registrant Wise Group plc (CIK 2099039); 0 filings selected
+  - Wikipedia: skipped: WIKIPEDIA_USER_AGENT is not set in .env
+  - web search: 20 results, 15 usable, 6 about this company and added
+  - search round 2: 15 results, 9 usable, 6 about this company and added
+  - search round 2 ran because no current CEO found: 6 pages, 4 more claims. No further round is ever run
+  - location of Kristo Käärmann: 5 results, 2 usable, 2 about this company and added
+  - enrichment: 1 of 1 current leaders looked up; 0 locations and 1 biographies found this run
+
+Usage against limits
+  pages             24 of 40
+  search_queries     8 of 25
+  llm_calls         28 of 120
+  pages failed       0
+  pages skipped      8   (refused, robots.txt, or not verified as this company)
+  network calls     38   (this process; 0 means all from cache)
+
+Reasons recorded
+  access_refused    fetch    disallowed by robots.txt  [https://owners.wise.com/governance/leadership-team]
+  access_refused    fetch    disallowed by robots.txt  [https://owners.wise.com/governance/board-of-directors]
+  access_refused    fetch    disallowed by robots.txt  [https://owners.wise.com/news-releases/news-release-details/board-appointment]
+
+Extraction: 8 claims stored about 4 people; 6 rejected by the checks this run; 0 documents skipped
+Current leaders: 1. Unverified, not counted as current: 0
+
+Leadership found (C-level, VP, Head)
+  current    Kristo Käärmann         co-founder and CEO                            news          2026-03-19 
+
+Targeted checks on record (all runs)
+  bio       found                 1
+  location  not_found             1
+
+Sources stored
+  tier 1  company_site  extracted   5
+  tier 1  company_site  skipped     2
+  tier 2  press_release extracted   7
+  tier 2  press_release skipped     1
+  tier 3  news          extracted   4
+  tier 3  news          skipped     4
+  tier 3  wikipedia     skipped     1
+
+Pages that could not be read (nothing from them is used)
+  tier 1  company_site  https://owners.wise.com/governance/board-of-directors  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 1  company_site  https://owners.wise.com/governance/leadership-team  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 2  press_release https://owners.wise.com/news-releases/news-release-details/board-appointment  <- the company's own page or filing
+          skipped: disallowed by robots.txt
+  tier 3  news          https://craft.co/wise-uk/executives
+          skipped: the site refused automated access (HTTP 403)
+  tier 3  wikipedia     https://en.wikipedia.org/wiki/Wise_(company)
+          skipped: disallowed by robots.txt
+  tier 3  news          https://fintechmagazine.com/articles/lifetime-of-achievement-kristo-kaarmann
+          skipped: the site refused automated access (HTTP 403)
+  tier 3  news          https://fintechmagazine.com/digital-payments/kristo-kaarmann-ceo-of-wise-on-leading-cross-border-fintech
+          skipped: the site refused automated access (HTTP 403)
+  tier 3  news          https://fxnewsgroup.com/forex-news/executives/wise-appoints-barak-eilam-to-its-bod-as-non-exec-director-and-chair-designate
+          skipped: the site refused automated access (HTTP 403)
+
+Run log: C:\dev\ExecTrace\logs\collect-wise.com-20261113T123533.jsonl

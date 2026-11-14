@@ -1,0 +1,818 @@
+{
+  "company": "Campfire",
+  "domain": "meetcampfire.com",
+  "collected_at": "2026-11-14T03:14:24+00:00",
+  "run": {
+    "status": "complete",
+    "reasons": [],
+    "counters": {
+      "pages": 0,
+      "pages_failed": 0,
+      "pages_skipped": 0,
+      "search_queries": 0,
+      "llm_calls": 0,
+      "sources_found": 13,
+      "search_rounds": 1,
+      "current_leaders": 3,
+      "unverified_leaders": 1,
+      "earlier_titles_found": 0,
+      "employment_ends_found": 0,
+      "dates_recovered": 0,
+      "locations_found": 0,
+      "bios_found": 0,
+      "people": 5,
+      "claims": 17,
+      "network_calls_this_process": 0
+    }
+  },
+  "people": [
+    {
+      "name": "Chris McDonough",
+      "employment_status": "current",
+      "may_be_the_same_person_as": null,
+      "location": {
+        "value": null,
+        "status": "not_found",
+        "evidence": null,
+        "source_url": null
+      },
+      "bio": {
+        "value": "Chris McDonough has joined 4 companies right before they exploded.",
+        "status": "found",
+        "evidence": "Chris McDonough has joined 4 companies right before they exploded.",
+        "source_url": "https://thegtmnewsletter.substack.com/p/gtm-205-ai-native-sales-organization-chris-mcdonough-campfire"
+      },
+      "roles": [
+        {
+          "title": "VP of Sales",
+          "level": "vp",
+          "department": "sales",
+          "canonical_role": null,
+          "status": "current",
+          "decided_by": "rule5_recent_reliable_source",
+          "starts_on": null,
+          "ended_on": null,
+          "end_reported_on": null,
+          "first_seen": "2026-09-10",
+          "last_seen": "2026-09-10",
+          "last_verified_at": null,
+          "conflict": false,
+          "conflict_reason": null,
+          "source_count": 1,
+          "claims": [
+            {
+              "type": "role",
+              "scope": null,
+              "title": "VP of Sales",
+              "name_as_written": "Chris McDonough",
+              "evidence": "The VP of Sales at Campfire joins Sophie Buonassisi on GTMnow to break down what he learned riding hypergrowth over and over",
+              "effective_date": null,
+              "pending": false,
+              "as_of_date": "2026-09-10",
+              "as_of_basis": "published",
+              "source_url": "https://thegtmnewsletter.substack.com/p/gtm-205-ai-native-sales-organization-chris-mcdonough-campfire",
+              "tier": 3,
+              "source_type": "news"
+            }
+          ]
+        },
+        {
+          "title": "leaders for each of those departments",
+          "level": "other",
+          "department": "other",
+          "canonical_role": null,
+          "status": "current",
+          "decided_by": "rule5_recent_reliable_source",
+          "starts_on": null,
+          "ended_on": null,
+          "end_reported_on": null,
+          "first_seen": "2026-09-10",
+          "last_seen": "2026-09-10",
+          "last_verified_at": null,
+          "conflict": false,
+          "conflict_reason": null,
+          "source_count": 1,
+          "claims": [
+            {
+              "type": "role",
+              "scope": null,
+              "title": "leaders for each of those departments",
+              "name_as_written": "Chris McDonough",
+              "evidence": "Chris is hiring SDRs, AEs, and SEs, plus leaders for each of those departments - aggressively across the stack to keep up with market demand.",
+              "effective_date": null,
+              "pending": false,
+              "as_of_date": "2026-09-10",
+              "as_of_basis": "published",
+              "source_url": "https://thegtmnewsletter.substack.com/p/gtm-205-ai-native-sales-organization-chris-mcdonough-campfire",
+              "tier": 3,
+              "source_type": "news"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Erik Leavell",
+      "employment_status": "current",
+      "may_be_the_same_person_as": null,
+      "location": {
+        "value": null,
+        "status": "not_found",
+        "evidence": null,
+        "source_url": null
+      },
+      "bio": {
+        "value": null,
+        "status": "not_found",
+        "evidence": null,
+        "source_url": null
+      },
+      "roles": [
+        {
+          "title": "Head of Finance & Applied AI",
+          "level": "head",
+          "department": "finance",
+          "canonical_role": null,
+          "status": "current",
+          "decided_by": "rule4_listed_on_company_page",
+          "starts_on": null,
+          "ended_on": null,
+          "end_reported_on": null,
+          "first_seen": "2026-11-13",
+          "last_seen": "2026-11-13",
+          "last_verified_at": null,
+          "conflict": false,
+          "conflict_reason": null,
+          "source_count": 1,
+          "claims": [
+            {
+              "type": "role",
+              "scope": null,
+              "title": "Head of Finance & Applied AI",
+              "name_as_written": "Erik Leavell",
+              "evidence": "Erik Leavell Head of Finance & Applied AI, Campfire",
+              "effective_date": null,
+              "pending": false,
+              "as_of_date": "2026-11-13",
+              "as_of_basis": "retrieved",
+              "source_url": "https://campfire.ai/basecamp",
+              "tier": 1,
+              "source_type": "company_site"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fernando San Martin",
+      "employment_status": "unknown",
+      "may_be_the_same_person_as": null,
+      "location": null,
+      "bio": null,
+      "roles": [
+        {
+          "title": "technical co-founder",
+          "level": "other",
+          "department": "other",
+          "canonical_role": null,
+          "status": "unverified",
+          "decided_by": "rule6_stale_or_weak_evidence",
+          "starts_on": null,
+          "ended_on": null,
+          "end_reported_on": null,
+          "first_seen": "2026-11-13",
+          "last_seen": "2026-11-13",
+          "last_verified_at": null,
+          "conflict": false,
+          "conflict_reason": null,
+          "source_count": 1,
+          "claims": [
+            {
+              "type": "role",
+              "scope": null,
+              "title": "technical co-founder",
+              "name_as_written": "Fernando San Martin",
+              "evidence": "The platform was co-founded by John Glasgow (former Invoice2go VP) and technical co-founder Fernando San Martin (previously back-end engineering lead at Trovata, where he handled large accounting datasets for customers including Block and Etsy).",
+              "effective_date": null,
+              "pending": false,
+              "as_of_date": "2026-11-13",
+              "as_of_basis": "retrieved",
+              "source_url": "https://zanovoy.com/blog/campfire-large-accounting-model-explained",
+              "tier": 3,
+              "source_type": "news"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "John Glasgow",
+      "employment_status": "current",
+      "may_be_the_same_person_as": null,
+      "location": {
+        "value": null,
+        "status": "not_found",
+        "evidence": null,
+        "source_url": null
+      },
+      "bio": {
+        "value": "John Glasgow is the CEO and Founder of Campfire, the modern accounting software for tech companies. Backed by YC and Foundation Capital, Campfire offers powerful, intuitive software that saves accounting and finance teams' time, improves financial visibility.",
+        "status": "found",
+        "evidence": "John Glasgow is the CEO and Founder of Campfire, the modern accounting software for tech companies. Backed by YC and Foundation Capital, Campfire offers powerful, intuitive software that saves accounting and finance teams' time, improves financial visibility.",
+        "source_url": "https://campfire.ai/blog/from-cpa-to-cfo-ron-wangerin-cfo-trust-and-will"
+      },
+      "roles": [
+        {
+          "title": "CEO",
+          "level": "c_level",
+          "department": "other",
+          "canonical_role": "CEO",
+          "status": "current",
+          "decided_by": "rule4_listed_on_company_page",
+          "starts_on": null,
+          "ended_on": null,
+          "end_reported_on": null,
+          "first_seen": "2025-02-06",
+          "last_seen": "2026-11-13",
+          "last_verified_at": null,
+          "conflict": false,
+          "conflict_reason": null,
+          "source_count": 7,
+          "claims": [
+            {
+              "type": "role",
+              "scope": null,
+              "title": "CEO",
+              "name_as_written": "John Glasgow",
+              "evidence": "John Glasgow CEO & Founder, Campfire",
+              "effective_date": null,
+              "pending": false,
+              "as_of_date": "2026-11-13",
+              "as_of_basis": "retrieved",
+              "source_url": "https://campfire.ai/basecamp",
+              "tier": 1,
+              "source_type": "company_site"
+            },
+            {
+              "type": "role",
+              "scope": null,
+              "title": "Founder & CEO",
+              "name_as_written": "John Glasgow",
+              "evidence": "— John Glasgow Founder & CEO, Campfire",
+              "effective_date": null,
+              "pending": false,
+              "as_of_date": "2025-10-15",
+              "as_of_basis": "published",
+              "source_url": "https://campfire.ai/blog/campfire-65-million-series-b-co-led-by-accel-and-ribbit",
+              "tier": 2,
+              "source_type": "press_release"
+            },
+            {
+              "type": "role",
+              "scope": null,
+              "title": "Founder & CEO",
+              "name_as_written": "John Glasgow",
+              "evidence": "— John Glasgow Founder & CEO, Campfire",
+              "effective_date": null,
+              "pending": false,
+              "as_of_date": "2025-08-27",
+              "as_of_basis": "published",
+              "source_url": "https://campfire.ai/blog/campfire-raises-35m-series-a-from-accel",
+              "tier": 2,
+              "source_type": "press_release"
+            },
+            {
+              "type": "role",
+              "scope": null,
+              "title": "CEO and Founder",
+              "name_as_written": "John Glasgow",
+              "evidence": "John Glasgow is the CEO and Founder of Campfire, the modern accounting software for tech companies.",
+              "effective_date": null,
+              "pending": false,
+              "as_of_date": "2025-02-21",
+              "as_of_basis": "published",
+              "source_url": "https://campfire.ai/blog/from-cpa-to-cfo-ron-wangerin-cfo-trust-and-will",
+              "tier": 2,
+              "source_type": "press_release"
+            },
+            {
+              "type": "role",
+              "scope": null,
+              "title": "CEO and Founder",
+              "name_as_written": "John Glasgow",
+              "evidence": "\"Our engineering team found a lot of value in Anthropic's ‘cookbook’ to build AI into our product,\" said John Glasgow, CEO and Founder of Campfire.",
+              "effective_date": null,
+              "pending": false,
+              "as_of_date": "2025-02-06",
+              "as_of_basis": "published",
+              "source_url": "https://campfire.ai/blog/campfire-accelerates-accounting-with-claude",
+              "tier": 2,
+              "source_type": "press_release"
+            },
+            {
+              "type": "role",
+              "scope": null,
+              "title": "CEO and Founder",
+              "name_as_written": "John Glasgow",
+              "evidence": "John Glasgow is the CEO and Founder of Campfire, the modern accounting software for tech companies.",
+              "effective_date": null,
+              "pending": false,
+              "as_of_date": "2025-02-06",
+              "as_of_basis": "published",
+              "source_url": "https://campfire.ai/blog/webinar-or-building-better-usage-based-billing-systems",
+              "tier": 2,
+              "source_type": "press_release"
+            },
+            {
+              "type": "role",
+              "scope": null,
+              "title": "founder and CEO (and still CFO)",
+              "name_as_written": "John Glasgow",
+              "evidence": "John Glasgow, founder and CEO (and still CFO) of Campfire, shares what it's really like to raise over $100M while simultaneously running sales, managing product, and closing your own books.",
+              "effective_date": null,
+              "pending": false,
+              "as_of_date": "2026-11-13",
+              "as_of_basis": "retrieved",
+              "source_url": "https://aircfo.com/resources/funded-how-campfire-raised-100m-while-doubling-revenue-for-6-straight-quarters-john-glasgow",
+              "tier": 3,
+              "source_type": "news"
+            }
+          ]
+        },
+        {
+          "title": "Founder",
+          "level": "other",
+          "department": "other",
+          "canonical_role": null,
+          "status": "current",
+          "decided_by": "rule4_listed_on_company_page",
+          "starts_on": null,
+          "ended_on": null,
+          "end_reported_on": null,
+          "first_seen": "2026-11-13",
+          "last_seen": "2026-11-13",
+          "last_verified_at": null,
+          "conflict": false,
+          "conflict_reason": null,
+          "source_count": 1,
+          "claims": [
+            {
+              "type": "role",
+              "scope": null,
+              "title": "Founder",
+              "name_as_written": "John Glasgow",
+              "evidence": "John Glasgow CEO & Founder, Campfire",
+              "effective_date": null,
+              "pending": false,
+              "as_of_date": "2026-11-13",
+              "as_of_basis": "retrieved",
+              "source_url": "https://campfire.ai/basecamp",
+              "tier": 1,
+              "source_type": "company_site"
+            }
+          ]
+        },
+        {
+          "title": "co-founder",
+          "level": "other",
+          "department": "other",
+          "canonical_role": null,
+          "status": "unverified",
+          "decided_by": "rule6_stale_or_weak_evidence",
+          "starts_on": null,
+          "ended_on": null,
+          "end_reported_on": null,
+          "first_seen": "2026-11-13",
+          "last_seen": "2026-11-13",
+          "last_verified_at": null,
+          "conflict": false,
+          "conflict_reason": null,
+          "source_count": 1,
+          "claims": [
+            {
+              "type": "role",
+              "scope": null,
+              "title": "co-founder",
+              "name_as_written": "John Glasgow",
+              "evidence": "The platform was co-founded by John Glasgow (former Invoice2go VP) and technical co-founder Fernando San Martin (previously back-end engineering lead at Trovata, where he handled large accounting datasets for customers including Block and Etsy).",
+              "effective_date": null,
+              "pending": false,
+              "as_of_date": "2026-11-13",
+              "as_of_basis": "retrieved",
+              "source_url": "https://zanovoy.com/blog/campfire-large-accounting-model-explained",
+              "tier": 3,
+              "source_type": "news"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Paul Nichols",
+      "employment_status": "unknown",
+      "may_be_the_same_person_as": null,
+      "location": null,
+      "bio": null,
+      "roles": [
+        {
+          "title": "CTO",
+          "level": "c_level",
+          "department": "engineering",
+          "canonical_role": "CTO",
+          "status": "unverified",
+          "decided_by": "rule6_stale_or_weak_evidence",
+          "starts_on": null,
+          "ended_on": null,
+          "end_reported_on": null,
+          "first_seen": "2025-02-06",
+          "last_seen": "2026-11-13",
+          "last_verified_at": "2026-11-13T20:18:18+00:00",
+          "conflict": false,
+          "conflict_reason": null,
+          "source_count": 2,
+          "claims": [
+            {
+              "type": "role",
+              "scope": null,
+              "title": "CTO",
+              "name_as_written": "Paul Nichols",
+              "evidence": "The engineering team at Campfire, led by CTO Paul Nichols, leveraged Claude's financial \"recipes\" API framework for rapid deployment.",
+              "effective_date": null,
+              "pending": false,
+              "as_of_date": "2025-02-06",
+              "as_of_basis": "published",
+              "source_url": "https://campfire.ai/blog/campfire-accelerates-accounting-with-claude",
+              "tier": 2,
+              "source_type": "press_release"
+            },
+            {
+              "type": "role",
+              "scope": null,
+              "title": "CTO",
+              "name_as_written": "Paul Nichols",
+              "evidence": "CTO Paul Nichols joined later to scale the engineering organization.",
+              "effective_date": null,
+              "pending": false,
+              "as_of_date": "2026-11-13",
+              "as_of_basis": "retrieved",
+              "source_url": "https://zanovoy.com/blog/campfire-large-accounting-model-explained",
+              "tier": 3,
+              "source_type": "news"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://campfire.ai/basecamp",
+      "source_type": "company_site",
+      "tier": 1,
+      "title": "Campfire's Basecamp 2026 | AI Corporate Finance Conference",
+      "published_at": null,
+      "retrieved_at": "2026-11-13T08:32:18+00:00",
+      "stage": "extracted",
+      "page_kind": "official",
+      "last_error": null
+    },
+    {
+      "url": "https://campfire.ai/customers/april",
+      "source_type": "company_site",
+      "tier": 1,
+      "title": "April",
+      "published_at": null,
+      "retrieved_at": "2026-11-13T20:19:17+00:00",
+      "stage": "extracted",
+      "page_kind": "official",
+      "last_error": null
+    },
+    {
+      "url": "https://meetcampfire.com/",
+      "source_type": "company_site",
+      "tier": 1,
+      "title": "Campfire | The AI-Native ERP",
+      "published_at": null,
+      "retrieved_at": "2026-11-13T08:32:04+00:00",
+      "stage": "extracted",
+      "page_kind": "official",
+      "last_error": null
+    },
+    {
+      "url": "http://campfire.ai/blog",
+      "source_type": "press_release",
+      "tier": 2,
+      "title": "Campfire | Blog",
+      "published_at": null,
+      "retrieved_at": "2026-11-13T21:27:26+00:00",
+      "stage": "extracted",
+      "page_kind": "official",
+      "last_error": null
+    },
+    {
+      "url": "https://campfire.ai/blog",
+      "source_type": "press_release",
+      "tier": 2,
+      "title": "Campfire | Blog",
+      "published_at": null,
+      "retrieved_at": "2026-11-13T08:32:19+00:00",
+      "stage": "extracted",
+      "page_kind": "official",
+      "last_error": null
+    },
+    {
+      "url": "https://campfire.ai/blog/announcing-campfire-x-rho-partnering-to-accelerate-accounting-workflows",
+      "source_type": "press_release",
+      "tier": 2,
+      "title": "Announcing Campfire x Rho: Partnering to accelerate accounting workflows",
+      "published_at": "2024-03-18",
+      "retrieved_at": "2026-11-13T08:32:15+00:00",
+      "stage": "extracted",
+      "page_kind": "official",
+      "last_error": null
+    },
+    {
+      "url": "https://campfire.ai/blog/campfire-65-million-series-b-co-led-by-accel-and-ribbit",
+      "source_type": "press_release",
+      "tier": 2,
+      "title": "Campfire $65 Million Series B Co-Led by Accel & Ribbit: $100M raised in 12 weeks to Meet Surging Demand",
+      "published_at": "2025-10-15",
+      "retrieved_at": "2026-11-13T08:32:14+00:00",
+      "stage": "extracted",
+      "page_kind": "official",
+      "last_error": null
+    },
+    {
+      "url": "https://campfire.ai/blog/campfire-accelerates-accounting-with-claude",
+      "source_type": "press_release",
+      "tier": 2,
+      "title": "Campfire accelerates accounting with Claude",
+      "published_at": "2025-02-06",
+      "retrieved_at": "2026-11-13T08:32:17+00:00",
+      "stage": "extracted",
+      "page_kind": "official",
+      "last_error": null
+    },
+    {
+      "url": "https://campfire.ai/blog/campfire-announces-forecast-an-end-to-the-mid-month-guessing-game",
+      "source_type": "press_release",
+      "tier": 2,
+      "title": "Campfire Announces Forecast: An End to the Mid-Month Guessing Game",
+      "published_at": "2026-09-18",
+      "retrieved_at": "2026-11-13T08:32:16+00:00",
+      "stage": "extracted",
+      "page_kind": "official",
+      "last_error": null
+    },
+    {
+      "url": "https://campfire.ai/blog/campfire-raises-35m-series-a-from-accel",
+      "source_type": "press_release",
+      "tier": 2,
+      "title": "Campfire $35M Series A Led by Accel: Building the Future of AI-First ERP",
+      "published_at": "2025-08-27",
+      "retrieved_at": "2026-11-13T08:32:13+00:00",
+      "stage": "extracted",
+      "page_kind": "official",
+      "last_error": null
+    },
+    {
+      "url": "https://campfire.ai/blog/from-cpa-to-cfo-ron-wangerin-cfo-trust-and-will",
+      "source_type": "press_release",
+      "tier": 2,
+      "title": "From CPA to CFO: Ron Wangerin, CFO @ Trust & Will",
+      "published_at": "2025-02-21",
+      "retrieved_at": "2026-11-13T08:32:20+00:00",
+      "stage": "extracted",
+      "page_kind": "official",
+      "last_error": null
+    },
+    {
+      "url": "https://campfire.ai/blog/webinar-or-building-better-usage-based-billing-systems",
+      "source_type": "press_release",
+      "tier": 2,
+      "title": "Building Better Usage Based Billing Systems",
+      "published_at": "2025-02-06",
+      "retrieved_at": "2026-11-13T21:27:27+00:00",
+      "stage": "extracted",
+      "page_kind": "official",
+      "last_error": null
+    },
+    {
+      "url": "https://campfire.ai/blog?category=Accounting",
+      "source_type": "press_release",
+      "tier": 2,
+      "title": "Campfire | Blog",
+      "published_at": null,
+      "retrieved_at": "2026-11-13T21:27:21+00:00",
+      "stage": "extracted",
+      "page_kind": "official",
+      "last_error": null
+    },
+    {
+      "url": "https://campfire.ai/blog?category=Case+Study",
+      "source_type": "press_release",
+      "tier": 2,
+      "title": "Campfire | Blog",
+      "published_at": null,
+      "retrieved_at": "2026-11-13T21:27:23+00:00",
+      "stage": "extracted",
+      "page_kind": "official",
+      "last_error": null
+    },
+    {
+      "url": "https://campfire.ai/blog?category=General",
+      "source_type": "press_release",
+      "tier": 2,
+      "title": "Campfire | Blog",
+      "published_at": null,
+      "retrieved_at": "2026-11-13T21:27:21+00:00",
+      "stage": "extracted",
+      "page_kind": "official",
+      "last_error": null
+    },
+    {
+      "url": "https://campfire.ai/blog?category=Invoicing",
+      "source_type": "press_release",
+      "tier": 2,
+      "title": "Campfire | Blog",
+      "published_at": null,
+      "retrieved_at": "2026-11-13T21:27:24+00:00",
+      "stage": "extracted",
+      "page_kind": "official",
+      "last_error": null
+    },
+    {
+      "url": "https://aircfo.com/resources/funded-how-campfire-raised-100m-while-doubling-revenue-for-6-straight-quarters-john-glasgow",
+      "source_type": "news",
+      "tier": 3,
+      "title": "Funded: How Campfire Raised $100M+ While Doubling Revenue for 6 Straight Quarters | John Glasgow",
+      "published_at": null,
+      "retrieved_at": "2026-11-13T08:32:18+00:00",
+      "stage": "extracted",
+      "page_kind": "article",
+      "last_error": null
+    },
+    {
+      "url": "https://paulcnichols.com",
+      "source_type": "news",
+      "tier": 3,
+      "title": null,
+      "published_at": null,
+      "retrieved_at": "2026-11-13T20:18:11+00:00",
+      "stage": "skipped",
+      "page_kind": null,
+      "last_error": "disallowed by robots.txt"
+    },
+    {
+      "url": "https://rocketreach.co/chris-mcdonough-email_10282099",
+      "source_type": "news",
+      "tier": 3,
+      "title": null,
+      "published_at": null,
+      "retrieved_at": "2026-11-13T20:19:12+00:00",
+      "stage": "skipped",
+      "page_kind": null,
+      "last_error": "the site refused automated access (HTTP 403)"
+    },
+    {
+      "url": "https://rocketreach.co/paul-nichols-email_3288437",
+      "source_type": "news",
+      "tier": 3,
+      "title": null,
+      "published_at": null,
+      "retrieved_at": "2026-11-13T20:18:13+00:00",
+      "stage": "skipped",
+      "page_kind": null,
+      "last_error": "the site refused automated access (HTTP 403)"
+    },
+    {
+      "url": "https://thegtmnewsletter.substack.com/p/gtm-205-ai-native-sales-organization-chris-mcdonough-campfire",
+      "source_type": "news",
+      "tier": 3,
+      "title": "Building an AI-Era Sales Machine | Chris McDonough",
+      "published_at": "2026-09-10",
+      "retrieved_at": "2026-11-13T08:32:21+00:00",
+      "stage": "extracted",
+      "page_kind": "article",
+      "last_error": null
+    },
+    {
+      "url": "https://www.frontlines.io/podcasts/john-glasgow",
+      "source_type": "news",
+      "tier": 3,
+      "title": null,
+      "published_at": null,
+      "retrieved_at": "2026-11-13T20:18:44+00:00",
+      "stage": "failed",
+      "page_kind": null,
+      "last_error": "HTTP 429"
+    },
+    {
+      "url": "https://www.thecampfire.ai/about",
+      "source_type": "news",
+      "tier": 3,
+      "title": "About | Campfire AI",
+      "published_at": null,
+      "retrieved_at": "2026-11-13T08:32:22+00:00",
+      "stage": "skipped",
+      "page_kind": null,
+      "last_error": "not verified: this site has a name like the company's but the page never mentions campfire.ai or meetcampfire.com"
+    },
+    {
+      "url": "https://zanovoy.com/blog/campfire-large-accounting-model-explained",
+      "source_type": "news",
+      "tier": 3,
+      "title": "Campfire Large Accounting Model (L.A.M.): How AI Reconciliation Actually Works",
+      "published_at": null,
+      "retrieved_at": "2026-11-13T20:18:14+00:00",
+      "stage": "extracted",
+      "page_kind": "article",
+      "last_error": null
+    },
+    {
+      "url": "https://www.ycombinator.com/companies/campfire-2",
+      "source_type": "news",
+      "tier": 4,
+      "title": "Campfire: The AI Native ERP for the fastest growing companies. | Y Combinator",
+      "published_at": null,
+      "retrieved_at": "2026-11-13T08:32:24+00:00",
+      "stage": "extracted",
+      "page_kind": "profile_or_directory",
+      "last_error": null
+    }
+  ],
+  "checks": [
+    {
+      "person": "Chris McDonough",
+      "kind": "bio",
+      "role_key": null,
+      "queries": [],
+      "outcome": "found",
+      "detail": "stored as a claim with its source",
+      "checked_at": "2026-11-13T21:27:32+00:00"
+    },
+    {
+      "person": "Erik Leavell",
+      "kind": "bio",
+      "role_key": null,
+      "queries": [],
+      "outcome": "not_found",
+      "detail": "no source that was read states it about this person",
+      "checked_at": "2026-11-13T20:19:17+00:00"
+    },
+    {
+      "person": "John Glasgow",
+      "kind": "bio",
+      "role_key": null,
+      "queries": [],
+      "outcome": "found",
+      "detail": "stored as a claim with its source",
+      "checked_at": "2026-11-13T21:27:32+00:00"
+    },
+    {
+      "person": "Chris McDonough",
+      "kind": "location",
+      "role_key": null,
+      "queries": [
+        "\"Chris McDonough\" Campfire \"based in\" OR \"lives in\" OR \"resides in\""
+      ],
+      "outcome": "not_found",
+      "detail": "no source that was read states it about this person",
+      "checked_at": "2026-11-13T20:19:12+00:00"
+    },
+    {
+      "person": "Erik Leavell",
+      "kind": "location",
+      "role_key": null,
+      "queries": [
+        "\"Erik Leavell\" Campfire \"based in\" OR \"lives in\" OR \"resides in\""
+      ],
+      "outcome": "not_found",
+      "detail": "no source that was read states it about this person",
+      "checked_at": "2026-11-13T20:19:17+00:00"
+    },
+    {
+      "person": "John Glasgow",
+      "kind": "location",
+      "role_key": null,
+      "queries": [
+        "\"John Glasgow\" Campfire \"based in\" OR \"lives in\" OR \"resides in\""
+      ],
+      "outcome": "not_found",
+      "detail": "no source that was read states it about this person",
+      "checked_at": "2026-11-13T20:18:44+00:00"
+    },
+    {
+      "person": "Paul Nichols",
+      "kind": "verify",
+      "role_key": "CTO",
+      "queries": [
+        "Paul Nichols CTO Campfire.ai",
+        "Paul Nichols Campfire.ai CTO departure"
+      ],
+      "outcome": "still_unverified",
+      "detail": "3 new sources, 1 new claims about this person; status unverified -> unverified (rule6_stale_or_weak_evidence)",
+      "checked_at": "2026-11-13T20:18:18+00:00"
+    }
+  ]
+}

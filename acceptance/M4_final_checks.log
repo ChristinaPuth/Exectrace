@@ -1,0 +1,120 @@
+M4 final checks after the review of 2026-11-13 (re-processing from the cache only)
+Date: 2026-11-13T19:12:12-08:00
+Commit base: 3c20f6b, branch m4-verify
+
+=== uv run leadership collect https://robinhood.com/
+Run:      65    Status: complete
+  - targeted searches: none, one full pass was made on 2026-11-13 (run with --refresh to search again)
+  search_queries     0 of 25
+  llm_calls          0 of 120
+  network calls      0   (this process; 0 means all from cache)
+Current leaders: 5. Unverified, not counted as current: 7
+
+=== uv run leadership collect https://meetcampfire.com/
+Run:      66    Status: complete
+  - targeted searches: none, one full pass was made on 2026-11-13 (run with --refresh to search again)
+  search_queries     0 of 25
+  llm_calls          0 of 120
+  network calls      0   (this process; 0 means all from cache)
+Current leaders: 3. Unverified, not counted as current: 1
+
+=== uv run leadership collect https://wise.com/
+Run:      67    Status: complete
+  - targeted searches: none, one full pass was made on 2026-11-13 (run with --refresh to search again)
+  search_queries     0 of 25
+  llm_calls          0 of 120
+  network calls      0   (this process; 0 means all from cache)
+Current leaders: 2. Unverified, not counted as current: 0
+
+=== Jason Warnick after re-processing
+employment: former
+role: ('Chief Financial Officer', 'former', '2026-02-06', None)
+role: ('advisory role', 'former', '2026-09-01', None)
+
+=== uv run leadership export meetcampfire.com robinhood.com
+wrote fixtures\meetcampfire.com.json
+wrote fixtures\robinhood.com.json
+wrote fixtures\leadership.db
+
+=== uv run python tools/check_evidence.py
+Wise          11 claims re-checked, 0 failed; 5 current roles, 0 without a supporting claim; 2 extraction version(s) in use
+Example Domain   0 claims re-checked, 0 failed; 0 current roles, 0 without a supporting claim; 0 extraction version(s) in use
+
+177 claims checked: 0 problems
+
+=== uv run leadership eval --gold-only
+
+Gold-set measurement, from fixtures\leadership.db
+
+Campfire
+  Coverage of the gold set (people the gold set lists as current)
+    Both figures are always shown. 'Reachable' leaves out only people whose every cited source the
+    pipeline asked for and was refused; the full figure is the one the target applies to.
+    group     in gold  found current  full recall  reachable  reachable recall  found, other status  not found
+    c_level         1              1         100%          1              100%                    0          0
+    vp              0              0          n/a          0               n/a                    0          0
+    head            2              1          50%          2               50%                    0          1
+    head: NOT FOUND: Brendan Doyle
+  Roles the pipeline marks current (C-level, VP, Head)
+    not counted Chris McDonough       VP of Sales                                           a secondary-source candidate, kept apart from the gold set
+    correct     Erik Leavell          Head of Finance & Applied AI                          the gold set lists this office as current
+    correct     John Glasgow          CEO                                                   the gold set lists this office as current
+  Precision of current roles: 100%  (2 correct, 0 wrong, 1 not judged or not counted)
+  Gold-set former leaders reported as current: 0
+  Target precision >= 90%: met  (provisional: some roles are not judged)
+  Target C-level recall = 100%: met
+  Target no former leader as current: met
+
+Robinhood
+  Coverage of the gold set (people the gold set lists as current)
+    Both figures are always shown. 'Reachable' leaves out only people whose every cited source the
+    pipeline asked for and was refused; the full figure is the one the target applies to.
+    group     in gold  found current  full recall  reachable  reachable recall  found, other status  not found
+    c_level        11              5          45%          5              100%                    0          6
+    vp             14              0           0%          0               n/a                    0         14
+    head            0              0          n/a          0               n/a                    0          0
+    c_level: NOT FOUND: Connie Schan, Evan McHenry, Jordan Sinclair, Ravi Mehta, Stephanie Guild, Walter Koller
+    c_level: unreachable: Connie Schan: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    c_level: unreachable: Evan McHenry: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    c_level: unreachable: Jordan Sinclair: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    c_level: unreachable: Ravi Mehta: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    c_level: unreachable: Stephanie Guild: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    c_level: unreachable: Walter Koller: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: NOT FOUND: Abhishek Fatehpuria, Chris Koegel, Deepak Rao, Evan McHenry, JB Mackenzie, Johann Kerbrat, Lucas Moskowitz, Matt Billings, Nicola White, Pooja Anand, Ravi Mehta, Robb Baldwin, Seok Lee, Walter Koller
+    GAP: none of the 14 vp people in the gold set was found as current
+    vp: unreachable: Abhishek Fatehpuria: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Chris Koegel: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Deepak Rao: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Evan McHenry: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: JB Mackenzie: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Johann Kerbrat: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Lucas Moskowitz: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Matt Billings: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Nicola White: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Pooja Anand: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Ravi Mehta: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Robb Baldwin: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Seok Lee: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+    vp: unreachable: Walter Koller: https://investors.robinhood.com/governance/leadership: disallowed by robots.txt
+  Roles the pipeline marks current (C-level, VP, Head)
+    correct     Daniel Gallagher      Chief Legal Officer                                   judged by hand
+    correct     Daniel Gallagher      Chief Legal, Compliance, and Corporate Affairs Offic  the gold set lists this office as current
+    correct     Dara Bazzano          Chief Accounting Officer                              the gold set lists this office as current
+    correct     Shiv Verma            Chief Financial Officer                               the gold set lists this office as current
+    correct     Steven Quirk          Chief Brokerage Officer                               the gold set lists this office as current
+    correct     Vladimir Tenev        Chair and Chief Executive Officer                     the gold set lists this office as current
+    correct     Vladimir Tenev        President                                             the gold set lists this office as current
+  Precision of current roles: 100%  (7 correct, 0 wrong, 0 not judged or not counted)
+  Gold-set former leaders reported as current: 0
+  Target precision >= 90%: met
+  Target C-level recall = 100%: NOT MET
+  Target no former leader as current: met
+
+Recall is measured against the gold sets only, not against everyone who may exist.
+A target that is not met is reported as it is; the gold sets are not changed to pass.
+
+=== uv run pytest -q
+329 passed, 13 deselected in 28.45s
+
+=== uv run python tools/scan_secrets.py
+209 files scanned (79 that git would track, 130 run logs), 4 values from .env checked: 0 problems

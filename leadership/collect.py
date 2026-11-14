@@ -23,8 +23,9 @@ from .extract import (Malformed, OverBudget, ProviderDown, Target, code_version,
                       processing_version)
 from .llm import LLM
 from .runlog import RunLog
+from .verify import Ops, enrich, recover_dates, recover_earlier_titles, recover_employment_end, verify_roles
 from .sources import edgar, wikipedia
-from .sources.search import Search, SearchError, round_one_queries, round_two_queries
+from .sources.search import Search, SearchError, role_word_queries, round_one_queries, round_two_queries
 from .sources.site import (NEWS_PATH, HomepageError, discover, pick_links, pick_results, registrable,
                            unverified_reason,
                            shortlist)
@@ -137,12 +138,16 @@ def _open_run(conn: sqlite3.Connection, company_id: int) -> tuple[int, dict, lis
 
 
 IN_SCOPE = ("c_level", "vp", "head")
+ROLE_SEARCH_PAGES = 6       # new own-domain pages read by the role-word search
 
 
 def collect(url: str, cfg: Config, *, refresh: bool = False, root: Path = ROOT,
             transport: httpx.BaseTransport | None = None, sleep=None,
-            extract: bool = True, today: date | None = None) -> RunResult:
-    """Run one company: discover, fetch, extract, resolve. `extract=False` stops after fetching."""
+            extract: bool = True, verify: bool = True, today: date | None = None) -> RunResult:
+    """Run one company: discover, fetch, extract, resolve, then verify and enrich.
+
+    `extract=False` stops after fetching; `verify=False` stops after the first resolution.
+    """
     domain = urlsplit(url if "://" in url else "https://" + url).netloc.lower().removeprefix("www.")
     if not domain or "." not in domain:
         raise ConfigError(f"'{url}' is not a company domain or URL.")
@@ -211,7 +216,7 @@ def collect(url: str, cfg: Config, *, refresh: bool = False, root: Path = ROOT,
 
         home_domain = registrable(urlsplit(site.home_url).netloc)
 
-        def search_for(queries: list[str], label: str) -> list[Planned]:
+        def search_for(queries: list[str], label: str, limit: int | None = None) -> list[Planned]:
             results = []
             for q in queries:
                 cached = search.cache.get(f"tavily|{search.max_results}|{q}") and not refresh
@@ -228,7 +233,7 @@ def collect(url: str, cfg: Config, *, refresh: bool = False, root: Path = ROOT,
                       and registrable(urlsplit(r["url"]).netloc) not in _NO_FETCH]
             # Namesakes are common ("Campfire"): keep only results about this company.
             if llm is None or budget.take("llm_calls", "discover"):
-                relevant, calls = pick_results(llm, site, usable, cfg.discovery.news_pages,
+                relevant, calls = pick_results(llm, site, usable, limit or cfg.discovery.news_pages,
                                                FileCache(root / "cache" / "llm"), log, problems)
                 if llm is not None:
                     counters["llm_calls"] += calls - 1
@@ -324,11 +329,23 @@ def collect(url: str, cfg: Config, *, refresh: bool = False, root: Path = ROOT,
             rows = conn.execute("SELECT * FROM sources WHERE company_id = ? AND stage IN "
                                 "('fetched', 'extracted') ORDER BY tier, id", (company_id,)).fetchall()
             for row in rows:
-                if row["stage"] == "extracted" and row["extraction_version"] in versions:
-                    continue                        # done; a resume never repeats it
                 cached = fetcher.cache.get(row["url"])
+                kind = ((cached or {}).get("content_type") or "").lower()
+                binary = bool(kind) and "html" not in kind and not kind.startswith("text/")
+                if row["stage"] == "extracted" and row["extraction_version"] in versions and not binary:
+                    continue                        # done; a resume never repeats it
                 if not cached or not cached.get("body"):
                     log.event("extract", url=row["url"], skipped="the page is not in the cache")
+                    continue
+                if binary:
+                    # A PDF or other binary file: its bytes are not text, and sending them to
+                    # the model wastes calls. Reading PDFs is not built (discovery plan, step 3).
+                    reason = f"not read: {kind.split(';')[0]} files are not read (only web pages are)"
+                    with conn:
+                        conn.execute("DELETE FROM claims WHERE source_id = ?", (row["id"],))
+                        conn.execute("UPDATE sources SET stage = 'skipped', last_error = ? WHERE id = ?",
+                                     (reason, row["id"]))
+                    log.event("extract", url=row["url"], skipped=reason)
                     continue
                 try:
                     found = extract_document(
@@ -426,7 +443,84 @@ def collect(url: str, cfg: Config, *, refresh: bool = False, root: Path = ROOT,
                              f"{after - before} more claims. No further round is ever run")
                 log.event("search_round", round=2, ran=True, trigger=trigger, pages=len(extra),
                           new_claims=after - before)
-            for problem in problems[reported:]:     # model trouble during round 2
+            # ---------------------------------------------- verify and enrich
+            if verify and not stopped:
+                def targeted_search(queries: list[str], label: str) -> list[Planned]:
+                    if not search.available or cfg.limits.max_search_rounds < 1:
+                        return []
+                    found = search_for(queries, label, limit=3)     # a check reads at most 3 new pages
+                    plan.extend(found)
+                    return found
+
+                ops = Ops(conn=conn, company_id=company_id, company=site.name, domain=home_domain, llm=llm,
+                          cache=FileCache(root / "cache" / "llm"), pages=fetcher.cache, log=log,
+                          counters=counters, reasons=reasons, notes=notes, limits=cfg.limits,
+                          take=budget.take, search=targeted_search, fetch=fetch, extract=extract_pending,
+                          resolve=resolve_now, add_reason=add_reason, stopped=stopped)
+                passed = conn.execute("SELECT verified_pass_at FROM companies WHERE id = ?",
+                                      (company_id,)).fetchone()[0]
+                # One automatic search pass per company. --refresh allows another; a role
+                # already checked is never searched again either way.
+                ops.allow_search = refresh or passed is None
+                if not ops.allow_search:
+                    notes.append(f"targeted searches: none, one full pass was made on {passed[:10]} "
+                                 "(run with --refresh to search again)")
+                # Plan step 1: role words, searched on the company's own domains only. Once
+                # per company, like every automatic search; --refresh allows it again.
+                role_done = conn.execute("SELECT role_search_at FROM companies WHERE id = ?",
+                                         (company_id,)).fetchone()[0]
+                if search.available and cfg.limits.max_search_rounds >= 1 and (refresh or role_done is None):
+                    results, complete = [], True
+                    for q in role_word_queries(site.name):
+                        cached = search.cache.get(f"tavily|{search.max_results}|{q}|domains="
+                                                  + ",".join(sorted(site.domains))) and not refresh
+                        if not cached and not budget.take("search_queries", "discover"):
+                            complete = False
+                            break
+                        try:
+                            found_now, _ = search.query(q, include_domains=sorted(site.domains))
+                        except SearchError as e:
+                            add_reason(reasons, "partial_failure", "discover", f"role-word search failed: {e}",
+                                       query=q)
+                            complete = False
+                            break
+                        results += found_now
+                    known = {r["url"] for r in conn.execute("SELECT url FROM sources WHERE company_id = ?",
+                                                            (company_id,))}
+                    new: list[Planned] = []
+                    for r in results:
+                        host = registrable(urlsplit(r["url"]).netloc)
+                        # The provider's filter is not trusted: anything off the company's domains is dropped.
+                        if host in site.domains and r["url"] not in known and host not in _NO_FETCH \
+                                and r["url"] not in {p.url for p in new}:
+                            new.append(Planned(r["url"], *classify(r["url"], site.domains)))
+                    new = new[:ROLE_SEARCH_PAGES]
+                    plan.extend(new)
+                    fetch(new)
+                    extract_pending()
+                    resolve_now()
+                    if complete:
+                        with conn:
+                            conn.execute("UPDATE companies SET role_search_at = ? WHERE id = ?", (_now(), company_id))
+                    notes.append(f"role-word search on the company's own domains: {len(results)} results, "
+                                 f"{len(new)} new pages read")
+                    log.event("role_search", results=len(results), new_pages=len(new), complete=complete)
+                recover_earlier_titles(ops)     # "had been our SVP": no longer held, by the company's word
+                resolve_now()
+                recover_employment_end(ops)     # "remain employed until <date>": ends every role then
+                recover_dates(ops)          # a date a held source states, without model or search
+                resolve_now()
+                verify_roles(ops)           # each uncertain role: search, extract, and the rules decide
+                recover_dates(ops)
+                enrich(ops)                 # location and biography of current leaders
+                extract_pending()           # pages fetched while enriching
+                ceo, people = resolve_now()
+                capped = any(r["code"] == "budget_exhausted" for r in reasons)
+                if ops.allow_search and not stopped and not capped:
+                    with conn:
+                        conn.execute("UPDATE companies SET verified_pass_at = ? WHERE id = ?", (_now(), company_id))
+                    notes.append("targeted searches: full pass complete; later runs make no automatic search")
+            for problem in problems[reported:]:     # model trouble during round 2 or later
                 add_reason(reasons, "partial_failure", "discover", problem)
                 notes.append("degraded: " + problem)
             counters["sources_found"] = len(plan)
@@ -511,6 +605,13 @@ def print_report(result: RunResult, cfg: Config, conn_path: Path) -> None:
                   f"{r['source_type'] or '':<14}{r['source_date'] or '':<11}{flag}")
         if not people:
             print("  (none)")
+        checks = conn.execute(
+            """SELECT k.kind, k.outcome, count(*) AS n FROM checks k JOIN companies c ON c.id = k.company_id
+                WHERE c.name = ? GROUP BY 1, 2 ORDER BY 1, 2""", (result.company,)).fetchall()
+        if checks:
+            print("\nTargeted checks on record (all runs)")
+            for k in checks:
+                print(f"  {k['kind']:<10}{k['outcome']:<20}{k['n']:>3}")
     rows = conn.execute(
         """SELECT s.source_type, s.tier, s.stage, count(*) AS n FROM sources s
              JOIN companies c ON c.id = s.company_id WHERE c.name = ?

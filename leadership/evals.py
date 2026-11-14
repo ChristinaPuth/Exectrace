@@ -121,3 +121,50 @@ def run_extraction_eval(cfg: Config, root: Path = ROOT) -> int:
     print(f"Labelled claim types and effective dates that came out wrong: {details}")
     print("\nThis measures five pages, not the whole pipeline. Recall is against the labels only.")
     return 0
+
+
+# ------------------------------------------------------------------ gold sets
+def run_gold_eval(cfg: Config, root: Path = ROOT) -> int:
+    """Measure the exported fixtures against the hand-verified gold sets. No model, no network.
+
+    Reads fixtures/leadership.db (written by `leadership export`), or the
+    working database when no fixture exists yet. For each company it also
+    writes fixtures/gold/<domain>_review.json: one row per role the pipeline
+    marks current, for a person to judge the ones the gold set does not cover.
+    """
+    from . import gold as gold_module
+    from .db import connect
+
+    fixture, working = root / "fixtures" / "leadership.db", root / "data" / "leadership.db"
+    source = fixture if fixture.exists() else working
+    print(f"\nGold-set measurement, from {source.relative_to(root)}")
+    conn = connect(source)
+    for path in sorted((root / "fixtures" / "gold").glob("*.json")):
+        if path.name.endswith("_review.json"):
+            continue
+        gold = gold_module.load(path)
+        review_path = path.with_name(path.stem + "_review.json")
+        verdicts: dict[str, str] = {}
+        notes: dict[str, str] = {}                      # who judged a role, and on what basis
+        if review_path.exists():
+            for row in json.loads(review_path.read_text(encoding="utf-8"))["roles"]:
+                key = f"{row['person']} | {row['title']}"
+                if row.get("hand_verdict") in ("correct", "wrong"):
+                    verdicts[key] = row["hand_verdict"]
+                if row.get("hand_note"):
+                    notes[key] = row["hand_note"]
+        report = gold_module.measure(conn, gold, verdicts)
+        gold_module.print_report(report, cfg.eval.min_precision_current_roles, cfg.eval.min_recall_gold_c_level)
+        review_path.write_text(json.dumps({
+            "about": "One row per role the pipeline marks current (C-level, VP, Head). 'verdict' is decided from "
+                     "the gold set where it can be. For rows marked 'to review', a person sets 'hand_verdict' to "
+                     "'correct' or 'wrong' and runs `leadership eval` again.",
+            "company": gold["company"],
+            "roles": [{**row, "hand_verdict": verdicts.get(f"{row['person']} | {row['title']}"),
+                       **({"hand_note": notes[k]} if (k := f"{row['person']} | {row['title']}") in notes else {})}
+                      for row in report.review]}, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8", newline="\n")
+    conn.close()
+    print("\nRecall is measured against the gold sets only, not against everyone who may exist.")
+    print("A target that is not met is reported as it is; the gold sets are not changed to pass.")
+    return 0
