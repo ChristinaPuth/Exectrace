@@ -20,7 +20,7 @@ Cited URLs: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/h
 
 | Supports | Right person | Date and status | Note |
 |---|---|---|---|
-|  |  |  |  |
+| Yes | Yes | Yes | SEC filing confirms Vladimir Tenev as Chair and CEO. |
 
 ## 2. robinhood.com — Who are the current C-level executives? (sample question, several people)
 
@@ -47,34 +47,37 @@ Cited URLs: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/h
 
 | Supports | Right person | Date and status | Note |
 |---|---|---|---|
-|  |  |  |  |
+| Yes | Yes | Yes | The cited SEC filings support all five executives and their titles. The list is limited to collected data. |
 
 ## 3. robinhood.com — How many C-level executives were found? (a count)
 
 Answer, as the user sees it:
 
 > 5 found in public sources.
+>
+> Note: this counts only the people named in the sources that could be read. 29 sources found for this company could not be read (robots.txt or the site refused automated access), 15 of them on the company's own site. The real number may be higher.
 
 Cited URLs: none (an answer that something was not found cites nothing)
 
 | Supports | Right person | Date and status | Note |
 |---|---|---|---|
-|  |  |  |  |
+| Yes | Yes | Yes | Database confirms 5 distinct current C-level executives. The actual number may be higher due to unreadable sources. |
 
 ## 4. robinhood.com — Who was the previous CFO? (a former executive)
 
 Answer, as the user sees it:
 
 > The previous CFO was Jason Warnick, who ceased to serve as Chief Financial Officer effective 2026-02-06 and has left the role; according to a SEC filing, 2026-04-22: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
->
-> Sources:
-> - Jason Warnick: https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer (press_release, 2020-08-04)
 
-Cited URLs: https://robinhood.com/newsroom/christina-smedley-joins-robinhood-as-chief-marketing-officer, https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+Cited URLs: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm
+
+(Changed after the first review: a 2020 press release about another executive's hire was appended as
+Warnick's source although the answer already cited the SEC filing that ended his role. Fixed in
+`leadership/citations.py`; regression test in `tests/test_chat.py`.)
 
 | Supports | Right person | Date and status | Note |
 |---|---|---|---|
-|  |  |  |  |
+| Yes | Yes | Yes | SEC filing confirms Jason Warnick's CFO role ended on 2026-02-06. The unrelated citation was removed. |
 
 ## 5. robinhood.com — Where is the CEO based? (a location)
 
@@ -86,7 +89,7 @@ Cited URLs: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/h
 
 | Supports | Right person | Date and status | Note |
 |---|---|---|---|
-|  |  |  |  |
+| Yes | Yes | Yes | SEC confirms the CEO's identity; no location was found in the collected database. |
 
 ## 6. meetcampfire.com — Who is the CEO? (sample question)
 
@@ -98,7 +101,7 @@ Cited URLs: https://campfire.ai/basecamp
 
 | Supports | Right person | Date and status | Note |
 |---|---|---|---|
-|  |  |  |  |
+| Yes | Yes | Yes | Official company page identifies John Glasgow as CEO and Founder. |
 
 ## 7. meetcampfire.com — Who leads finance? (a head of department)
 
@@ -110,7 +113,7 @@ Cited URLs: https://campfire.ai/basecamp
 
 | Supports | Right person | Date and status | Note |
 |---|---|---|---|
-|  |  |  |  |
+| Yes | Yes | Yes | Official company page confirms Erik Leavell as Head of Finance & Applied AI. |
 
 ## 8. meetcampfire.com — Who is the VP of Sales? (a vice president)
 
@@ -122,19 +125,21 @@ Cited URLs: https://thegtmnewsletter.substack.com/p/gtm-205-ai-native-sales-orga
 
 | Supports | Right person | Date and status | Note |
 |---|---|---|---|
-|  |  |  |  |
+| Yes | Yes | Yes | Third-party interview identifies Chris McDonough as Campfire's VP of Sales. |
 
 ## 9. meetcampfire.com — How many heads of department were found? (a count)
 
 Answer, as the user sees it:
 
 > 1 found in public sources.
+>
+> Note: this counts only the people named in the sources that could be read. 3 sources found for this company could not be read (robots.txt or the site refused automated access). The real number may be higher.
 
 Cited URLs: none (an answer that something was not found cites nothing)
 
 | Supports | Right person | Date and status | Note |
 |---|---|---|---|
-|  |  |  |  |
+| Yes | Yes | Yes | Database confirms 1 current department head. The count may be incomplete. |
 
 ## 10. meetcampfire.com — Where is John Glasgow based? (a location)
 
@@ -146,11 +151,15 @@ Cited URLs: https://campfire.ai/basecamp
 
 | Supports | Right person | Date and status | Note |
 |---|---|---|---|
-|  |  |  |  |
+| Yes | Yes | Yes | Official company page confirms his identity; no location was found in the collected database. |
 
 ## Result
 
 | | |
 |---|---|
-| Answers with three Yes | __ of 10 |
-| Reviewed by / date | |
+| Answers with three Yes | 10 of 10 |
+| Reviewed by / date | Project owner, 2026-11-13 |
+
+Counts (items 3 and 9) and missing locations (items 5 and 10) were verified against the collected
+database, not as complete real-world facts: a count covers only the sources that could be read, and
+"no location found" means none was found in the collected sources.

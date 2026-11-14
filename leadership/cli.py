@@ -79,7 +79,7 @@ def _chat(cfg, args) -> int:
     from pathlib import Path
 
     from .agent import Agent
-    from .citations import add_missing_sources
+    from .citations import add_count_note, add_missing_sources, unread_sources
     domain = args.domain.lower().removeprefix("https://").removeprefix("http://").removeprefix("www.").strip("/")
     try:
         agent = Agent(cfg, domain, Path(args.db) if args.db else None)
@@ -91,10 +91,12 @@ def _chat(cfg, args) -> int:
         return 1
     note = "" if agent.status == "complete" else f"  (data collection status: {agent.status}; answers are partial)"
     print(f"{agent.company} ({domain}){note}. Answers come only from the collected data.")
+    unread = unread_sources(agent.source_db, domain)
 
     def answer(question: str) -> None:
         result = agent.ask(question)
-        print("\n" + add_missing_sources(result.text, result.steps))
+        text = add_missing_sources(result.text, result.steps)
+        print("\n" + add_count_note(text, result.steps, domain, unread, agent.status))
         if args.show_sql:
             for step in result.steps:
                 outcome = f"error: {step.error}" if step.error else f"{len(step.rows)} rows"
@@ -104,13 +106,13 @@ def _chat(cfg, args) -> int:
     if args.question:
         answer(args.question)
         return 0
-    print("Type a question, or an empty line to quit.")
+    print("Type a question, or exit, quit or an empty line to stop.")
     while True:
         try:
             question = input("\n> ").strip()
         except (EOFError, KeyboardInterrupt):
             return 0
-        if not question:
+        if question.rstrip(".!").casefold() in ("", "exit", "quit", "q", "bye"):
             return 0
         answer(question)
 

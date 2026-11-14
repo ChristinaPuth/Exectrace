@@ -190,7 +190,7 @@ What the measurement shows, and its limits:
 uv run leadership chat robinhood.com
 ```
 
-Type a question, or an empty line to quit. Add `-q "Who is the CEO?"` to ask
+Type a question, or `exit` (or an empty line) to stop. Add `-q "Who is the CEO?"` to ask
 one question, and `--show-sql` to see the SQL that ran. The chat reads
 `fixtures/leadership.db` and needs one LLM key.
 
