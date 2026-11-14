@@ -37,8 +37,8 @@ BAD = ('- **Jason Warnick** – former Chief Financial Officer. He left the CF
        'date was given; the role was reported as ended on **2026‑04‑22** (end_reported_on). This information '
        'comes from an SEC filing dated 2022‑02‑10: ' + FEB_8K + '.')
 
-GOOD = (f"- Jason Warnick – former Chief Financial Officer. He ceased to serve as CFO effective 2026-02-06 and has "
-        f"left the company, according to an SEC filing, 2026-04-22: {PROXY}.\n\n"
+GOOD = (f"- Jason Warnick – former Chief Financial Officer. He ceased to serve as CFO effective 2026-02-06 and "
+        f"moved to an advisory role, according to an SEC filing, 2026-04-22: {PROXY}.\n\n"
         f"- Shiv Verma – former principal accounting officer. He ceased to serve in that role on 2026-06-25, "
         f"according to an SEC filing, 2026-06-26: {JUNE_8K}. He remains at Robinhood as Chief Financial "
         f"Officer, according to the same SEC filing, 2026-06-26: {JUNE_8K}.\n\n"
@@ -201,3 +201,42 @@ def test_the_evaluation_grader_runs_the_source_check(hood):
     good = Answer(case["question"], f"No. Jeffrey Pinner is no longer CTO; it ended on 2026-05-07, according to a "
                                     f"sec_filing, 2026-05-08: {MAY_8K}.", [step], ok=True)
     assert grade(case, good, hood, COLLECTED).passed
+
+
+WARNICK_SQL = ("SELECT person, title, status, employment_status, ended_on, ended_by_source_url, ended_by_source_date, "
+               "source_url, source_date FROM leadership WHERE person = 'Jason Warnick'")
+
+
+def _warnick(hood):
+    r = sqlguard.run(hood, WARNICK_SQL)
+    return Step(sql=WARNICK_SQL, columns=r.columns, rows=[list(x) for x in r.rows])
+
+
+def test_a_planned_end_date_is_not_stated_as_a_departure(hood):
+    """rh09. "will remain employed ... until September 1, 2026" (8-K filed 2026-02-10) is a planned end; no later
+    source confirms Warnick left, so the answer must not say he has."""
+    rows = _warnick(hood)
+    fortune = "https://fortune.com/2025/12/29/who-is-robinhoods-cfo-shiv-verma-transition"
+    cached = ("Jason Warnick is no longer at Robinhood. The collected data shows him as former, with his role ending "
+              f"on 2026-09-01, according to news, 2025-12-29: {fortune}")
+    found = problems(cached, [rows], hood, COLLECTED)
+    assert any("2026-09-01 is an end date announced in advance" in p for p in found)
+    assert any("says Jason Warnick left the company, but the only source" in p for p in found)
+    stated = f"Jason Warnick left the company on 2026-09-01, according to an SEC filing, 2026-02-10: {FEB_8K}."
+    assert any("announced in advance" in p for p in problems(stated, [rows], hood, COLLECTED))
+    planned = (f"Jason Warnick's employment was planned to end on 2026-09-01, according to an SEC filing, "
+               f"2026-02-10: {FEB_8K}. No later source confirms that he left.")
+    assert problems(planned, [rows], hood, COLLECTED) == []
+
+
+def test_an_end_reported_after_it_happened_is_not_a_planned_end(hood):
+    # Warnick's CFO role ended 2026-02-06, shown by the April proxy (2026-04-22): stated as a fact, it passes.
+    text = f"Jason Warnick ceased to serve as CFO effective 2026-02-06, according to an SEC filing, 2026-04-22: {PROXY}."
+    assert problems(text, [_warnick(hood)], hood, COLLECTED) == []
+
+
+def test_a_departure_sentence_must_itself_say_it_was_planned(hood):
+    # The real correction of rh09 opened with an unqualified departure and qualified it only later.
+    text = ("Jason Warnick is no longer at Robinhood in the collected data. His advisory role was planned to end on "
+            f"2026-09-01, according to an SEC filing, 2026-02-10: {FEB_8K}; no later source confirms it.")
+    assert any("left the company" in p for p in problems(text, [_warnick(hood)], hood, COLLECTED))
