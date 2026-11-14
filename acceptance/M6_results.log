@@ -1,0 +1,67 @@
+Acceptance run for M6
+Date:    2026-11-13T20:40:31-08:00
+Branch:  m6-ui
+Commit:  bfd017f
+Python:  3.12.10
+
+==============================================================================
+[1] M6 tests: companies listed from the fixtures; no key gives instructions and no chat box
+command:  uv run pytest -v tests/test_app.py
+exit code 0 (expected 0)  ->  PASS    5.9s
+------------------------------------------------------------------------------
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0 -- C:\dev\ExecTrace\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\dev\ExecTrace
+configfile: pyproject.toml
+plugins: anyio-4.16.0
+collecting ... collected 3 items / 1 deselected / 2 selected
+
+tests/test_app.py::test_the_page_lists_the_companies_in_the_fixtures PASSED [ 50%]
+tests/test_app.py::test_without_a_key_the_page_says_what_to_do_and_asks_nothing PASSED [100%]
+
+======================= 2 passed, 1 deselected in 4.28s =======================
+
+==============================================================================
+[2] Whole fast suite (no network, no keys)
+command:  uv run pytest -q
+exit code 0 (expected 0)  ->  PASS    26.3s
+------------------------------------------------------------------------------
+........................................................................ [ 20%]
+........................................................................ [ 40%]
+........................................................................ [ 60%]
+........................................................................ [ 80%]
+........................................................................ [100%]
+360 passed, 16 deselected in 24.45s
+
+==============================================================================
+[3] Real model: a question shows the answer, its sources, and a panel with the SQL and rows
+command:  uv run pytest -v -m llm tests/test_app.py
+exit code 0 (expected 0)  ->  PASS    5.3s
+------------------------------------------------------------------------------
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0 -- C:\dev\ExecTrace\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\dev\ExecTrace
+configfile: pyproject.toml
+plugins: anyio-4.16.0
+collecting ... collected 3 items / 2 deselected / 1 selected
+
+tests/test_app.py::test_a_question_shows_the_answer_with_its_sql_and_rows PASSED [100%]
+
+======================= 1 passed, 2 deselected in 3.61s =======================
+
+==============================================================================
+[4] No key or contact address in any file that could be committed, or in the run logs
+command:  uv run python tools/scan_secrets.py
+exit code 0 (expected 0)  ->  PASS    0.8s
+------------------------------------------------------------------------------
+252 files scanned (93 that git would track, 159 run logs), 4 values from .env checked: 0 problems
+
+==============================================================================
+SUMMARY
+  [1] PASS  M6 tests: companies listed from the fixtures; no key gives instructions and no chat box
+  [2] PASS  Whole fast suite (no network, no keys)
+  [3] PASS  Real model: a question shows the answer, its sources, and a panel with the SQL and rows
+  [4] PASS  No key or contact address in any file that could be committed, or in the run logs
+  4 of 4 steps as expected

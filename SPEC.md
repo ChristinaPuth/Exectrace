@@ -11,7 +11,8 @@ Remaining open decisions are in [section 9](#9-open-decisions).
 | M3 Extraction + normalization | Done; implemented and manually accepted 2026-11-13, with conditions carried into M4 as R160, R161, R164, R165 (`acceptance/M3.md` section 10); merged to `main` |
 | M4 Verify, enrich, export, gold set | Done; accepted 2026-11-13 with the C-level recall target not met for Robinhood (`acceptance/M4.md`); merged to `main` |
 | M5 Chat agent (CLI) | Built on branch `m5-chat`; automated acceptance passed; manual tests pending |
-| M6 – M7 | Not started |
+| M6 Streamlit UI | Built on branch `m6-ui` (on top of `m5-chat`); automated acceptance passed; manual tests pending |
+| M7 | Not started |
 
 Evidence for each finished milestone is in `acceptance/`.
 
@@ -160,7 +161,7 @@ leadership/
   sqlguard.py       # built: read-only snapshot of the two views, authorizer, limits
   citations.py      # built: sources appended from queried rows
   chateval.py       # built: `leadership eval --chat`
-app.py              # M6: Streamlit UI
+app.py              # built: Streamlit UI (`uv run python -m streamlit run app.py`)
 config.toml         # models, limits, agent limits, eval thresholds
 tools/              # acceptance.py, show_cases.py, mutation_check.py, show_schema.py,
                     # show_run.py, scan_secrets.py, manual_checks_m2.py,
@@ -869,6 +870,10 @@ shows the chosen model writes poor SQL, one fixed tool is added then.
 
 - Company selector, chat history, and an expandable panel per answer showing
   the SQL that ran and the source rows. Nothing else.
+- As built (M6): run with `uv run python -m streamlit run app.py`. The rows
+  are shown as Markdown tables, not `st.dataframe`, because `st.dataframe`
+  needs pyarrow's compiled library, which some machines' application control
+  policy blocks. History is kept per company for the browser session.
 
 ---
 
@@ -1097,7 +1102,7 @@ The next milestone starts only after the author has run the manual tests.
 | M6 | Streamlit UI | Runs from committed fixtures with one LLM key; shows answer, SQL, and sources | 0.5 h |
 | M7 | README + deliverables | Fresh-clone test passes; README covers design decisions, measured results, and limits; key scan clean; fixtures, eval report, citation review, and session export committed | 0.75 h |
 
-Progress: M0 to M4 accepted; M5 built and awaiting manual acceptance. M4's C-level recall target is not met for Robinhood (45%), a documented access limit. M0 also
+Progress: M0 to M4 accepted; M5 and M6 built and awaiting manual acceptance. M4's C-level recall target is not met for Robinhood (45%), a documented access limit. M0 also
 delivered the Groq-first provider chain with pacing and fallback, which the
 original plan had placed in M3.
 

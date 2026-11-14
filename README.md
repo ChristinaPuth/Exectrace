@@ -9,7 +9,7 @@ rules) and **M2** (finding and fetching sources) are done and accepted.
 **M3** (extracting people and roles from the sources) is done and accepted.
 **M4** (verification, location and biography, export, measurement) is done and accepted;
 its recall limits are listed below.
-**M5** (the chat agent, command line) is built. The web UI is not built yet. See [SPEC.md](SPEC.md) for
+**M5** (the chat agent, command line) and **M6** (the web UI) are built and awaiting acceptance. See [SPEC.md](SPEC.md) for
 the design, `SPEC_checklist.xlsx` for the requirement checklist, and
 `acceptance/` for each milestone's test results.
 
@@ -206,6 +206,20 @@ uv run leadership eval --chat
 
 measures it on 31 questions with hand-written reference queries, plus
 hallucination, injection and incomplete-data cases.
+
+## Ask questions (web page)
+
+```bash
+uv run python -m streamlit run app.py
+```
+
+opens a page at http://localhost:8501. Choose a company in the sidebar and
+ask. Under each answer, "SQL and source rows" shows the queries that ran and
+the rows they returned. The page reads `fixtures/leadership.db` and needs one
+LLM key and no collection step. (Use `python -m streamlit` rather than the
+`streamlit` command: some security policies block the `streamlit.exe`
+launcher. For the same reason the rows are shown as plain tables, which do
+not need pyarrow.)
 
 ## Tests
 
