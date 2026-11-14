@@ -13,7 +13,7 @@ import sqlite3
 
 import streamlit as st
 
-from leadership.agent import Agent
+from leadership.agent import Agent, collected_on
 from leadership.citations import add_missing_sources
 from leadership.config import ROOT, ConfigError, configured_providers, load_config, load_env
 
@@ -73,6 +73,7 @@ def main() -> None:
     st.set_page_config(page_title="Company leadership", page_icon=":material/groups:")
     load_env()
     st.title("Company leadership")
+    st.caption("Executive team research from public sources, with the source behind every answer.")
     if not FIXTURE.exists():
         st.error("No data found at fixtures/leadership.db. Run `uv run leadership export` first.")
         return
@@ -95,20 +96,24 @@ def main() -> None:
     except ConfigError as e:
         st.error(f"Configuration problem: {e}")
         return
+    with st.container(border=True):
+        st.markdown(f"**{agent.company}** &nbsp;·&nbsp; {domain} &nbsp;·&nbsp; "
+                    f"Data collected {collected_on(FIXTURE, domain) or 'on an unknown date'} &nbsp;·&nbsp; "
+                    f"Collection {agent.status.replace('_', ' ')}")
     if agent.status != "complete":
         st.warning(f"The data collection for this company did not finish normally (status {agent.status}). "
                    "Answers are based on partial data.")
     history: list[dict] = st.session_state.setdefault(f"history:{domain}", [])
     for entry in history:
-        with st.chat_message("user"):
+        with st.chat_message("user", avatar=":material/person:"):
             st.markdown(entry["question"])
-        with st.chat_message("assistant"):
+        with st.chat_message("assistant", avatar=":material/business_center:"):
             show_answer(entry)
     question = st.chat_input(f"Ask about {agent.company}'s leadership")
     if question:
-        with st.chat_message("user"):
+        with st.chat_message("user", avatar=":material/person:"):
             st.markdown(question)
-        with st.chat_message("assistant"):
+        with st.chat_message("assistant", avatar=":material/business_center:"):
             with st.spinner("Looking it up in the collected data..."):
                 result = agent.ask(question)
             entry = {"question": question, "text": add_missing_sources(result.text, result.steps),
