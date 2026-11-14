@@ -158,7 +158,10 @@ SELECT
     substr(cc.evidence, 1, 300) AS conflicting_evidence,
     np.full_name           AS successor,
     nc.effective_date      AS successor_starts_on,
-    ns.url                 AS successor_source_url
+    ns.url                 AS successor_source_url,
+    es.url                 AS ended_by_source_url,
+    es.published_at        AS ended_by_source_date,
+    substr(ec.evidence, 1, 300) AS ended_by_evidence
 FROM roles r
 JOIN people p     ON p.id = r.person_id
 JOIN companies c  ON c.id = r.company_id
@@ -168,7 +171,9 @@ LEFT JOIN claims cc  ON cc.id = r.conflicting_claim_id
 LEFT JOIN sources cs ON cs.id = cc.source_id
 LEFT JOIN claims nc  ON nc.id = r.successor_claim_id
 LEFT JOIN people np  ON np.id = nc.person_id
-LEFT JOIN sources ns ON ns.id = nc.source_id;
+LEFT JOIN sources ns ON ns.id = nc.source_id
+LEFT JOIN claims ec  ON ec.id = r.ended_by_claim_id
+LEFT JOIN sources es ON es.id = ec.source_id;
 
 CREATE VIEW IF NOT EXISTS current_leadership AS
 SELECT * FROM leadership

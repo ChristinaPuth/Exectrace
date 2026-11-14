@@ -9,7 +9,7 @@ rules) and **M2** (finding and fetching sources) are done and accepted.
 **M3** (extracting people and roles from the sources) is done and accepted.
 **M4** (verification, location and biography, export, measurement) is done and accepted;
 its recall limits are listed below.
-The chat is not built yet. See [SPEC.md](SPEC.md) for
+**M5** (the chat agent, command line) is built. The web UI is not built yet. See [SPEC.md](SPEC.md) for
 the design, `SPEC_checklist.xlsx` for the requirement checklist, and
 `acceptance/` for each milestone's test results.
 
@@ -183,6 +183,29 @@ What the measurement shows, and its limits:
   not read.
 - **One automatic search pass per company.** After it, `collect` makes no
   automatic search; add `--refresh` to allow another pass.
+
+## Ask questions (command line)
+
+```bash
+uv run leadership chat robinhood.com
+```
+
+Type a question, or an empty line to quit. Add `-q "Who is the CEO?"` to ask
+one question, and `--show-sql` to see the SQL that ran. The chat reads
+`fixtures/leadership.db` and needs one LLM key.
+
+The agent answers only from the collected data, through one read-only SQL
+query tool, and cites a source URL for every person it names. It says "not
+found" when the data does not have the answer, marks unconfirmed roles as
+such, and says when a company's data collection was incomplete. Answers are
+cached, so asking again costs nothing.
+
+```bash
+uv run leadership eval --chat
+```
+
+measures it on 31 questions with hand-written reference queries, plus
+hallucination, injection and incomplete-data cases.
 
 ## Tests
 

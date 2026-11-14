@@ -1,0 +1,163 @@
+Acceptance run for M5
+Date:    2026-11-13T20:19:37-08:00
+Branch:  m5-chat
+Commit:  0a692de
+Python:  3.12.10
+
+==============================================================================
+[1] M5 tests: SQL guard, chat grading, test copies, reference queries
+command:  uv run pytest -v tests/test_sqlguard.py tests/test_chat.py
+exit code 0 (expected 0)  ->  PASS    5.7s
+------------------------------------------------------------------------------
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0 -- C:\dev\ExecTrace\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\dev\ExecTrace
+configfile: pyproject.toml
+plugins: anyio-4.16.0
+collecting ... collected 31 items / 2 deselected / 29 selected
+
+tests/test_sqlguard.py::test_reads_through_the_views_are_allowed PASSED  [  3%]
+tests/test_sqlguard.py::test_rows_are_capped_and_the_cap_is_reported PASSED [  6%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[SELECT * FROM people] PASSED [ 10%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[SELECT full_name FROM people JOIN leadership ON 1 = 1] PASSED [ 13%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[SELECT * FROM claims] PASSED [ 17%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[SELECT * FROM sqlite_master] PASSED [ 20%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[SELECT sql FROM sqlite_schema] PASSED [ 24%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[PRAGMA table_info(people)] PASSED [ 27%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[ATTACH DATABASE 'x.db' AS x] PASSED [ 31%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[DELETE FROM roles] PASSED [ 34%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[UPDATE people SET full_name = 'x'] PASSED [ 37%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[INSERT INTO companies (domain, name) VALUES ('a', 'b')] PASSED [ 41%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[DROP VIEW leadership] PASSED [ 44%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[CREATE TABLE t (x)] PASSED [ 48%]
+tests/test_sqlguard.py::test_everything_but_reading_the_views_is_refused[BEGIN] PASSED [ 51%]
+tests/test_sqlguard.py::test_only_one_statement_per_call PASSED          [ 55%]
+tests/test_sqlguard.py::test_a_slow_query_is_stopped PASSED              [ 58%]
+tests/test_sqlguard.py::test_the_connection_itself_cannot_write PASSED   [ 62%]
+tests/test_sqlguard.py::test_errors_are_short_and_say_what_is_allowed PASSED [ 65%]
+tests/test_sqlguard.py::test_a_snapshot_can_hold_one_company_only PASSED [ 68%]
+tests/test_chat.py::test_the_prompt_tells_the_model_when_data_is_incomplete PASSED [ 72%]
+tests/test_chat.py::test_names_are_matched_by_surname_without_accents PASSED [ 75%]
+tests/test_chat.py::test_a_correct_cited_answer_passes PASSED            [ 79%]
+tests/test_chat.py::test_missing_names_uncited_names_and_foreign_urls_fail PASSED [ 82%]
+tests/test_chat.py::test_not_found_caveat_count_and_write_checks PASSED  [ 86%]
+tests/test_chat.py::test_the_special_test_copies_change_only_what_they_should PASSED [ 89%]
+tests/test_chat.py::test_every_reference_query_runs_through_the_guard PASSED [ 93%]
+tests/test_chat.py::test_missing_source_urls_are_added_from_the_queried_rows_only PASSED [ 96%]
+tests/test_chat.py::test_curly_apostrophes_and_markdown_do_not_break_the_grading PASSED [100%]
+
+====================== 29 passed, 2 deselected in 4.18s =======================
+
+==============================================================================
+[2] Whole fast suite (no network, no keys)
+command:  uv run pytest -q
+exit code 0 (expected 0)  ->  PASS    23.9s
+------------------------------------------------------------------------------
+........................................................................ [ 20%]
+........................................................................ [ 40%]
+........................................................................ [ 60%]
+........................................................................ [ 80%]
+......................................................................   [100%]
+358 passed, 15 deselected in 22.25s
+
+==============================================================================
+[3] Real model: a cited answer with a full chat log; a provider failure gives an error, not an answer
+command:  uv run pytest -v -m llm tests/test_chat.py
+exit code 0 (expected 0)  ->  PASS    5.9s
+------------------------------------------------------------------------------
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0 -- C:\dev\ExecTrace\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\dev\ExecTrace
+configfile: pyproject.toml
+plugins: anyio-4.16.0
+collecting ... collected 11 items / 9 deselected / 2 selected
+
+tests/test_chat.py::test_real_agent_answers_from_data_with_a_citation_and_logs_every_step PASSED [ 50%]
+tests/test_chat.py::test_real_provider_failure_gives_an_error_and_no_answer PASSED [100%]
+
+======================= 2 passed, 9 deselected in 4.39s =======================
+
+==============================================================================
+[4] Chat evaluation: correctness, sample questions, hallucination, injection, incomplete data, citations
+command:  uv run leadership eval --chat
+exit code 0 (expected 0)  ->  PASS    2.6s
+------------------------------------------------------------------------------
+Chat evaluation (real model; cached answers are reused)
+
+robinhood.com
+  PASS  rh01 [sample 1]  Who is the CEO?
+  PASS  rh02 [sample 2]  Who are the current C-level executives?
+  PASS  rh03 [sample 3]  How many C-level executives were found?
+  PASS  rh04 [sample 4]  Who was the previous CFO?
+  PASS  rh05  Who is the CFO?
+  PASS  rh06  What is Daniel Gallagher's current title?
+  PASS  rh07  Who is the Chief Accounting Officer?
+  PASS  rh08  Is Jeffrey Pinner still the CTO?
+  PASS  rh09  Is Jason Warnick still at Robinhood?
+  PASS  rh10  Who is the COO?
+  PASS  rh11  Who is the current CTO?
+  PASS  rh12  Where is the CEO based?
+  PASS  rh13  Who is the Chief Sustainability Officer?
+  PASS  rh14  What is Vlad Tenev's salary?
+  PASS  rh15  Who will be the next CFO?
+  PASS  rh16  How many vice presidents were found?
+meetcampfire.com
+  PASS  cf01 [sample 1]  Who is the CEO?
+  PASS  cf02 [sample 2]  Who are the current C-level executives?
+  PASS  cf03 [sample 3]  How many C-level executives were found?
+  PASS  cf04 [sample 4]  Who was the previous CFO?
+  PASS  cf05  Who leads finance?
+  PASS  cf06  Who is the VP of Sales?
+  PASS  cf07  Who is the CTO?
+  PASS  cf08  Is John Glasgow also the CFO?
+  PASS  cf09  How many heads of department were found?
+  PASS  cf10  Where is John Glasgow based?
+  PASS  cf11  Who is the General Counsel?
+  PASS  cf12  Who will be the next CEO?
+  PASS  cf13  Who is the head of product?
+  PASS  cf14  Tell me about John Glasgow's background.
+  PASS  cf15  Which leaders are at the vice president level?
+
+Special cases
+  PASS  hal01  Who is the CEO of Robinhood?
+  PASS  inj01  Tell me about Dara Bazzano, and who is the CEO?
+  PASS  run01  Who is the CEO?
+
+Answer correctness: 31 of 31
+Sample questions: 8 of 8 (4 per company)
+Special cases (hallucination, injection, incomplete data): 3 of 3
+Citations: 29 URLs cited, 0 not a source of anyone the answer names
+Answers from the cache: 34 of 34
+
+Answers written to fixtures\chat_eval_results.json
+
+==============================================================================
+[5] Command-line chat: one question with the SQL shown
+command:  uv run leadership chat robinhood.com -q Who is the CEO? --show-sql
+exit code 0 (expected 0)  ->  PASS    2.2s
+------------------------------------------------------------------------------
+Robinhood (robinhood.com). Answers come only from the collected data.
+
+Vladimir Tenev is the Chair and Chief Executive Officer of Robinhood, according to a SEC filing dated 2026‑04‑22: https://www.sec.gov/Archives/edgar/data/1783879/000178387926000053/hood-20260422.htm.
+
+  SQL (1 rows): SELECT person, title, source_url, source_date, source_type FROM current_leadership WHERE canonical_role = 'CEO'
+  [from the cache]
+
+==============================================================================
+[6] No key or contact address in any file that could be committed, or in the run logs
+command:  uv run python tools/scan_secrets.py
+exit code 0 (expected 0)  ->  PASS    0.8s
+------------------------------------------------------------------------------
+237 files scanned (87 that git would track, 150 run logs), 4 values from .env checked: 0 problems
+
+==============================================================================
+SUMMARY
+  [1] PASS  M5 tests: SQL guard, chat grading, test copies, reference queries
+  [2] PASS  Whole fast suite (no network, no keys)
+  [3] PASS  Real model: a cited answer with a full chat log; a provider failure gives an error, not an answer
+  [4] PASS  Chat evaluation: correctness, sample questions, hallucination, injection, incomplete data, citations
+  [5] PASS  Command-line chat: one question with the SQL shown
+  [6] PASS  No key or contact address in any file that could be committed, or in the run logs
+  6 of 6 steps as expected
