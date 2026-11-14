@@ -14,7 +14,8 @@ import sqlite3
 import streamlit as st
 
 from leadership.agent import Agent, collected_on
-from leadership.citations import add_missing_sources
+from leadership.citations import add_count_note, add_missing_sources, unread_sources
+from leadership.grounding import grounded_ask
 from leadership.config import ROOT, ConfigError, configured_providers, load_config, load_env
 
 FIXTURE = ROOT / "fixtures" / "leadership.db"
@@ -115,8 +116,10 @@ def main() -> None:
             st.markdown(question)
         with st.chat_message("assistant", avatar=":material/business_center:"):
             with st.spinner("Looking it up in the collected data..."):
-                result = agent.ask(question)
-            entry = {"question": question, "text": add_missing_sources(result.text, result.steps),
+                result = grounded_ask(agent, question)
+            text = add_missing_sources(result.text, result.steps)
+            text = add_count_note(text, result.steps, domain, unread_sources(FIXTURE, domain), agent.status)
+            entry = {"question": question, "text": text,
                      "ok": result.ok, "steps": result.steps, "cached": result.cached, "model": result.model}
             show_answer(entry)
         history.append(entry)

@@ -50,3 +50,16 @@ def test_a_question_shows_the_answer_with_its_sql_and_rows():
     # A second company keeps its own history.
     at.sidebar.selectbox[0].select("meetcampfire.com").run()
     assert not any("Tenev" in m.value for m in at.markdown)
+
+
+@pytest.mark.llm
+def test_a_count_on_the_page_says_what_it_can_miss():
+    """M5 review fix 10, on the page: "0 found" is not shown as "there are none"."""
+    from leadership.config import load_env
+    load_env()
+    at = AppTest.from_file(APP, default_timeout=180).run()
+    at.sidebar.selectbox[0].select("robinhood.com").run()
+    at.chat_input[0].set_value("How many vice presidents were found?").run()
+    assert not at.exception
+    answer = " ".join(m.value for m in at.markdown)
+    assert "could not be read" in answer and "None found does not mean there are none" in answer
