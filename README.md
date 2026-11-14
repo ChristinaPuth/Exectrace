@@ -9,7 +9,7 @@ rules) and **M2** (finding and fetching sources) are done and accepted.
 **M3** (extracting people and roles from the sources) is done and accepted.
 **M4** (verification, location and biography, export, measurement) is done and accepted;
 its recall limits are listed below.
-**M5** (the chat agent, command line) and **M6** (the web UI) are built and awaiting acceptance. See [SPEC.md](SPEC.md) for
+**M5** (the chat agent, command line) and **M6** (the web UI) are done and accepted. See [SPEC.md](SPEC.md) for
 the design, `SPEC_checklist.xlsx` for the requirement checklist, and
 `acceptance/` for each milestone's test results.
 
