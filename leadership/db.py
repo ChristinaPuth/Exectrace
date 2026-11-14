@@ -89,6 +89,18 @@ CREATE TABLE IF NOT EXISTS claims (
     CHECK (claim_type <> 'departure' OR departure_scope IS NOT NULL)
 );
 
+CREATE TABLE IF NOT EXISTS checks (               -- targeted checks made after the first resolution
+    id           INTEGER PRIMARY KEY,
+    company_id   INTEGER NOT NULL REFERENCES companies(id),
+    person_id    INTEGER NOT NULL,              -- no foreign key: people are rebuilt on re-extraction
+    kind         TEXT NOT NULL CHECK (kind IN ('verify','date','location','bio')),
+    role_key     TEXT,
+    queries      TEXT NOT NULL DEFAULT '[]',    -- JSON list of the search queries used
+    outcome      TEXT NOT NULL,
+    detail       TEXT,
+    checked_at   TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS roles (                -- DERIVED, rebuilt by rebuild_roles
     id                    INTEGER PRIMARY KEY,
     company_id            INTEGER NOT NULL REFERENCES companies(id),
@@ -133,6 +145,8 @@ SELECT
     (SELECT ls.url FROM claims l JOIN sources ls ON ls.id = l.source_id
       WHERE l.person_id = p.id AND l.claim_type = 'location'
       ORDER BY ls.tier, l.as_of_date DESC, l.id LIMIT 1)        AS location_source_url,
+    (SELECT k.outcome FROM checks k WHERE k.person_id = p.id AND k.kind = 'location'
+      ORDER BY k.id DESC LIMIT 1)                               AS location_status,
     (SELECT l.value FROM claims l JOIN sources ls ON ls.id = l.source_id
       WHERE l.person_id = p.id AND l.claim_type = 'bio'
       ORDER BY ls.tier, l.as_of_date DESC, l.id LIMIT 1)        AS bio,
@@ -182,7 +196,9 @@ def connect(path: str | Path) -> sqlite3.Connection:
 
 _ADDED_COLUMNS = [("sources", "extraction_version", "TEXT"), ("sources", "page_kind", "TEXT"),
                   ("people", "possible_duplicate_of", "INTEGER REFERENCES people(id)"),
-                  ("claims", "person_as_written", "TEXT"), ("roles", "end_reported_on", "TEXT")]
+                  ("claims", "person_as_written", "TEXT"), ("roles", "end_reported_on", "TEXT"),
+                  ("companies", "verified_pass_at", "TEXT"),   # when the one automatic search pass ended
+                  ("companies", "role_search_at", "TEXT")]     # when the own-domain role search was made
 
 
 def find_person(conn: sqlite3.Connection, company_id: int, full_name: str,
@@ -277,6 +293,8 @@ def drop_people_without_claims(conn: sqlite3.Connection, company_id: int) -> Non
                      "possible_duplicate_of NOT IN (SELECT DISTINCT person_id FROM claims)", (company_id,))
         conn.execute("DELETE FROM people WHERE company_id = ? AND id NOT IN "
                      "(SELECT DISTINCT person_id FROM claims)", (company_id,))
+        conn.execute("DELETE FROM checks WHERE company_id = ? AND person_id NOT IN "
+                     "(SELECT id FROM people)", (company_id,))
 
 
 def load_claims(conn: sqlite3.Connection, company_id: int) -> list[Claim]:
@@ -330,4 +348,12 @@ def rebuild_roles(conn: sqlite3.Connection, company_id: int, today: date,
             "UPDATE people SET employment_status = ? WHERE id = ? AND company_id = ?",
             [(status, pid, company_id) for pid, status in result.employment.items()],
         )
+        # A role that had a targeted check carries the time of its last check.
+        for r in conn.execute("SELECT id, person_id, title, level, department, canonical_role FROM roles "
+                              "WHERE company_id = ?", (company_id,)).fetchall():
+            key = r["canonical_role"] or claim_key(r["title"], r["level"], r["department"], None)
+            last = conn.execute("SELECT max(checked_at) FROM checks WHERE person_id = ? AND kind = 'verify' "
+                                "AND role_key = ?", (r["person_id"], key)).fetchone()[0]
+            if last:
+                conn.execute("UPDATE roles SET last_verified_at = ? WHERE id = ?", (last, r["id"]))
     return len(result.roles)

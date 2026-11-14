@@ -87,3 +87,17 @@ def test_name_comparison():
     assert compare_names("john smith", "jane smith") == "different"           # same surname is not enough
     assert compare_names("vlad tenev", "vlad bhatt") == "different"
     assert compare_names("madonna", "madonna") == "same" and compare_names("madonna", "madonna x") == "different"
+
+
+def test_a_descriptive_phrase_with_chief_and_officer_is_not_a_chief_officer_title():
+    # Found in M4: a news article called the CFO "finance chief and principal financial officer".
+    assert canonical_role("finance chief and principal financial officer") is None
+    assert canonical_role("Chief Legal, Compliance and Corporate Affairs Officer") is not None
+
+
+def test_chief_executive_without_officer_is_the_ceo():
+    # Found on the held-out company (Wise): "the co-founder and chief executive of Wise".
+    assert canonical_role("co-founder and chief executive", "Wise") == "CEO"
+    assert level("co-founder and chief executive") == "c_level"
+    assert canonical_role("Chief Executive Officer", "Wise") == "CEO"
+    assert canonical_role("chief executive of Wise Payments", "Wise") is None      # a unit's chief executive

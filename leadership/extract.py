@@ -97,6 +97,7 @@ USER = """Target company: {company}
 Website: {domains}
 What it does: {description}
 Document type: {source_type}. Document date: {doc_date}.
+Published by: {publisher}.
 
 Extract what the document between the markers says about the leadership of the TARGET company:
 C-level officers, presidents, vice presidents, heads of departments, founders and directors.
@@ -105,10 +106,15 @@ Rules
 1. Only people who hold or held the title AT THE TARGET COMPANY. Skip customers, guests,
    interviewers, investors, authors' other jobs, and jobs at earlier employers.
    Include a leader of the target company who appears only as the speaker of a quotation,
-   as the author, or in a signature line, when the title is given there.
+   as the host, as the author, or in a signature line, when the title is given there. For
+   example each of these names a leader and must give a claim:
+     "...", said Jane Doe, CEO and Co-Founder of Acme.
+     - Jane Doe, Founder & CEO, Acme
+     About the host: Jane Doe is the CEO of Acme.
 2. "organization": the organisation where the person holds this title, named as the document
-   names it. If the document is about a different organisation that only shares the target's
-   name, set "about_target_company" to false and return no claims.
+   names it. If a third-party document is about a different organisation that only shares
+   the target's name, set "about_target_company" to false and return no claims. A document
+   published by the target company itself is always about the target company.
 3. "claim_type":
    - "role": the person holds the title.
    - "appointment": the person is taking, or took, the title (joins, named, promoted, appointed).
@@ -127,7 +133,8 @@ Rules
 7. "effective_pending": true only when the document describes the change as still in the
    future and gives no date ("will become CFO", "plans to step down").
 8. "evidence": one sentence or phrase copied from the document exactly, character for
-   character, that states this fact. At most 300 characters.
+   character, that states this fact. At most 300 characters. Change no word of it, and
+   never rewrite a name, including the company's name.
 9. "person": the full name (given name and surname) exactly as the document writes it. If a
    sentence says "Mr. Smith" or "she", use the full name the document gives elsewhere. If the
    document never gives the full name, skip the person.
@@ -167,6 +174,21 @@ def code_version() -> str:
 def processing_version(model: str) -> str:
     """What a stored document was produced with: prompt, schema, model, and checks."""
     return f"{extraction_version(model)}+{code_version()}"
+
+
+FIRST_PARTY = ("company_site", "press_release", "sec_filing")
+
+
+def user_prompt(target: Target, piece: str, source_type: str, doc_date: str | None) -> str:
+    """The request for one piece of a document. Also used by tests to record answers."""
+    own = source_type in FIRST_PARTY
+    return USER.format(
+        company=target.name, domains=", ".join(sorted(target.domains)),
+        description=target.description or "unknown", source_type=source_type,
+        doc_date=doc_date or "not stated", departments=", ".join(DEPARTMENTS),
+        publisher=("the target company itself (its own website or its own regulatory filing)"
+                   if own else "a third party"),
+        max_claims=MAX_CLAIMS_PER_CHUNK, text=piece)
 
 
 # ------------------------------------------------------------------ the target
@@ -219,6 +241,35 @@ def _plain_lower(text: str) -> str:
     return "".join(ch for ch in text if not unicodedata.combining(ch)).casefold()
 
 
+_LONG = {"CEO": "chief executive officer", "CFO": "chief financial officer", "CTO": "chief technology officer",
+         "COO": "chief operating officer", "CMO": "chief marketing officer", "CPO": "chief product officer",
+         "CLO": "chief legal officer", "CIO": "chief information officer", "CRO": "chief revenue officer",
+         "CISO": "chief information security officer", "CHRO": "chief human resources officer"}
+_SHORT = {"vp": "vice president", "svp": "senior vice president", "evp": "executive vice president",
+          "sr": "senior", "co-ceo": "co-chief executive officer", "co-ceos": "co-chief executive officers"}
+_FILLER = {"and", "of", "the", "our", "a", "an", "for", "at", "to", "in", "its", "company", "s", "as"}
+
+
+def _title_words(text: str) -> set[str]:
+    low = _plain_lower(text)
+    for short, long in _SHORT.items():
+        low = re.sub(rf"\b{re.escape(short)}\b", long, low)
+    for short, long in _LONG.items():
+        low = re.sub(rf"\b{short.lower()}s?\b", long, low)
+    return {w.rstrip("s") if len(w) > 4 else w for w in re.findall(r"[a-z0-9]+", low)} - _FILLER
+
+
+def states_title(title: str, quote: str) -> bool:
+    """The quote itself contains the title, allowing for the usual short forms.
+
+    "CEO" is stated by "Chief Executive Officer" and "VP of Sales" by "Vice
+    President, Sales". A quote that never mentions the office does not state
+    that someone holds it, however close a name stands to it.
+    """
+    wanted = _title_words(title)
+    return bool(wanted) and wanted <= _title_words(quote)
+
+
 def check_claim(claim: ExtractedClaim, text: str, target: Target) -> str | None:
     """Why a claim must be rejected, or None. No model is involved."""
     plain = squash(text)
@@ -238,7 +289,94 @@ def check_claim(claim: ExtractedClaim, text: str, target: Target) -> str | None:
         return "the evidence quote is not about this person (their name is not near it)"
     if organisation_relation(claim.organization, target) == "other":
         return f"the title is at another organisation ({claim.organization[:60]})"
+    if claim.claim_type in ("role", "appointment", "departure") and claim.raw_title:
+        low_quote = _plain_lower(quote)
+        by_pronoun = (surname not in low_quote and _PRONOUN.search(low_quote)
+                      and states_title(claim.raw_title, low_quote))
+        if not by_pronoun and not _title_beside_name(claim.raw_title, name, plain, quote):
+            return "the title is not tied to this person (not in the same sentence as their name)"
     return None
+
+
+BESIDE_CHARS = 150
+# A quote without the name may still be about the person: "She is our Chief Executive Officer."
+_PRONOUN = re.compile(r"\b(?:he|she|his|her|him|hers)\b")
+# The end of a sentence: a full stop that does not belong to "Inc.", "Dr." and the like.
+_SENTENCE_END = re.compile(r"(?<!\binc)(?<!\bdr)(?<!\bmr)(?<!\bms)(?<!\bmrs)(?<!\bcorp)(?<!\bco)(?<!\bltd)"
+                           r"(?<!\bjr)(?<!\bsr)(?<!\bst)(?<!\bno)[.!?]\s", re.I)
+
+
+def sentences(text: str) -> list[str]:
+    """Sentences of a text, each kept exactly as written. "Mr." and "Inc." do not end one."""
+    out: list[str] = []
+    for line in re.split(r"\n+", text):
+        start = 0
+        for m in _SENTENCE_END.finditer(line):
+            out.append(line[start:m.start() + 1])
+            start = m.end()
+        out.append(line[start:])
+    return [s for s in (x.strip() for x in out) if s]
+
+
+def _strip_accents(text: str) -> str:
+    text = unicodedata.normalize("NFKD", text)
+    return "".join(ch for ch in text if not unicodedata.combining(ch))
+
+
+def _title_beside_name(title: str, name: list[str], plain: str, quote: str) -> bool:
+    """The title stands in the same sentence as the person's name, within BESIDE_CHARS, close to the quote.
+
+    This accepts the speaker of a quotation ('"...", said Vlad Tenev, CEO and
+    Co-Founder') and a sentence that uses the given name alone ("Since joining
+    as Vice President of Operations, Gretchen's leadership ..."). It refuses a
+    name that merely appears near someone else's title, even when that title
+    is inside the quote: "... Jack Zhang, Co-Founder & CEO at AirWallex. ...
+    partner with Accel and John Locke". A given name followed by a different
+    surname ("John Glasgow" for John Locke) is another person.
+    """
+    kept, wanted = _strip_accents(plain), _strip_accents(quote).lower()
+    low = kept.lower()
+    given, surname = name[0], name[-1]
+    at = -1
+    while (at := low.find(wanted, at + 1)) != -1:
+        start, end = max(0, at - NEAR_CHARS), at + len(wanted) + NEAR_CHARS
+        spots = [start + m.start() for m in re.finditer(rf"\b{re.escape(surname)}\b", low[start:end])]
+        if len(given) >= 3:
+            for m in re.finditer(rf"\b{re.escape(given)}\b", low[start:end]):
+                a = start + m.end()
+                follows = re.match(r"(?:['\u2019]s)?\s+([A-Z][A-Za-z'\-]+)", kept[a:a + 40])
+                if not follows or follows.group(1).lower() == surname:
+                    spots.append(start + m.start())
+        for a in spots:
+            # Only within the name's own sentence: a signature that follows the
+            # sentence, or a title that ends the one before, belongs to someone else.
+            before = _SENTENCE_END.split(low[max(0, a - BESIDE_CHARS):a])[-1]
+            after = _SENTENCE_END.split(low[a:a + BESIDE_CHARS])[0]
+            if states_title(title, before + after):
+                return True
+    return False
+
+
+def relocate_evidence(claim: ExtractedClaim, text: str) -> str | None:
+    """A verbatim sentence of the document that names the person with the title, or None.
+
+    Used when the model's quote is not in the document (it wrote "Campground"
+    for "Campfire"). Only for a plain role: one sentence holding both the
+    full name and the title is direct support for "holds the title", but it
+    would not show that someone joined or left.
+    """
+    if claim.claim_type != "role" or not claim.raw_title:
+        return None
+    name = _plain_lower(squash(claim.person))
+    title = [w for w in re.findall(r"[a-z0-9]+", _plain_lower(claim.raw_title)) if w not in ("and", "of", "the")]
+    best: str | None = None
+    for sentence in sentences(text):
+        s = squash(sentence)
+        low = _plain_lower(s)
+        if 8 <= len(s) <= 300 and name in low and all(re.search(rf"\b{re.escape(w)}\b", low) for w in title):
+            if best is None or len(s) < len(best):
+                best = s
+    return best
 
 
 def date_is_stated(iso: str, text: str) -> bool:
@@ -292,17 +430,26 @@ _WEAK = re.compile(
     r"\bappoint|\bjoins?\b|\bnamed\b|\bpromot|\bsteps? down\b|\bresign|\bretire|\bsucceed", re.I)
 
 
+# Plan step 4: a short line that heads a section about the company's officers.
+_SECTION = re.compile(r"^(?:item\s+\d+[a-z]?\.?\s*)?(?:information about our\s+)?(?:named\s+)?"
+                      r"(?:executive officers|executive (?:leadership )?team|leadership team|senior management|"
+                      r"management team|our leadership|our executives)\b", re.I)
+
+
+def _heading(line: str) -> bool:
+    line = line.strip(" |*-:#\t")
+    line = re.split(r"\s*\|", line)[0].strip()      # a table row: its first cell only
+    # A heading is short and is not a sentence.
+    return (0 < len(line) <= 80 and len(line.split()) <= 8 and not line.endswith(".")
+            and bool(_SECTION.search(line)))
+
+
 def _signal(piece: str) -> int:
     return 3 * len(_STRONG.findall(piece)) + len(_WEAK.findall(piece))
 
 
-def chunks(text: str, max_chunks: int, size: int = CHUNK_CHARS) -> list[str]:
-    """Up to max_chunks pieces of the document, the ones most about leadership.
-
-    Short documents are sent whole. Long ones (an annual report) are cut at
-    paragraph ends and the pieces with the most leadership wording are kept,
-    in document order.
-    """
+def pieces_of(text: str, size: int = CHUNK_CHARS) -> list[str]:
+    """The document cut at paragraph ends into pieces of at most `size` characters."""
     paragraphs = [p.strip() for p in re.split(r"\n\s*\n|\n", text) if p.strip()]
     pieces: list[str] = []
     current = ""
@@ -318,10 +465,34 @@ def chunks(text: str, max_chunks: int, size: int = CHUNK_CHARS) -> list[str]:
             current = f"{current}\n{p}" if current else p
     if current:
         pieces.append(current)
+    return pieces
+
+
+def chunks(text: str, max_chunks: int, size: int = CHUNK_CHARS) -> list[str]:
+    """Up to max_chunks pieces of the document, the ones most about leadership.
+
+    Short documents are sent whole. Long ones (an annual report) are cut at
+    paragraph ends and the pieces with the most leadership wording are kept,
+    in document order.
+    """
+    pieces = pieces_of(text, size)
     if len(pieces) <= max_chunks:
         return pieces
     ranked = sorted(range(len(pieces)), key=lambda i: (-_signal(pieces[i]), i))
-    return [pieces[i] for i in sorted(ranked[:max_chunks])]
+    chosen = ranked[:max_chunks]
+    # A section headed "Executive Officers" may use few of the words the ranking counts.
+    # When no chosen piece holds such a heading, one slot goes to the best one that does.
+    heads = [i for i, p in enumerate(pieces) if any(_heading(line) for line in p.split("\n"))]
+    if heads and max_chunks >= 2 and not set(heads) & set(chosen):
+        best = max(heads, key=lambda i: (_signal(pieces[i]) + (_signal(pieces[i + 1]) if i + 1 < len(pieces)
+                                                               else 0), -i))
+        lines = pieces[best].split("\n")
+        last = max(k for k, line in enumerate(lines) if _heading(line))
+        # A heading that ends its piece: the section itself is in the next piece.
+        pick = best + 1 if last == len(lines) - 1 and best + 1 < len(pieces) else best
+        if pick not in chosen[:max_chunks - 1]:
+            chosen = chosen[:max_chunks - 1] + [pick]
+    return [pieces[i] for i in sorted(chosen)]
 
 
 # ------------------------------------------------------------------ extraction
@@ -413,19 +584,18 @@ def extract_document(llm: LLM, target: Target, text: str, *, source_type: str, d
     text = text.replace("<<<DOCUMENT", "").replace("DOCUMENT>>>", "")    # the markers are ours alone
     kinds: list[str] = []
     for piece in chunks(text, max_chunks):
-        messages = [
-            {"role": "system", "content": SYSTEM},
-            {"role": "user", "content": USER.format(
-                company=target.name, domains=", ".join(sorted(target.domains)),
-                description=target.description or "unknown", source_type=source_type,
-                doc_date=doc_date or "not stated", departments=", ".join(DEPARTMENTS),
-                max_claims=MAX_CLAIMS_PER_CHUNK, text=piece)},
-        ]
+        messages = [{"role": "system", "content": SYSTEM},
+                    {"role": "user", "content": user_prompt(target, piece, source_type, doc_date)}]
         parsed, version, calls = _ask(llm, messages, cache, log, url, take_call)
         result.calls += calls
         result.versions.add(version)
         kinds.append(parsed.page_kind)
-        if not parsed.about_target_company:
+        if not parsed.about_target_company and source_type in FIRST_PARTY:
+            # The company's own page or filing is about the company whatever the model
+            # says. Its claims go through the same checks as any others.
+            log.event("affiliation_overridden", url=url, claims=len(parsed.claims),
+                      reason="a first-party document is never refused on the model's judgment alone")
+        elif not parsed.about_target_company:
             result.about_target = False
             log.event("document_rejected", url=url, claims=len(parsed.claims),
                       reason="the model judged the document to be about another organisation")
@@ -434,6 +604,12 @@ def extract_document(llm: LLM, target: Target, text: str, *, source_type: str, d
             continue
         for c in parsed.claims:
             reason = check_claim(c, text, target)
+            if reason == "the evidence quote is not in the document" and (found := relocate_evidence(c, text)):
+                log.event("evidence_relocated", url=url, person=c.person, title=c.raw_title,
+                          reason="the model's quote is not in the document; a sentence of the document "
+                                 "naming the person with the title is used instead")
+                c.evidence = found
+                reason = check_claim(c, text, target)
             if reason:
                 result.rejected.append((c, reason))
                 log.event("claim_rejected", url=url, person=c.person, title=c.raw_title,

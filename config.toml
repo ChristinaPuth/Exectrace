@@ -33,6 +33,7 @@ max_search_queries = 25           # per company, including verification
 max_llm_calls = 120               # per company; cache hits do not count
 max_verification_checks = 15
 max_queries_per_verification = 2
+max_enrichment_people = 8         # current leaders looked up for location and biography
 max_retries = 3                   # per request, with backoff
 max_throttle_wait_seconds = 30    # wait this long for the preferred provider, then fall back
 max_source_attempts = 2           # retries of a failed source on resume

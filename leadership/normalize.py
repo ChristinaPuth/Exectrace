@@ -24,9 +24,12 @@ _CHIEFS = {
 }
 _ABBREVIATIONS = {"ceo": "CEO", "cfo": "CFO", "cto": "CTO", "coo": "COO", "cmo": "CMO",
                   "cpo": "CPO", "clo": "CLO", "cio": "CIO", "cro": "CRO", "ciso": "CISO",
-                  "chro": "CHRO"}
+                  "chro": "CHRO",
+                  # British usage drops "officer": "co-founder and chief executive of Wise".
+                  "chief executive": "CEO"}
 _OFFICE = r"\bofficer\b|\b(?:" + "|".join(_ABBREVIATIONS) + r")\b"
-_CHIEF = re.compile(r"\bchief\s+([a-z&,\s]+?)\s+officer\b")
+# "finance chief and principal financial officer" is not a "Chief ... Officer" title.
+_CHIEF = re.compile(r"\bchief\s+(?!and\b)([a-z&,\s]+?)\s+officer\b")
 _VP = re.compile(r"\b(?:[se]?vp|vice[\s-]+president)\b")
 _HEAD = re.compile(r"\b(?:global\s+)?head\s+of\b|\bhead,\s")
 _PRESIDENT = re.compile(r"(?<!vice )(?<!vice-)\bpresident\b")

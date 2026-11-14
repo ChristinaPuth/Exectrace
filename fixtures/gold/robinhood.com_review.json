@@ -1,0 +1,70 @@
+{
+  "about": "One row per role the pipeline marks current (C-level, VP, Head). 'verdict' is decided from the gold set where it can be. For rows marked 'to review', a person sets 'hand_verdict' to 'correct' or 'wrong' and runs `leadership eval` again.",
+  "company": "Robinhood",
+  "roles": [
+    {
+      "person": "Daniel Gallagher",
+      "title": "Chief Legal Officer",
+      "level": "c_level",
+      "decided_by": "rule5_recent_reliable_source",
+      "verdict": "correct",
+      "basis": "judged by hand",
+      "hand_verdict": "correct",
+      "hand_note": "Judged by the project owner on 2026-11-13: correct, based on the SEC proxy ('our Chief Legal Officer since May 2020')."
+    },
+    {
+      "person": "Daniel Gallagher",
+      "title": "Chief Legal, Compliance, and Corporate Affairs Officer",
+      "level": "c_level",
+      "decided_by": "rule5_recent_reliable_source",
+      "verdict": "correct",
+      "basis": "the gold set lists this office as current",
+      "hand_verdict": null
+    },
+    {
+      "person": "Dara Bazzano",
+      "title": "Chief Accounting Officer",
+      "level": "c_level",
+      "decided_by": "rule5_recent_reliable_source",
+      "verdict": "correct",
+      "basis": "the gold set lists this office as current",
+      "hand_verdict": null
+    },
+    {
+      "person": "Shiv Verma",
+      "title": "Chief Financial Officer",
+      "level": "c_level",
+      "decided_by": "rule5_recent_reliable_source",
+      "verdict": "correct",
+      "basis": "the gold set lists this office as current",
+      "hand_verdict": null
+    },
+    {
+      "person": "Steven Quirk",
+      "title": "Chief Brokerage Officer",
+      "level": "c_level",
+      "decided_by": "rule5_recent_reliable_source",
+      "verdict": "correct",
+      "basis": "the gold set lists this office as current",
+      "hand_verdict": null
+    },
+    {
+      "person": "Vladimir Tenev",
+      "title": "Chair and Chief Executive Officer",
+      "level": "c_level",
+      "decided_by": "rule5_recent_reliable_source",
+      "verdict": "correct",
+      "basis": "the gold set lists this office as current",
+      "hand_verdict": null
+    },
+    {
+      "person": "Vladimir Tenev",
+      "title": "President",
+      "level": "c_level",
+      "decided_by": "rule5_recent_reliable_source",
+      "verdict": "correct",
+      "basis": "the gold set lists this office as current",
+      "hand_verdict": null
+    }
+  ]
+}

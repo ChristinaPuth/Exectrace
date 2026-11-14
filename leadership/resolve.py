@@ -234,7 +234,10 @@ def resolve(claims: Iterable[Claim], today: date, freshness_months: int = 12) ->
             and not any(a.claim_type == "appointment" and a.when > d.when for a in sup)
         ]
         ref = _best(sup) if sup else _best(deps)
-        canonical = next((c.canonical_role for c in sup + deps if c.canonical_role), None)
+        # A company-wide departure ends every role of the person, but it names only
+        # one office: that office must not be copied onto the person's other roles.
+        canonical = next((c.canonical_role for c in sup if c.canonical_role), None) or next(
+            (d.canonical_role for d in deps if d.canonical_role and role_key(d) == key), None)
         seen = [c.when for c in sup] or [d.when for d in deps]
         role = Role(
             person_id=pid, key=key,

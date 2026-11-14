@@ -3,6 +3,7 @@
     uv run python tools/show_people.py robinhood.com            # leaders (C-level, VP, Head)
     uv run python tools/show_people.py robinhood.com --all      # also directors and others
     uv run python tools/show_people.py robinhood.com --rejected # claims the checks refused (newest log)
+    uv run python tools/show_people.py robinhood.com --checks   # verification, date, location and bio checks
 
 For manual review. Reads data/leadership.db.
 """
@@ -34,6 +35,8 @@ def main() -> int:
     cid = company["id"]
     if "--rejected" in sys.argv:
         return rejected(domain)
+    if "--checks" in sys.argv:
+        return checks(conn, company)
     scope = "" if "--all" in sys.argv else "AND r.level IN ('c_level', 'vp', 'head')"
     roles = conn.execute(
         f"""SELECT r.*, p.full_name, p.employment_status, p.possible_duplicate_of
@@ -57,6 +60,20 @@ def main() -> int:
             other = conn.execute("SELECT full_name FROM people WHERE id = ?",
                                  (r["possible_duplicate_of"],)).fetchone()
             print(f"    NAME FLAG: may be the same person as {other['full_name']} (kept separate)")
+        if r["last_verified_at"]:
+            print(f"    targeted check made at {r['last_verified_at']}")
+        if r["status"] == "current":
+            for kind in ("location", "bio"):
+                fact = conn.execute(
+                    "SELECT cl.value, cl.evidence, s.url FROM claims cl JOIN sources s ON s.id = cl.source_id "
+                    "WHERE cl.person_id = ? AND cl.claim_type = ? ORDER BY s.tier, cl.id LIMIT 1",
+                    (r["person_id"], kind)).fetchone()
+                check = conn.execute("SELECT outcome FROM checks WHERE person_id = ? AND kind = ? ORDER BY id DESC "
+                                     "LIMIT 1", (r["person_id"], kind)).fetchone()
+                if fact:
+                    print(f"    {kind}: \"{fact['value'][:200]}\"\n        {fact['url'][:110]}")
+                elif check:
+                    print(f"    {kind}: {check['outcome'].replace('_', ' ')} (looked for, no source states it)")
         claims = conn.execute(
             """SELECT cl.*, s.url, s.tier, s.source_type, s.page_kind FROM claims cl
                  JOIN sources s ON s.id = cl.source_id
@@ -85,6 +102,19 @@ def main() -> int:
 def _key(role) -> str:
     from leadership.db import claim_key
     return role["canonical_role"] or claim_key(role["title"], role["level"], role["department"], None)
+
+
+def checks(conn, company) -> int:
+    rows = conn.execute(
+        """SELECT k.*, p.full_name FROM checks k LEFT JOIN people p ON p.id = k.person_id
+            WHERE k.company_id = ? ORDER BY k.kind, p.full_name, k.id""", (company["id"],)).fetchall()
+    print(f"Company: {company['name']}    targeted checks on record: {len(rows)}")
+    for k in rows:
+        print(f"\n{k['kind'].upper():<9}{k['full_name']}  |  {k['role_key'] or ''}  ->  {k['outcome']}")
+        print(f"    {k['detail']}")
+        for q in json.loads(k["queries"]):
+            print(f"    query: {q}")
+    return 0
 
 
 def rejected(domain: str) -> int:

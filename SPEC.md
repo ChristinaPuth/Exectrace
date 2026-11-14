@@ -1,6 +1,6 @@
 # SPEC: Company Leadership RAG Agent
 
-Status: **revision 13, 2026-11-13** — design agreed; implementation in progress.
+Status: **revision 14, 2026-11-13** — design agreed; implementation in progress.
 Remaining open decisions are in [section 9](#9-open-decisions).
 
 | Milestone | State |
@@ -9,7 +9,8 @@ Remaining open decisions are in [section 9](#9-open-decisions).
 | M1 Schema + resolution logic | Done; manual tests passed 2026-11-12; merged to `main` |
 | M2 Discovery, fetch, cache | Done; accepted 2026-11-13 (`acceptance/M2.md`) |
 | M3 Extraction + normalization | Done; implemented and manually accepted 2026-11-13, with conditions carried into M4 as R160, R161, R164, R165 (`acceptance/M3.md` section 10); merged to `main` |
-| M4 – M7 | Not started |
+| M4 Verify, enrich, export, gold set | Done; accepted 2026-11-13 with the C-level recall target not met for Robinhood (`acceptance/M4.md`); merged to `main` |
+| M5 – M7 | Not started |
 
 Evidence for each finished milestone is in `acceptance/`.
 
@@ -151,7 +152,9 @@ leadership/
   extract.py        # built: document -> claims with a real model, then checks without one
   normalize.py      # built: title -> level and single-holder role; name matching
   evals.py          # built: `leadership eval`, extraction accuracy on labelled pages
-  verify.py         # M4: targeted checks for unverified / conflicting roles
+  verify.py         # built: stated dates, targeted verification, location and biography
+  export.py         # built: fixtures/<domain>.json and fixtures/leadership.db
+  gold.py           # built: measurement against the hand-verified gold sets
   agent.py          # M5: tool-calling loop
 app.py              # M6: Streamlit UI
 config.toml         # models, limits, agent limits, eval thresholds
@@ -209,6 +212,13 @@ from cache when possible.
   domains. Otherwise it is stored with stage `skipped` and the reason, and
   its text is never extracted. This check is code, not a model decision.
 - **Search round 2** runs only when triggered (section 3.10).
+- **Role-word search on the company's own domains** (built in M4): three
+  fixed queries ("vice president"; "general manager" or "head of"; "chief
+  ... officer" appointed, joins or named) with the search limited to the
+  company's domains. Results off those domains are dropped; at most 6 new
+  pages are read. Once per company (`companies.role_search_at`).
+- **Files that are not web pages** (PDFs) are recorded as `skipped`, "not
+  read", and never sent to the model. Reading PDFs is not built.
 - **EDGAR** (if the company matches a public registrant): latest 10-K, latest
   proxy statement, and recent 8-K filings reporting officer changes (item
   5.02). Matching is strict: the registrant's name must equal the company's
@@ -313,7 +323,9 @@ from cache when possible.
 - **Long documents.** A document is cut at paragraph ends into pieces of at
   most 4,500 characters. If there are more than `max_chunks_per_page`, the
   pieces with the most leadership wording (named offices count most) are
-  kept. An annual report is therefore read only in part.
+  kept. If none of them holds a section heading such as "Executive
+  Officers" or "Leadership Team" (a short line, not a sentence), one slot
+  goes to the piece under the best such heading. An annual report is therefore read only in part.
 - A claim that passes is **supported**: the source said it. It is stored but
   not yet believed. Belief is decided in 3.6.
 - The name is stored as the source wrote it (`person_as_written`) as well as
@@ -526,16 +538,49 @@ evidence on both sides can be shown and diagnosed later.
 - Re-run 3.6. Confirmed → `current` with `last_verified_at`; departure evidence
   → `former`; nothing found → stays `unverified`. If both holders of a
   single-holder role are confirmed (e.g. co-CEOs), both stay `current`.
+- Each check reads at most three new pages. Every check is stored in the
+  `checks` table with its queries and outcome, and the role carries the time
+  of its last check. A role that was checked is not searched again.
+- **One automatic search pass per company.** Verification and the location
+  search run until a pass ends without being stopped; the time is recorded
+  (`companies.verified_pass_at`). Later runs make no automatic search, even
+  when a check surfaced new uncertain roles. `--refresh` allows another
+  pass.
+- **Before any search**, two things are looked for in the documents already
+  held, without a model:
+  - *A stated date.* If a former role has no end date and one sentence of a
+    held tier 1 to 2 document names the person, the office, a verb of
+    leaving and exactly one full date, a dated departure claim is added from
+    that sentence. Sentences that disagree add nothing.
+  - *An earlier title.* If the company's own later document says the person
+    "had been our ..." or held the title "prior to his current position", a
+    departure claim without a date is added, so the earlier post is no
+    longer shown as current.
 
 ### 3.8 Enrich
 
 - For in-scope people with `current` status: location and a short bio, stored
   as claims with the same evidence check.
 - Company headquarters is never substituted for a person's location.
+- The model only picks passages: a place with the sentence that states it,
+  and one or two sentences as the biography. A biography must have the
+  person as its subject (surname in its first 60 characters) and say what
+  they are, were or did, with the verb right after the name. If the model's
+  choice fails, the document's first sentence that passes is used. Stored
+  biographies are re-checked on every run. Code then checks that each
+  sentence is in the document, that the place is named in its sentence, that
+  the sentence is about the person, and that it is not a company address.
+  The biography is the quoted text itself, never a summary.
+- The person's own held sources are read first; one search is made for the
+  location only if they do not give it. "Not found" is stored as a result
+  (`location_status`), never left blank.
 
 ### 3.9 Export
 
-- Write `fixtures/<company>.json`: people, roles, and their supporting sources.
+- `leadership export <domain>...` writes `fixtures/<domain>.json` (people,
+  roles with every claim, source and quote behind them, checks, sources) and
+  `fixtures/leadership.db`, a copy of the database holding only those
+  companies. The measurement and the chat read the fixtures.
 
 ### 3.10 Limits and stop conditions
 
@@ -549,7 +594,8 @@ points, to be confirmed against free-tier quotas in M0.
 | Search rounds | 2 |
 | Search queries per company, including verification | 25 |
 | LLM calls per company (cache hits do not count) | 120 |
-| Verification checks | 15, two queries each |
+| Verification checks | 15, two queries each, three new pages each |
+| Current leaders looked up for location and biography | 8 |
 | Retries per request | 3, exponential backoff, honoring `Retry-After` |
 | Delay between requests to one host | 1 second |
 | Request timeout | 20 seconds |
@@ -623,6 +669,16 @@ One bad page never stops a run.
 ### Known limits (to be stated in the README)
 
 - A departure nobody announced publicly cannot be detected.
+- **Coverage depends on which pages a site lets the tool read.** Robinhood's
+  and Wise's official leadership pages open in a browser but refuse this
+  tool's fetcher. Measured against gold sets built from those pages, the
+  pipeline found 5 of 11 Robinhood C-level leaders and none of its 14 vice
+  presidents; for Wise, 1 of 9 leaders. What it did report was correct.
+- Verification by search rarely settles an old appointment: of 12 checks on
+  Robinhood roles, none ended in a confirmed or ended role.
+- No personal location was found for any leader. The result stored is "not
+  found".
+- A biography is one or two sentences quoted from a source. Some are thin.
 - Extraction can miss a sentence, including one that states a date. The
   date is then not stored; it is never replaced by a filing or announcement
   date. (Robinhood's former CFO: the proxy gives 2026-02-06, the database
@@ -697,6 +753,11 @@ claims    (id, company_id, person_id, source_id,
            effective_pending,                  -- 1: a future change, no date given
            extraction_version,                 -- prompt + schema + model
            person_as_written)                  -- the name as this source wrote it
+
+checks    (id, company_id, person_id,          -- targeted checks after the first resolution
+           kind,                               -- verify | date | location | bio
+           role_key NULL, queries,             -- JSON list of search queries used
+           outcome, detail, checked_at)
 
 roles     (id, company_id, person_id,          -- DERIVED, rebuilt by resolve
            title, level, department, canonical_role,
@@ -933,7 +994,20 @@ chat. No other observability infrastructure.
 | End to end | Chat on fixtures; live collection on the held-out company | LLM / Live |
 
 **Gold sets.** Hand-verified by the author from primary sources **before**
-looking at pipeline output, so recall is not circular. Recall is measured
+looking at pipeline output, so recall is not circular. As built (2026-11-13):
+the gold sets in `fixtures/gold/` were drafted after the M2 and M3 runs and
+are therefore **not fully blind** to earlier pipeline results; each file says
+so, names its sources with access dates, and was approved row by row by the
+project owner. A row counts toward every group its title names (a "Vice
+President and Chief ... Officer" counts toward C-level and VP), and
+company-level and unit-level offices are kept apart.
+
+**Two recall figures, always shown together.** Full recall is against the
+whole gold set, and the targets apply to it. Reachable recall leaves out a
+person only when every source the gold set cites for them is recorded as
+refused to the pipeline (it asked for that exact page and the site or its
+robots.txt refused). A source never attempted is not evidence, and a person
+found as current is always reachable. Recall is measured
 against the gold set only, not against every executive who may exist; the
 README says so.
 
@@ -1004,7 +1078,7 @@ The next milestone starts only after the author has run the manual tests.
 | M6 | Streamlit UI | Runs from committed fixtures with one LLM key; shows answer, SQL, and sources | 0.5 h |
 | M7 | README + deliverables | Fresh-clone test passes; README covers design decisions, measured results, and limits; key scan clean; fixtures, eval report, citation review, and session export committed | 0.75 h |
 
-Progress: M0, M1, M2 and M3 accepted. M0 also
+Progress: M0 to M4 accepted. M4's C-level recall target is not met for Robinhood (45%), a documented access limit. M0 also
 delivered the Groq-first provider chain with pacing and fallback, which the
 original plan had placed in M3.
 

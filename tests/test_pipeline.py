@@ -50,6 +50,7 @@ def model_configured(monkeypatch):
 
 
 def _run(tmp_path, web, cfg=None, **kw):
+    kw.setdefault("verify", False)      # these tests cover extraction; the later stages have their own
     return collect("acme-robotics.com", cfg or _cfg(), root=tmp_path, transport=web.transport,
                    sleep=lambda s: None, today=TODAY, **kw)
 
@@ -64,11 +65,7 @@ def _seed(tmp_path, answers=ANSWERS, default=NOTHING):
         text = clean_text(pages.get(row["url"])["body"])
         answer = next((a for path, a in answers.items() if row["url"].endswith(path)), default)
         for piece in chunks(text, 3):
-            user = ex.USER.format(
-                company=target.name, domains=", ".join(sorted(target.domains)),
-                description=target.description or "unknown", source_type=row["source_type"],
-                doc_date=row["published_at"] or "not stated", departments=", ".join(ex.DEPARTMENTS),
-                max_claims=ex.MAX_CLAIMS_PER_CHUNK, text=piece)
+            user = ex.user_prompt(target, piece, row["source_type"], row["published_at"])
             digest = hashlib.sha256(user.encode()).hexdigest()
             llm_cache.put(f"extract|{extraction_version('openai/gpt-oss-120b')}|{digest}", answer)
     conn.close()
@@ -301,7 +298,10 @@ def test_real_run_stopped_by_its_limit_resumes_without_repeating_work(tmp_path, 
     calls = [e for r in (first, second) for e in _events(r)
              if e["event"] == "llm_call" and e.get("stage") == "extract" and e["cache"] == "miss"]
     assert len({e["url"] for e in calls}) == len(calls) or all(e.get("attempt") for e in calls)
-    # The result equals that of a run that was never interrupted.
+    # The result equals that of a run that was never interrupted. That run reuses the same
+    # model answers: the test is about resuming, and the model is not fully repeatable.
+    import shutil
+    shutil.copytree(tmp_path / "a" / "cache" / "llm", tmp_path / "b" / "cache" / "llm")
     _run(tmp_path / "b", FakeWeb(broken=()), _cfg(max_llm_calls=40))
     assert _people(tmp_path / "a") == _people(tmp_path / "b")
     assert ("Ada Lovelace", "CEO", "current") in _people(tmp_path / "a")
@@ -367,7 +367,7 @@ def test_an_unverified_role_is_never_counted_or_listed_as_a_current_leader(tmp_p
     conn.commit()
     old = {"about_target_company": True, "page_kind": "official", "claims": [
         {"person": "Grace Hopper", "organization": "Acme Robotics", "claim_type": "role",
-         "raw_title": "Chief Operating Officer", "evidence": "Grace Hopper will become CFO."}]}
+         "raw_title": "CFO", "evidence": "Grace Hopper will become CFO."}]}
     _seed(tmp_path, answers={"/about/leadership": LEADERSHIP, "/press/acme-names-new-cfo": old})
     result = _run(tmp_path, web)
     row = conn.execute("SELECT status, status_reason FROM leadership WHERE person = 'Grace Hopper'").fetchone()
@@ -379,4 +379,74 @@ def test_an_unverified_role_is_never_counted_or_listed_as_a_current_leader(tmp_p
         != "current"
     # She does not count toward "enough leaders found", so the second search round is still wanted.
     assert any(n.startswith("search round 2: wanted (only 1 current leaders found)") for n in result.notes)
+    conn.close()
+
+
+# ---------------------------------------------- plan step 1: role words on own domains
+def test_role_word_search_runs_once_on_the_companys_own_domains(tmp_path, model_configured, monkeypatch):
+    import httpx
+    import test_collect
+    from leadership.sources.site import describe
+    monkeypatch.setenv("TAVILY_API_KEY", "tvly-TESTSECRETVALUE0123456789")
+    vp_page = ('<html><head><meta property="article:published_time" content="2026-10-01T09:00:00Z"></head>'
+               "<title>New VP</title><body><p>Pooja Anand has been named Vice President, Enterprise Risk at "
+               "Acme Robotics. She joins from Globex.</p></body></html>")
+    monkeypatch.setitem(test_collect.PAGES, "/press/vp-appointed", vp_page)
+    filtered = []
+    original = FakeWeb.handle
+
+    def handle(self, request):
+        if request.url.host == "api.tavily.com" and json.loads(request.content).get("include_domains"):
+            filtered.append(json.loads(request.content))
+            return httpx.Response(200, json={"results": [
+                {"url": "https://acme-robotics.com/press/vp-appointed", "title": "VP", "content": "x"},
+                {"url": "https://acme-robotics.com/press/acme-names-new-cfo", "title": "known", "content": "x"},
+                {"url": "https://elsewhere.example/acme-vp", "title": "off the domain", "content": "x"}]})
+        return original(self, request)
+
+    monkeypatch.setattr(FakeWeb, "handle", handle)
+    web = FakeWeb(broken=())
+    _run(tmp_path, web, extract=False)
+    _seed(tmp_path)
+    home = FileCache(tmp_path / "cache" / "pages").get("https://acme-robotics.com/")["body"]
+    target = Target("Acme Robotics", {"acme-robotics.com"}, describe(home))
+    vp = {"about_target_company": True, "page_kind": "official", "claims": [
+        {"person": "Pooja Anand", "organization": "Acme Robotics", "claim_type": "appointment",
+         "raw_title": "Vice President, Enterprise Risk", "department": "other",
+         "evidence": "Pooja Anand has been named Vice President, Enterprise Risk at Acme Robotics."}]}
+    for piece in chunks(clean_text(vp_page), 3):
+        user = ex.user_prompt(target, piece, "press_release", "2026-10-01")
+        FileCache(tmp_path / "cache" / "llm").put(
+            f"extract|{extraction_version('openai/gpt-oss-120b')}|{hashlib.sha256(user.encode()).hexdigest()}", vp)
+    cfg = _cfg(max_enrichment_people=0)
+    result = _run(tmp_path, web, cfg, verify=True)
+    assert len(filtered) == 3 and all(b["include_domains"] == ["acme-robotics.com"] for b in filtered)
+    assert all("acme-robotics.com" not in b["query"] for b in filtered)     # the filter, not the words, limits it
+    urls = {r[0] for r in connect(tmp_path / "data" / "leadership.db").execute("SELECT url FROM sources")}
+    assert "https://acme-robotics.com/press/vp-appointed" in urls
+    assert "https://elsewhere.example/acme-vp" not in urls                  # the provider's filter is not trusted
+    conn = connect(tmp_path / "data" / "leadership.db")
+    row = conn.execute("SELECT status, level FROM leadership WHERE person = 'Pooja Anand'").fetchone()
+    assert tuple(row) == ("current", "vp")                                  # found, checked, decided by the rules
+    assert any(n.startswith("role-word search on the company's own domains: 9 results, 1 new pages read")
+               for n in result.notes)
+    assert conn.execute("SELECT role_search_at FROM companies").fetchone()[0]
+    conn.close()
+    _run(tmp_path, web, cfg, verify=True)
+    assert len(filtered) == 3                                               # once per company: not again
+
+
+def test_a_pdf_is_recorded_as_not_read_and_never_sent_to_the_model(tmp_path, model_configured):
+    web = FakeWeb(broken=())
+    _run(tmp_path, web, extract=False)
+    _seed(tmp_path)
+    pages = FileCache(tmp_path / "cache" / "pages")
+    entry = pages.get("https://acme-robotics.com/blog/company-update")
+    pages.put("https://acme-robotics.com/blog/company-update",
+              {**entry, "content_type": "application/pdf", "body": "%PDF-1.7 binary"})
+    result = _run(tmp_path, web)
+    conn = connect(tmp_path / "data" / "leadership.db")
+    row = conn.execute("SELECT stage, last_error FROM sources WHERE url LIKE '%company-update'").fetchone()
+    assert row["stage"] == "skipped" and "application/pdf files are not read" in row["last_error"]
+    assert not [e for e in _events(result) if e["event"] == "llm_call" and e.get("url", "").endswith("company-update")]
     conn.close()
